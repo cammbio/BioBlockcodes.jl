@@ -349,3 +349,19 @@ construct_graph!(merged_data; show_plot = true, show_debug = false)
 show_graph(data; show_debug = false)
 display_cycles(merged_data, show_debug = true)
 display_cycles(data, show_debug = true)
+
+
+
+data3 = CodonGraphData(
+    Graphs.SimpleDiGraph(0), # graph
+    ["ATA", "TAA"], # codon_set
+    Vector{String}(), # all_vertex_labels
+    Vector{String}(), # base_vertex_labels
+    Vector{String}(), # added_vertex_labels
+    Vector{Tuple{String, String}}(), # all_edge_labels
+    Vector{Tuple{String, String}}(), # base_edge_labels
+    Vector{Tuple{String, String}}(), # added_edge_labels
+    Dict{String, Int}(), # vertice_index
+)
+construct_graph!(data3; show_plot = true, show_debug = false)
+is_circular(data3, show_debug = true)
