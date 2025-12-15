@@ -16,7 +16,7 @@ export
 # export relevant functions
 export
     # AnalysisUtils.jl
-    add_vertice_by_label!,
+    add_vertex_by_label!,
     add_edge_by_label!,
     connect_edge_by_label!,
     display_cycles,
@@ -29,7 +29,7 @@ export
     left_shift_codon_set,
     left_shift_codon,
     # CodonUtils.jl
-    get_complement_reversed_codons,
+    get_complement_reversed_codon_set,
     get_reverse_codon_set,
     # GCATCodes.jl
     # GraphUtils.jl

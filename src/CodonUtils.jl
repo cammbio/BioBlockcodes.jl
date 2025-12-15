@@ -6,15 +6,15 @@ const BASE_COMPLEMENT = Dict('A' => 'T', 'C' => 'G', 'G' => 'C', 'T' => 'A')
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # returns the reversed complement codon set
-function get_complement_reversed_codons(data::CodonGraphData; show_debug::Bool = false)
-    temp_codons = get_reverse_codon_set(
-        get_complement_codon_set(data.codon_set; show_debug = show_debug),
+function get_complement_reversed_codon_set(data::CodonGraphData; show_debug::Bool = false)
+    temp_codon_set = get_complement_codon_set(
+        get_reverse_codon_set(data.codon_set; show_debug = show_debug),
         show_debug = show_debug,
     )
     show_debug && @debug "Original codon set: $(data.codon_set)
-    -> reversed complement codon set: $temp_codons"
+    -> Complemented, reversed codon set: $temp_codon_set"
 
-    return temp_codons
+    return temp_codon_set
 end
 
 # returns the complement codon set
@@ -43,16 +43,6 @@ function get_reverse_codon_set(codons::Vector{String}; show_debug::Bool = false)
 end
 
 
-# returns the complement base
-function get_complement_base(base::Char; show_debug::Bool = false)
-    @assert haskey(BASE_COMPLEMENT, base)
-    "Base is invalid. Only A, C, G, T are allowed."
-    show_debug && @debug "Original base: $base, -> complement base: $(BASE_COMPLEMENT[base])"
-
-    return BASE_COMPLEMENT[base]
-end
-
-
 # returns the complement codon
 function get_complement_codon(codon::AbstractString; show_debug::Bool = false)
     @assert all(haskey(BASE_COMPLEMENT, c) for c in codon)
@@ -78,4 +68,14 @@ function get_reverse_codon(codon::AbstractString; show_debug::Bool = false)
 
         return reversed
     end
+end
+
+
+# returns the complement base
+function get_complement_base(base::Char; show_debug::Bool = false)
+    @assert haskey(BASE_COMPLEMENT, base)
+    "Base is invalid. Only A, C, G, T are allowed."
+    show_debug && @debug "Original base: $base, -> complement base: $(BASE_COMPLEMENT[base])"
+
+    return BASE_COMPLEMENT[base]
 end

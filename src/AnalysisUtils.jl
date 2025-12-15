@@ -94,7 +94,8 @@ function is_self_complementary(
     show_debug::Bool = false,
 )
     # create complement reversed codons
-    codon_set_complemented_reversed = get_complement_reversed_codons(data; show_debug = show_debug)
+    codon_set_complemented_reversed =
+        get_complement_reversed_codon_set(data; show_debug = show_debug)
     # create new graph with complement_reversed_codon_set to compare with original graph
     data_complemented_reversed = CodonGraphData(
         Graphs.SimpleDiGraph(0), # graph
@@ -149,15 +150,15 @@ function is_graphs_identical(
     show_debug && @debug "Comparing vertice labels..."
     for index in 1:nv(data_first.graph)
         show_debug &&
-            @debug """In Graph 1: vertice $(index): $(data_first.original_vertice_labels[index])
-In Graph 2: vertice $(index): $(data_second.original_vertice_labels[index])"""
-        if !has_vertice_label(
+            @debug """In Graph 1: vertice $(index): $(data_first.all_vertex_labels[index])
+In Graph 2: vertice $(index): $(data_second.all_vertex_labels[index])"""
+        if !has_vertex_label(
             data_second,
-            data_first.original_vertice_labels[index],
+            data_first.all_vertex_labels[index],
             show_debug = show_debug,
         )
             show_debug &&
-                @debug "vertice label $(data_first.original_vertice_labels[index]) NOT found in Graph 2"
+                @debug "vertice label $(data_first.all_vertex_labels[index]) NOT found in Graph 2"
             return false
         end
     end
@@ -165,16 +166,16 @@ In Graph 2: vertice $(index): $(data_second.original_vertice_labels[index])"""
     # check if same edges
     show_debug && @debug "Comparing edges..."
     for edge in edges(data_first.graph)
-        src_label = data_first.original_vertice_labels[src(edge)]
-        dst_label = data_first.original_vertice_labels[dst(edge)]
+        src_label = data_first.all_vertex_labels[src(edge)]
+        dst_label = data_first.all_vertex_labels[dst(edge)]
         show_debug &&
-            @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)])"
+            @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)])"
         if has_edge_label(data_second, src_label, dst_label; show_debug = show_debug)
             show_debug &&
-                @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)]) also in Graph 2"
+                @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)]) also in Graph 2"
         else
             show_debug &&
-                @debug "Edge: $(data_first.original_vertice_labels[src(edge)]) -> $(data_first.original_vertice_labels[dst(edge)]) NOT in Graph 2"
+                @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)]) NOT in Graph 2"
             return false # edge not found
         end
     end
@@ -202,7 +203,7 @@ end
 
 
 # check if a vertice labels exists in the graph
-function has_vertice_label(data::CodonGraphData, label::String; show_debug::Bool = false)
+function has_vertex_label(data::CodonGraphData, label::String; show_debug::Bool = false)
     return haskey(data.vertex_index, label)
 end
 
@@ -293,8 +294,8 @@ end
 
 
 # function to add a new vertice to a graph data structure
-function add_vertice_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
-    if label in data.original_vertice_labels # vertice already exists
+function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
+    if label in data.all_vertex_labels # vertice already exists
         show_debug && @debug "Vertice $label already exists in graph -> not added."
         return false
     else # vertice does not already exist
@@ -361,7 +362,7 @@ function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     for cycle in cycles # iterate all cycles
         # get all vertice labels 
         # join every vertice label in the cycle with " -> " and print it
-        println(join((data.original_vertice_labels[i] for i in (cycle..., first(cycle))), " -> "))
+        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
         println("Cycle length: $(length(cycle))")
     end
     println("Amount of cycles found: $(length(cycles))")
