@@ -24,7 +24,7 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
         """
 
         # extract vertice labels from codon set and add vertices to graph
-        create_all_vertices!(data)
+        create_vertices!(data)
         # create mapping from vertice label to vertice index in graph
         data.vertex_index =
             Dict(label => index for (index, label) in enumerate(data.base_vertex_labels))
@@ -51,8 +51,8 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
 end
 
 
-# create all needed vertices for the graph by iterating through codons and collect all singular and tuple bases
-function create_all_vertices!(data::CodonGraphData; show_debug::Bool = false)
+# create needed vertices for the graph by iterating through codons and collecting all singular and tuple bases
+function create_vertices!(data::CodonGraphData; show_debug::Bool = false)
     # use a temporary set to avoid duplicates and increase lookup speed
     temp_labels = Set{String}()
 
