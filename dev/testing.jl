@@ -5,6 +5,10 @@ using Logging
 using CairoMakie
 using GraphMakie
 using Graphs
+using BioSequences
+
+
+
 
 
 # debug logging
@@ -14,28 +18,31 @@ global_logger(ConsoleLogger(Logging.Debug)) # activate
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # create test codon x0 (which is self-complementary, circular and C3)
-codon_x0 = [
-    "AAC",
-    "AAT",
-    "ACC",
-    "ATC",
-    "ATT",
-    "CAG",
-    "CTC",
-    "CTG",
-    "GAA",
-    "GAC",
-    "GAG",
-    "GAT",
-    "GCC",
-    "GGC",
-    "GGT",
-    "GTA",
-    "GTC",
-    "GTT",
-    "TAC",
-    "TTC",
-]
+codon_x0 =
+    LongDNA{
+        4,
+    }.([
+        "AAC",
+        "AAT",
+        "ACC",
+        "ATC",
+        "ATT",
+        "CAG",
+        "CTC",
+        "CTG",
+        "GAA",
+        "GAC",
+        "GAG",
+        "GAT",
+        "GCC",
+        "GGC",
+        "GGT",
+        "GTA",
+        "GTC",
+        "GTT",
+        "TAC",
+        "TTC",
+    ])
 # first data for first graph with codon_x0
 data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
@@ -48,6 +55,7 @@ data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $codon_x0", # plot_title
 )
 construct_graph!(data; show_plot = true, show_debug = false)
 show_graph(data; show_debug = false)
@@ -69,6 +77,7 @@ data_adjusted = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $example_codon_set", # plot_title
 )
 construct_graph!(data_adjusted; show_plot = true, show_debug = false)
 
@@ -135,6 +144,7 @@ data_self_complementary = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $codon_x0_self_complementary", # plot_title
 )
 construct_graph!(data_self_complementary)
 println("Graph is circular: ", is_circular(data))
@@ -183,6 +193,7 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
             Vector{Tuple{String, String}}(), # base_edge_labels
             Vector{Tuple{String, String}}(), # added_edge_labels
             Dict{String, Int}(), # vertice_index
+            "Codon set: $(split(codon_line))", # plot_title
         )
         println("""Testing codon set #$row:
         $(test_data.codon_set)
@@ -200,7 +211,7 @@ end
 
 
 # example from PDF
-example_codon_set = ["CGT", "GTA", "ACT", "AAT"]
+example_codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
 # example for cycle detection
 example_data = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
@@ -212,6 +223,7 @@ example_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $example_codon_set", # plot_title
 )
 
 reverse_data = CodonGraphData(
@@ -224,6 +236,7 @@ reverse_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $example_codon_set", # plot_title
 )
 
 alpha_1_data = CodonGraphData(
@@ -236,6 +249,7 @@ alpha_1_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $example_codon_set", # plot_title
 )
 
 alpha_2_data = CodonGraphData(
@@ -248,6 +262,7 @@ alpha_2_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $(left_shift_codon_set(example_codon_set, 2; show_debug = false))", # plot_title
 )
 
 manually_adjusted_data = CodonGraphData(
@@ -260,6 +275,7 @@ manually_adjusted_data = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $example_codon_set", # plot_title
 )
 
 construct_graph!(example_data; show_plot = true, show_debug = false)
@@ -340,6 +356,7 @@ function merge_codon_graphs(
         Vector{Tuple{String, String}}(), # base_edge_labels
         Vector{Tuple{String, String}}(), # added_edge_labels
         Dict{String, Int}(), # vertice_index
+        "Codon set: $(union(data1.codon_set, data2.codon_set))", # plot_title
     )
     return merged_data
 end
@@ -354,7 +371,7 @@ display_cycles(data, show_debug = true)
 
 data3 = CodonGraphData(
     Graphs.SimpleDiGraph(0), # graph
-    ["ATA", "TAA"], # codon_set
+    LongDNA{4}.(["ATA", "TAA"]), # codon_set
     Vector{String}(), # all_vertex_labels
     Vector{String}(), # base_vertex_labels
     Vector{String}(), # added_vertex_labels
@@ -362,6 +379,15 @@ data3 = CodonGraphData(
     Vector{Tuple{String, String}}(), # base_edge_labels
     Vector{Tuple{String, String}}(), # added_edge_labels
     Dict{String, Int}(), # vertice_index
+    "Codon set: $(LongDNA{4}.(["ATA", "TAA"]))", # plot_title
 )
 construct_graph!(data3; show_plot = true, show_debug = false)
 is_circular(data3, show_debug = true)
+
+
+c_set = LongDNA{4}.(["ATC", "GAT", "GAC"])
+left_shift_codon_set(c_set, 1; show_debug = true)
+@show c_set
+println(c_set)
+length(c_set)
+allunique(c_set)
