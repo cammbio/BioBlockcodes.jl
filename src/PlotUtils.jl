@@ -21,13 +21,13 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
         yticklabelsvisible = false,
     )
     hidespines!(ax) # remove axis spines
-    ax.title = "Graph for codon set: $(data.codon_set)"
+    ax.title = data.plot_title
     # combine vertice labels with manually added vertice labels
     show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
     graphplot!(
         ax,
         data.graph;
-        layout = Spring(C = 20.0),
+        layout = Spring(C = 50.0),
         nlabels = data.all_vertex_labels,
         nlabels_color = :white,
         nlabels_size = 18,
@@ -66,14 +66,14 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
             xticklabelsvisible = false,
             yticklabelsvisible = false,
         )
-        ax.title = "Graph for codon set: $(data.codon_set)"
+        ax.title = data.plot_title
         # combine vertice labels with manually added vertice labels
         combine_vertice_labels = vcat(data.vertice_labels, data.added_vertice_labels)
         show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
         graphplot!(
             ax,
             data.graph;
-            layout = Spring(C = 20.0),
+            layout = Spring(C = 50.0),
             nlabels = data.all_vertex_labels,
             nlabels_color = :white,
             nlabels_size = 18,

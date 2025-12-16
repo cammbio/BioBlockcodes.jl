@@ -95,7 +95,7 @@ function is_self_complementary(
 )
     # create complement reversed codons
     codon_set_complemented_reversed =
-        get_complement_reversed_codon_set(data; show_debug = show_debug)
+        get_complemented_reversed_codon_set(data; show_debug = show_debug)
     # create new graph with complement_reversed_codon_set to compare with original graph
     data_complemented_reversed = CodonGraphData(
         Graphs.SimpleDiGraph(0), # graph
@@ -107,6 +107,7 @@ function is_self_complementary(
         Vector{Tuple{String, String}}(), # base_edge_labels
         Vector{Tuple{String, String}}(), # added_edge_labels
         Dict{String, Int}(), # vertice_index
+        "Complemented, reversed graph for $(data.codon_set)", # plot_title
     )
     construct_graph!(data_complemented_reversed; show_plot = show_plot, show_debug = show_debug)
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
@@ -241,11 +242,7 @@ function create_shifted_graph(
     show_debug::Bool = false,
 )
     # create shifted codon set
-    shifted_codon_set = Vector{String}()
-    for codon in data.codon_set
-        shifted_codon = left_shift_codon(codon, shift_by; show_debug = show_debug)
-        push!(shifted_codon_set, shifted_codon)
-    end
+    shifted_codon_set = left_shift_codon_set(data.codon_set, shift_by; show_debug = show_debug)
 
     # create new CodonGraphData for shifted graph
     shifted_data = CodonGraphData(
@@ -258,6 +255,7 @@ function create_shifted_graph(
         Vector{Tuple{String, String}}(), # base_edge_labels
         Vector{Tuple{String, String}}(), # added_edge_labels
         Dict{String, Int}(), # vertice_index
+        "Shifted graph by $shift_by for $(data.codon_set)", # plot_title
     )
     construct_graph!(shifted_data; show_plot = show_plot, show_debug = show_debug)
     return shifted_data
@@ -265,11 +263,15 @@ end
 
 
 # shift a codon set by k positions to the left
-function left_shift_codon_set(codon_set::Vector{String}, shift_by::Int; show_debug::Bool = false)
+function left_shift_codon_set(
+    codon_set::Vector{LongDNA{4}},
+    shift_by::Int;
+    show_debug::Bool = false,
+)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon_set[1]))
     # shift every codon from codon_set
-    shifted_codon_set = Vector{String}()
+    shifted_codon_set = Vector{LongDNA{4}}()
     for codon in codon_set
         # cut of first shift_by characters and append them to the end
         shifted_codon = left_shift_codon(codon, shift_by; show_debug = show_debug)
@@ -282,7 +284,7 @@ end
 
 
 # shift a codon by k positions to the left
-function left_shift_codon(codon::String, shift_by::Int; show_debug::Bool = false)
+function left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon))
     # cut of first shift_by characters and append them to the end
