@@ -62,8 +62,8 @@ function create_vertices!(data::CodonGraphData; show_debug::Bool = false)
         push!(temp_labels, string(codon[1])) # first base
         push!(temp_labels, string(codon[3])) # third base
         # get first two and last two characters of codon
-        push!(temp_labels, codon[1:2]) # first tuple
-        push!(temp_labels, codon[2:3]) # second tuple
+        push!(temp_labels, string(codon[1:2])) # first tuple
+        push!(temp_labels, string(codon[2:3])) # second tuple
     end
 
     # sort and copy temp_labels to all_vertex_labels and base_vertex_labels fields
@@ -90,10 +90,10 @@ function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
     # iterate through codon set and add edges to graph
     for codon in data.codon_set
         # get needed vertex IDs
-        first_base_id = vertex_index[SubString(codon, 1, 1)]
-        third_base_id = vertex_index[SubString(codon, 3, 3)]
-        first_tuple_id = vertex_index[SubString(codon, 1, 2)]
-        second_tuple_id = vertex_index[SubString(codon, 2, 3)]
+        first_base_id = vertex_index[string(codon[1])]
+        third_base_id = vertex_index[string(codon[3])]
+        first_tuple_id = vertex_index[string(codon[1:2])]
+        second_tuple_id = vertex_index[string(codon[2:3])]
 
         # add edge_labels to all_edge_labels and base_edge_labels fields
         push!(

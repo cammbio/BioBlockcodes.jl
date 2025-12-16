@@ -29,8 +29,8 @@ export
     left_shift_codon_set,
     left_shift_codon,
     # CodonUtils.jl
-    get_complement_reversed_codon_set,
-    get_reverse_codon_set,
+    get_complemented_reversed_codon_set,
+    get_reversed_codon_set,
     # GCATCodes.jl
     # GraphUtils.jl
     construct_graph!,

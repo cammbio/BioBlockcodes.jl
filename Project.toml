@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["Filip Cavar"]
 
 [deps]
+BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
 GraphMakie = "1ecd5474-83a3-4783-bb4f-06765db800d2"
@@ -12,6 +13,7 @@ Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 
 [compat]
+BioSequences = "3.5.0"
 CairoMakie = "0.15.7"
 GeometryBasics = "0.5.10"
 GraphMakie = "0.6.3"
