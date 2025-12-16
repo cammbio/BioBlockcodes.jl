@@ -85,6 +85,7 @@ function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
     graph = data.graph
     vertex_index = data.vertex_index
     base_vertex_labels = data.base_vertex_labels
+    all_edge_labels = data.all_edge_labels
     base_edge_labels = data.base_edge_labels
 
     # iterate through codon set and add edges to graph
@@ -97,11 +98,11 @@ function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
 
         # add edge_labels to all_edge_labels and base_edge_labels fields
         push!(
-            base_edge_labels,
+            all_edge_labels,
             (base_vertex_labels[first_base_id], base_vertex_labels[second_tuple_id]),
         )
         push!(
-            base_edge_labels,
+            all_edge_labels,
             (base_vertex_labels[first_tuple_id], base_vertex_labels[third_base_id]),
         )
         push!(
