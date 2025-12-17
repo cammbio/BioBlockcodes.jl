@@ -8,12 +8,9 @@ using Graphs
 using BioSequences
 
 
-
-
-
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
-# global_logger(ConsoleLogger(Logging.Info)) # deactivate
+global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
@@ -44,19 +41,7 @@ codon_x0 =
         "TTC",
     ])
 # first data for first graph with codon_x0
-data = CodonGraphData(
-    Graphs.SimpleDiGraph(0), # graph
-    codon_x0, # codon_set
-    # example_codon_set, # codon_set
-    Vector{String}(), # all_vertex_labels
-    Vector{String}(), # base_vertex_labels
-    Vector{String}(), # added_vertex_labels
-    Vector{Tuple{String, String}}(), # all_edge_labels
-    Vector{Tuple{String, String}}(), # base_edge_labels
-    Vector{Tuple{String, String}}(), # added_edge_labels
-    Dict{String, Int}(), # vertice_index
-    "Codon set: $codon_x0", # plot_title
-)
+data = CodonGraphData(codon_x0; plot_title = "Codon set: $codon_x0")
 construct_graph!(data; show_plot = true, show_debug = false)
 show_graph(data; show_debug = false)
 # check properties of graph
@@ -67,18 +52,7 @@ is_c3(data, show_plot = false, show_debug = false)
 
 
 # manually add vertices and edges to data_adjusted
-data_adjusted = CodonGraphData(
-    Graphs.SimpleDiGraph(0), # graph
-    example_codon_set, # codon_set
-    Vector{String}(), # all_vertex_labels
-    Vector{String}(), # base_vertex_labels
-    Vector{String}(), # added_vertex_labels
-    Vector{Tuple{String, String}}(), # all_edge_labels
-    Vector{Tuple{String, String}}(), # base_edge_labels
-    Vector{Tuple{String, String}}(), # added_edge_labels
-    Dict{String, Int}(), # vertice_index
-    "Codon set: $example_codon_set", # plot_title
-)
+data_adjusted = CodonGraphData(example_codon_set; plot_title = "Codon set: $example_codon_set")
 construct_graph!(data_adjusted; show_plot = true, show_debug = false)
 
 # get get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
@@ -391,3 +365,26 @@ left_shift_codon_set(c_set, 1; show_debug = true)
 println(c_set)
 length(c_set)
 allunique(c_set)
+
+
+# test data
+codon_set_1 = LongDNA{4}.(["AAC", "GTT"])
+test_data_1 = CodonGraphData(codon_set_1)
+construct_graph!(test_data_1; show_plot = true, show_debug = false)
+codon_set_2 = LongDNA{4}.(["GTA", "GTT", "GCA", "GCG"])
+test_data_2 = CodonGraphData(codon_set_2)
+construct_graph!(test_data_2; show_plot = true, show_debug = false)
+codon_set_3 = LongDNA{4}.(["ACT", "AAA", "CGA", "CCG", "TTC", "ATA"])
+test_data_3 = CodonGraphData(codon_set_3)
+construct_graph!(test_data_3; show_plot = true, show_debug = false)
+
+println(test_data_1.all_edge_labels)
+println(test_data_2.all_edge_labels)
+println(test_data_3.all_edge_labels)
+
+aaa = CodonGraphData(LongDNA{4}.(["GTA", "GTT", "GCA"]))
+construct_graph!(aaa; show_plot = true, show_debug = false)
+
+for field in fieldnames(typeof(aaa))
+    println("$field: $(getfield(aaa, field))\n")
+end
