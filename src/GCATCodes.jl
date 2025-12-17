@@ -31,9 +31,11 @@ export
     # CodonUtils.jl
     get_complemented_reversed_codon_set,
     get_reversed_codon_set,
-    # GCATCodes.jl
     # GraphUtils.jl
     construct_graph!,
+    create_vertices!,
+    connect_edges!,
+    # Types.jl
     # PlotUtils.jl
     show_graph,
     show_multiple_graphs
