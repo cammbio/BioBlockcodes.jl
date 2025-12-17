@@ -6,10 +6,12 @@
 """
 is_circular(data::CodonGraphData) -> Bool
 
-Returns true if the codon graph represented by `data` is circular aka. is acyclic (does not contain any cycles)
+Returns true if the graph is circular aka. acyclic
 """
 # check if a set of codons is circular by checking if the graph is acyclic
 function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
+    # check if graph is empty and throw ArgumentError
+    nv(graph) == 0 && throw(ArgumentError("Graph is empty! Cannot determine if circular."))
     # state_array to keep track of all vertices (0 = unvisited, 1 = visiting, 2 = visited)
     state_array = fill(0, nv(graph))
 
@@ -17,13 +19,13 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     for vertex in vertices(graph)
         if state_array[vertex] == 0
             if dfs_cycle_detection(graph, vertex, state_array; show_debug = show_debug)
-                println("Cycle detected in graph -> Graph is not acyclic aka. not circular")
+                show_debug && "Cycle detected in graph -> Graph is not acyclic aka. not circular"
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
     end
 
-    println("No cycles detected in graph -> Graph is acyclic aka. circular")
+    show_debug && "No cycles detected in graph -> Graph is acyclic aka. circular"
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
@@ -56,12 +58,12 @@ end
 function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
     for vertex in vertices(graph)
         if dfs_depth_limited(graph, vertex, 0; show_debug = show_debug)
-            println("Path longer than 2 found in graph -> codon set is not comma-free")
+            show_debug && "Path longer than 2 found in graph -> codon set is not comma-free"
             return false # path longer than 2 found
         end
     end
 
-    println("No paths longer than 2 found in graph -> codon set is comma-free")
+    show_debug && "No paths longer than 2 found in graph -> codon set is comma-free"
     return true # no paths longer than 2 found
 end
 
@@ -96,18 +98,18 @@ function is_self_complementary(
         CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
     construct_graph!(data_complemented_reversed; show_plot = show_plot, show_debug = show_debug)
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
-        println("""Original codon set:
+        show_debug && """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are identical -> original codon set is self-complementary""")
+        Graphs are identical -> original codon set is self-complementary"""
         return true
     else
-        println("""Original codon set:
+        show_debug && """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are not identical -> original codon set is not self-complementary""")
+        Graphs are not identical -> original codon set is not self-complementary"""
         return false
     end
 end
@@ -209,10 +211,10 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
     if is_circular(data.graph; show_debug = show_debug) &&
        is_circular(shifted_data_by_1.graph; show_debug = show_debug) &&
        is_circular(shifted_data_by_2.graph; show_debug = show_debug)
-        println("G(X), α₁(X) and α₂ are circular -> codon set is C3")
+        show_debug && "G(X), α₁(X) and α₂ are circular -> codon set is C3"
         return true
     else
-        println("G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3")
+        show_debug && "G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3"
         return false
     end
 end
@@ -337,8 +339,8 @@ function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     for cycle in cycles # iterate all cycles
         # get all vertice labels 
         # join every vertice label in the cycle with " -> " and print it
-        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
-        println("Cycle length: $(length(cycle))")
+        show_debug && join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> ")
+        show_debug && "Cycle length: $(length(cycle))"
     end
-    println("Amount of cycles found: $(length(cycles))")
+    show_debug && "Amount of cycles found: $(length(cycles))"
 end

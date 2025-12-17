@@ -182,3 +182,12 @@ construct_graph!(aaa; show_plot = true, show_debug = false)
 for field in fieldnames(typeof(aaa))
     println("$field: $(getfield(aaa, field))\n")
 end
+
+
+graph = SimpleDiGraph(5)
+add_edge!(graph, 1, 2)
+add_edge!(graph, 2, 3)
+add_edge!(graph, 4, 5)
+add_edge!(graph, 5, 4)
+graphplot(graph)
+is_circular(graph)
