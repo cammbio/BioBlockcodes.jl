@@ -43,10 +43,9 @@ codon_x0 =
 # first data for first graph with codon_x0
 data = CodonGraphData(codon_x0; plot_title = "Codon set: $codon_x0")
 construct_graph!(data; show_plot = true, show_debug = false)
-show_graph(data; show_debug = false)
 # check properties of graph
-is_circular(data, show_debug = false)
-is_comma_free(data, show_debug = false)
+is_circular(data.graph, show_debug = false)
+is_comma_free(data.graph, show_debug = false)
 is_self_complementary(data, show_plot = false, show_debug = false)
 is_c3(data, show_plot = false, show_debug = false)
 
