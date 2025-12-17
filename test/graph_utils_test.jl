@@ -8,7 +8,8 @@ println("Running GraphUtils tests...")
     # case 1 with accepted codon set with optional title
     @testset "case 1" begin
         codon_set = LongDNA{4}.(["CCA", "ATG"])
-        data = CodonGraphData(codon_set; plot_title = "Test title")
+        plot_title = "Test title"
+        data = CodonGraphData(codon_set; plot_title = plot_title)
         construct_graph!(data; show_plot = false, show_debug = false)
 
         # test graph content
@@ -41,7 +42,7 @@ println("Running GraphUtils tests...")
         @test data.vertex_index ==
               Dict("AT" => 4, "A" => 1, "CA" => 5, "C" => 2, "TG" => 7, "CC" => 6, "G" => 3)
         @test data.base_vertex_labels[data.vertex_index["CA"]] == "CA"
-        @test data.plot_title == "Test title"
+        @test data.plot_title == plot_title
     end
 
     # case 2 with accepted codon set without optional title
