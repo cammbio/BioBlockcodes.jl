@@ -10,7 +10,7 @@ using BioSequences
 
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
-# global_logger(ConsoleLogger(Logging.Info)) # deactivate
+global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
@@ -369,17 +369,22 @@ allunique(c_set)
 
 # test data
 codon_set_1 = LongDNA{4}.(["AAC", "GTT"])
-test_data_1 = create_data(codon_set_1)
+test_data_1 = CodonGraphData(codon_set_1)
 construct_graph!(test_data_1; show_plot = true, show_debug = false)
 codon_set_2 = LongDNA{4}.(["GTA", "GTT", "GCA", "GCG"])
-test_data_2 = create_data(codon_set_2)
+test_data_2 = CodonGraphData(codon_set_2)
 construct_graph!(test_data_2; show_plot = true, show_debug = false)
 codon_set_3 = LongDNA{4}.(["ACT", "AAA", "CGA", "CCG", "TTC", "ATA"])
-test_data_3 = create_data(codon_set_3)
+test_data_3 = CodonGraphData(codon_set_3)
 construct_graph!(test_data_3; show_plot = true, show_debug = false)
 
 println(test_data_1.all_edge_labels)
 println(test_data_2.all_edge_labels)
 println(test_data_3.all_edge_labels)
 
-dataaa = CodonGraphData(LongDNA{4}.([""]))
+aaa = CodonGraphData(LongDNA{4}.(["GTA", "GTT", "GCA"]))
+construct_graph!(aaa; show_plot = true, show_debug = false)
+
+for field in fieldnames(typeof(aaa))
+    println("$field: $(getfield(aaa, field))\n")
+end
