@@ -2,41 +2,48 @@ module GCATCodes
 
 # load other source files
 include("Types.jl")
+include("CyclesAnalysis.jl") # needs Types.jl
 include("CodonUtils.jl") # needs Types.jl
-include("AnalysisUtils.jl") # needs Types.jl
 include("PlotUtils.jl") # needs Types.jl
+include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
 include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
 
-# export relevant types
+# export types
 export
 # Types.jl
     CodonGraphData
 #
 
-# export relevant functions
+# export functions
 export
-    # AnalysisUtils.jl
-    add_vertex_by_label!,
-    add_edge_by_label!,
-    connect_edge_by_label!,
-    display_cycles,
-    has_vertex_label,
-    has_edge_label,
-    is_c3,
+    # CodonGraphAnalysis.jl
     is_circular,
     is_comma_free,
-    is_graphs_identical,
     is_self_complementary,
-    left_shift_codon_set,
-    left_shift_codon,
+    is_c3,
+    is_graphs_identical,
+    has_vertex_label,
+    has_edge_label,
     # CodonUtils.jl
     get_complemented_reversed_codon_set,
+    get_complemented_codon_set,
+    get_complemented_codon,
     get_reversed_codon_set,
+    get_complemented_codon,
+    get_reversed_codon,
+    get_complemented_base,
+    left_shift_codon_set,
+    left_shift_codon,
+    # CyclesAnalysis.jl
+    display_cycles,
     # GraphUtils.jl
     construct_graph!,
     create_vertices!,
     connect_edges!,
-    # Types.jl
+    add_vertex_by_label!,
+    add_edge_by_label!,
+    connect_edge_by_label!,
+    create_shifted_graph,
     # PlotUtils.jl
     show_graph,
     show_multiple_graphs
