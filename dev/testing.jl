@@ -47,7 +47,7 @@ construct_graph!(data; show_plot = true, show_debug = false)
 # check properties of graph
 is_circular(data.graph, show_debug = false)
 is_comma_free(data.graph, show_debug = false)
-is_self_complementary(data, show_plot = false, show_debug = false)
+is_self_complementary(data, show_plot = true, show_debug = false)
 is_c3(data, show_plot = false, show_debug = false)
 
 
@@ -165,6 +165,7 @@ display_cycles(data, show_debug = true)
 # test data
 codon_set_1 = LongDNA{4}.(["AAC", "GTT"])
 test_data_1 = CodonGraphData(codon_set_1)
+isempty(LongDNA{4}.([""]))
 construct_graph!(test_data_1; show_plot = true, show_debug = false)
 codon_set_2 = LongDNA{4}.(["GTA", "GTT", "GCA", "GCG"])
 test_data_2 = CodonGraphData(codon_set_2)
@@ -236,3 +237,10 @@ function show_temp(graph)
     )
     display(fig)
 end
+
+
+
+is_self_data = CodonGraphData(LongDNA{4}.(["ATA", "TAT", "CCA"]))
+is_self_data = CodonGraphData(LongDNA{4}.(["AAT"]))
+construct_graph!(is_self_data; show_plot = true, show_debug = false)
+is_self_complementary(is_self_data; show_plot = true, show_debug = true)
