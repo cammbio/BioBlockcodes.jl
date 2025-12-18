@@ -1,11 +1,11 @@
 using CairoMakie
 using GraphMakie
 using Graphs
-# -------------------------------------------------- VARIABLES --------------------------------------------------
+# ---------------------------------------------- VARIABLES ----------------------------------------------
 
-# -------------------------------------------------- CONSTANTS --------------------------------------------------
+# ---------------------------------------------- CONSTANTS ----------------------------------------------
 
-# -------------------------------------------------- FUNCTIONS --------------------------------------------------
+# ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # construct graph from data
 function construct_graph!(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
     # check if any duplicates in codons
@@ -105,4 +105,70 @@ function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
         add_edge!(graph, first_base_id, second_tuple_id)
         add_edge!(graph, first_tuple_id, third_base_id)
     end
+end
+
+
+# function to add a new vertice to a graph data structure
+function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
+    if label in data.all_vertex_labels # vertice already exists
+        show_debug && @debug "Vertice $label already exists in graph -> not added."
+        return false
+    else # vertice does not already exist
+        # update affected data fields
+        add_vertex!(data.graph) # add vertice to graph
+        push!(data.added_vertice_labels, label) # add to manually added vertice labels
+        data.vertex_index[label] = nv(data.graph) # map label to vertice index
+        show_debug && @debug "Added vertice: $label"
+        return true
+    end
+end
+
+
+# function to add a new edge to a graph data structure
+function add_edge_by_label!(
+    data::CodonGraphData,
+    from_label::String,
+    to_label::String;
+    show_debug::Bool = false,
+)
+    if has_edge_label(data, from_label, to_label; show_debug = show_debug) # edge already exists
+        show_debug && @debug "Edge $from_label -> $to_label already exists in graph -> not added."
+        return false
+    else # edge does not already exist
+        connect_edge_by_label!(data, from_label, to_label; show_debug = show_debug)
+        push!(data.added_edge_labels, (from_label, to_label)) # add to manually added edge labels
+        show_debug && @debug "Added edge: $from_label -> $to_label"
+        return true
+    end
+end
+
+
+# connect one edge label to another
+function connect_edge_by_label!(
+    data::CodonGraphData,
+    from_label::String,
+    to_label::String;
+    show_debug::Bool = false,
+)
+    # get needed vertice IDs
+    from_index = data.vertex_index[from_label]
+    to_index = data.vertex_index[to_label]
+    add_edge!(data.graph, from_index, to_index)
+end
+
+
+# create shifted graph αₖ(X) from original graph by shifting codons by k positions
+function create_shifted_graph(
+    codon_set::Vector{LongDNA{4}},
+    shift_by::Int;
+    show_plot::Bool = false,
+    show_debug::Bool = false,
+)
+    # create shifted codon set
+    shifted_codon_set = left_shift_codon_set(codon_set, shift_by; show_debug = show_debug)
+
+    # create new CodonGraphData for shifted graph
+    shifted_data = CodonGraphData(shifted_codon_set; plot_title = "Shifted graph by $shift_by")
+    construct_graph!(shifted_data; show_debug = show_debug, show_plot = show_plot)
+    return shifted_data
 end
