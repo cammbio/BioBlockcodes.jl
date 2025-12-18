@@ -7,7 +7,7 @@ using Graphs
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
 # construct graph from data
-function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
+function construct_graph!(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
     # check if any duplicates in codons
     if length(data.codon_set) == length(unique(data.codon_set)) # no duplicates if true
         show_debug && @debug """
@@ -26,8 +26,7 @@ function construct_graph!(data::CodonGraphData; show_plot::Bool = false, show_de
         # extract vertice labels from codon set and add vertices to graph
         create_vertices!(data)
         # create mapping from vertice label to vertice index in graph
-        data.vertex_index =
-            Dict(label => index for (index, label) in enumerate(data.base_vertex_labels))
+        data.vertex_index = Dict(label => index for (index, label) in enumerate(data.base_vertex_labels))
         # connect edges
         connect_edges!(data)
 
@@ -97,22 +96,10 @@ function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
         second_tuple_id = vertex_index[string(codon[2:3])]
 
         # add edge_labels to all_edge_labels and base_edge_labels fields
-        push!(
-            all_edge_labels,
-            (base_vertex_labels[first_base_id], base_vertex_labels[second_tuple_id]),
-        )
-        push!(
-            all_edge_labels,
-            (base_vertex_labels[first_tuple_id], base_vertex_labels[third_base_id]),
-        )
-        push!(
-            base_edge_labels,
-            (base_vertex_labels[first_base_id], base_vertex_labels[second_tuple_id]),
-        )
-        push!(
-            base_edge_labels,
-            (base_vertex_labels[first_tuple_id], base_vertex_labels[third_base_id]),
-        )
+        push!(all_edge_labels, (base_vertex_labels[first_base_id], base_vertex_labels[second_tuple_id]))
+        push!(all_edge_labels, (base_vertex_labels[first_tuple_id], base_vertex_labels[third_base_id]))
+        push!(base_edge_labels, (base_vertex_labels[first_base_id], base_vertex_labels[second_tuple_id]))
+        push!(base_edge_labels, (base_vertex_labels[first_tuple_id], base_vertex_labels[third_base_id]))
 
         # add edges to graph
         add_edge!(graph, first_base_id, second_tuple_id)

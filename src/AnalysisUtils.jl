@@ -6,192 +6,182 @@
 """
 is_circular(data::CodonGraphData) -> Bool
 
-Returns true if the codon graph represented by `data` is circular aka. is acyclic (does not contain any cycles)
+Returns true if the graph is circular aka. acyclic
 """
 # check if a set of codons is circular by checking if the graph is acyclic
-function is_circular(data::CodonGraphData; show_debug::Bool = false)
+function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
+    # do not allow graph with no vertices
+    nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if circular."))
+    # do not allow graphs with no edges
+    ne(graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if circular."))
     # state_array to keep track of all vertices (0 = unvisited, 1 = visiting, 2 = visited)
-    state_array = fill(0, nv(data.graph))
+    state_array = fill(0, nv(graph))
 
     # perform DFS for each vertice
-    for vertice in vertices(data.graph)
-        if state_array[vertice] == 0
-            if dfs_cycle_detection(data, vertice, state_array; show_debug = show_debug)
-                println("Cycle detected in graph -> Graph is not acyclic aka. not circular")
+    for vertex in vertices(graph)
+        if state_array[vertex] == 0
+            if dfs_cycle_detection(graph, vertex, state_array; show_debug = show_debug)
+                show_debug && @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
     end
 
-    println("No cycles detected in graph -> Graph is acyclic aka. circular")
+    show_debug && @debug "No cycles detected in graph -> Graph is acyclic aka. circular"
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
+
 # recursive DFS to detect cycles
 function dfs_cycle_detection(
-    data::CodonGraphData,
-    vertice::Int,
+    graph::SimpleDiGraph,
+    vertex::Int,
     state_array::Vector{Int};
     show_debug::Bool = false,
 )
     # mark the current vertice as visiting
-    state_array[vertice] = 1
-    for neighbor in outneighbors(data.graph, vertice)
+    state_array[vertex] = 1
+    for neighbor in outneighbors(graph, vertex)
         if state_array[neighbor] == 1
             return true # neighbor already visited, cycle detected
         elseif state_array[neighbor] == 0
-            if dfs_cycle_detection(data, neighbor, state_array; show_debug = show_debug)
+            if dfs_cycle_detection(graph, neighbor, state_array; show_debug = show_debug)
                 return true # cycle detected in recursion
             end
         end
     end
 
     # mark the current vertice as visited
-    state_array[vertice] = 2
+    state_array[vertex] = 2
     return false # no cycle detected from this path
 end
 
 
 # check if a set of codons is comma-free by checking if a path longer than 2 exists
-function is_comma_free(data::CodonGraphData; show_debug::Bool = false)
-    for vertice in vertices(data.graph)
-        if dfs_depth_limited(data.graph, vertice, 0; show_debug = show_debug)
-            println("Path longer than 2 found in graph -> codon set is not comma-free")
+function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
+    # do not allow graph with no vertices
+    nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if comma-free."))
+    # do not allow graphs with no edges
+    ne(graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if comma-free."))
+
+    # perform depth-limited DFS for each vertice
+    for vertex in vertices(graph)
+        if dfs_depth_limited(graph, vertex, 0; show_debug = show_debug)
+            show_debug && @debug "Path longer than 2 found in graph -> codon set is not comma-free"
             return false # path longer than 2 found
         end
     end
 
-    println("No paths longer than 2 found in graph -> codon set is comma-free")
+    show_debug && @debug "No paths longer than 2 found in graph -> codon set is comma-free"
     return true # no paths longer than 2 found
 end
 
 
 # recursive depth-limited DFS to find paths longer than 2
-function dfs_depth_limited(
-    graph::Graphs.DiGraph,
-    vertice::Int,
-    depth::Int;
-    show_debug::Bool = false,
-)
+function dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int; show_debug::Bool = false)
     if depth >= 3
         return true # Pfad mit Länge >= 3 gefunden
     end
 
-    for neighbor in outneighbors(graph, vertice)
+    for neighbor in outneighbors(graph, vertex)
         if dfs_depth_limited(graph, neighbor, depth + 1; show_debug = show_debug)
             return true
         end
     end
-
     return false
 end
 
 
-# check if a set of codons is self-complementary by checking if the graph G(X) is equal to its inverted Graph
-function is_self_complementary(
-    data::CodonGraphData;
-    show_plot::Bool = true,
-    show_debug::Bool = false,
-)
-    # create complement reversed codons
-    codon_set_complemented_reversed =
-        get_complemented_reversed_codon_set(data; show_debug = show_debug)
-    # create new graph with complement_reversed_codon_set to compare with original graph
-    data_complemented_reversed = CodonGraphData(
-        Graphs.SimpleDiGraph(0), # graph
-        codon_set_complemented_reversed, # codon_set
-        Vector{String}(), # all_vertex_labels
-        Vector{String}(), # base_vertex_labels
-        Vector{String}(), # added_vertex_labels
-        Vector{Tuple{String, String}}(), # all_edge_labels
-        Vector{Tuple{String, String}}(), # base_edge_labels
-        Vector{Tuple{String, String}}(), # added_edge_labels
-        Dict{String, Int}(), # vertice_index
-        "Complemented, reversed graph for $(data.codon_set)", # plot_title
-    )
-    construct_graph!(data_complemented_reversed; show_plot = show_plot, show_debug = show_debug)
+# check if a set of codons is self-complementary by checking if the graph G(X) is identical to its complemented, reversed graph
+function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
+    # do not allow graphs with no vertices
+    nv(data.graph) == 0 &&
+        throw(ArgumentError("Graph has no vertices! Cannot determine if self-complementary."))
+    # do not allow graphs with no edges
+    ne(data.graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if self-complementary."))
+
+    # create complemented, reversed codon set
+    codon_set_complemented_reversed = get_complemented_reversed_codon_set(data; show_debug = show_debug)
+
+    # create complemented, reversed graph
+    data_complemented_reversed =
+        CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
+    construct_graph!(data_complemented_reversed; show_debug = show_debug, show_plot = show_plot)
+
+    # compare original graph with complemented, reversed graph
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
-        println("""Original codon set:
+        show_debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are identical -> original codon set is self-complementary""")
+        Graphs are identical -> original codon set is self-complementary"""
         return true
     else
-        println("""Original codon set:
+        show_debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
-        Graphs are not identical -> original codon set is not self-complementary""")
+        Graphs are not identical -> original codon set is not self-complementary"""
         return false
     end
 end
 
 
 # compare two graphs for identical structure
-function is_graphs_identical(
-    data_first::CodonGraphData,
-    data_second::CodonGraphData;
-    show_debug::Bool = false,
-)
+function is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false)
     # check if same amount of vertices and edges
     show_debug && @debug """Comparing graphs...
-    Graph 1: nv=$(nv(data_first.graph)), ne=$(ne(data_first.graph))
-    Graph 2: nv=$(nv(data_second.graph)), ne=$(ne(data_second.graph))"""
-    if nv(data_first.graph) != nv(data_second.graph)
+    Graph 1: nv=$(nv(data_1.graph)), ne=$(ne(data_1.graph))
+    Graph 2: nv=$(nv(data_2.graph)), ne=$(ne(data_2.graph))"""
+    if nv(data_1.graph) != nv(data_2.graph)
         show_debug && @debug "Not the same amount of vertices"
         return false
     end
-    if ne(data_first.graph) != ne(data_second.graph)
+    if ne(data_1.graph) != ne(data_2.graph)
         show_debug && @debug "Not the same amount of edges"
         return false
     end
 
     # check if same vertice labels
     show_debug && @debug "Comparing vertice labels..."
-    for index in 1:nv(data_first.graph)
-        show_debug &&
-            @debug """In Graph 1: vertice $(index): $(data_first.all_vertex_labels[index])
-In Graph 2: vertice $(index): $(data_second.all_vertex_labels[index])"""
-        if !has_vertex_label(
-            data_second,
-            data_first.all_vertex_labels[index],
-            show_debug = show_debug,
-        )
-            show_debug &&
-                @debug "vertice label $(data_first.all_vertex_labels[index]) NOT found in Graph 2"
+    for index in 1:nv(data_1.graph)
+        show_debug && @debug """In Graph 1: vertice $(index): $(data_1.all_vertex_labels[index])
+        In Graph 2: vertice $(index): $(data_2.all_vertex_labels[index])"""
+        if !has_vertex_label(data_2.vertex_index, data_1.all_vertex_labels[index], show_debug = show_debug)
+            show_debug && @debug "vertice label $(data_1.all_vertex_labels[index]) NOT found in Graph 2"
             return false
         end
     end
 
     # check if same edges
     show_debug && @debug "Comparing edges..."
-    for edge in edges(data_first.graph)
-        src_label = data_first.all_vertex_labels[src(edge)]
-        dst_label = data_first.all_vertex_labels[dst(edge)]
+    for edge in edges(data_1.graph)
+        src_label = data_1.all_vertex_labels[src(edge)]
+        dst_label = data_1.all_vertex_labels[dst(edge)]
         show_debug &&
-            @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)])"
-        if has_edge_label(data_second, src_label, dst_label; show_debug = show_debug)
+            @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)])"
+        if has_edge_label(data_2, src_label, dst_label; show_debug = show_debug)
             show_debug &&
-                @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)]) also in Graph 2"
+                @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)]) also in Graph 2"
         else
             show_debug &&
-                @debug "Edge: $(data_first.all_vertex_labels[src(edge)]) -> $(data_first.all_vertex_labels[dst(edge)]) NOT in Graph 2"
+                @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)]) NOT in Graph 2"
             return false # edge not found
         end
     end
-
     return true # graphs are identical
 end
 
 
+# check if a vertex label exists in the graph
+function has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false)
+    show_debug && @debug "Checking if vertice label $label exists in graph..."
+    return haskey(vertex_index, label)
+end
+
+
 # check if edge exists in graph between two vertice labels
-function has_edge_label(
-    data::CodonGraphData,
-    src_label::String,
-    dst_label::String;
-    show_debug::Bool = false,
-)
+function has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; show_debug::Bool = false)
     # check if labels exist
     haskey(data.vertex_index, src_label) || return false
     haskey(data.vertex_index, dst_label) || return false
@@ -203,12 +193,6 @@ function has_edge_label(
 end
 
 
-# check if a vertice labels exists in the graph
-function has_vertex_label(data::CodonGraphData, label::String; show_debug::Bool = false)
-    return haskey(data.vertex_index, label)
-end
-
-
 # check if a set of codons is C3 by checking if the two shifted graphs α₁(X) and α₂ are circular
 function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
     # show original graph
@@ -217,18 +201,18 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
     end
     # create shifted graph
     shifted_data_by_1 =
-        create_shifted_graph(data, 1; show_plot = show_plot, show_debug = show_debug)
+        create_shifted_graph(data.codon_set, 1; show_debug = show_debug, show_plot = show_plot)
     shifted_data_by_2 =
-        create_shifted_graph(data, 2; show_plot = show_plot, show_debug = show_debug)
+        create_shifted_graph(data.codon_set, 2; show_debug = show_debug, show_plot = show_plot)
 
     # check if original graph and both shifted graphs are circular
-    if is_circular(data; show_debug = show_debug) &&
-       is_circular(shifted_data_by_1; show_debug = show_debug) &&
-       is_circular(shifted_data_by_2; show_debug = show_debug)
-        println("G(X), α₁(X) and α₂ are circular -> codon set is C3")
+    if is_circular(data.graph; show_debug = show_debug) &&
+       is_circular(shifted_data_by_1.graph; show_debug = show_debug) &&
+       is_circular(shifted_data_by_2.graph; show_debug = show_debug)
+        show_debug && @debug "G(X), α₁(X) and α₂ are circular -> codon set is C3"
         return true
     else
-        println("G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3")
+        show_debug && @debug "G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3"
         return false
     end
 end
@@ -236,38 +220,23 @@ end
 
 # create shifted graph αₖ(X) from original graph by shifting codons by k positions
 function create_shifted_graph(
-    data::CodonGraphData,
+    codon_set::Vector{LongDNA{4}},
     shift_by::Int;
     show_plot::Bool = false,
     show_debug::Bool = false,
 )
     # create shifted codon set
-    shifted_codon_set = left_shift_codon_set(data.codon_set, shift_by; show_debug = show_debug)
+    shifted_codon_set = left_shift_codon_set(codon_set, shift_by; show_debug = show_debug)
 
     # create new CodonGraphData for shifted graph
-    shifted_data = CodonGraphData(
-        Graphs.SimpleDiGraph(0), # graph
-        shifted_codon_set, # codon_set
-        Vector{String}(), # all_vertex_labels
-        Vector{String}(), # base_vertex_labels
-        Vector{String}(), # added_vertex_labels
-        Vector{Tuple{String, String}}(), # all_edge_labels
-        Vector{Tuple{String, String}}(), # base_edge_labels
-        Vector{Tuple{String, String}}(), # added_edge_labels
-        Dict{String, Int}(), # vertice_index
-        "Shifted graph by $shift_by for $(data.codon_set)", # plot_title
-    )
-    construct_graph!(shifted_data; show_plot = show_plot, show_debug = show_debug)
+    shifted_data = CodonGraphData(shifted_codon_set; plot_title = "Shifted graph by $shift_by")
+    construct_graph!(shifted_data; show_debug = show_debug, show_plot = show_plot)
     return shifted_data
 end
 
 
 # shift a codon set by k positions to the left
-function left_shift_codon_set(
-    codon_set::Vector{LongDNA{4}},
-    shift_by::Int;
-    show_debug::Bool = false,
-)
+function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon_set[1]))
     # shift every codon from codon_set
@@ -364,8 +333,8 @@ function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     for cycle in cycles # iterate all cycles
         # get all vertice labels 
         # join every vertice label in the cycle with " -> " and print it
-        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
-        println("Cycle length: $(length(cycle))")
+        show_debug && join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> ")
+        show_debug && @debug "Cycle length: $(length(cycle))"
     end
-    println("Amount of cycles found: $(length(cycles))")
+    show_debug && @debug "Amount of cycles found: $(length(cycles))"
 end

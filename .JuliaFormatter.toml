@@ -7,7 +7,7 @@ align_struct_field = true        # align struct fields
 always_for_in = true             # "for x in y" instead of "for x = y"
 format_docstrings = true         # formats docstrings
 indent = 4                       # indentation level
-margin = 100                     # maximal line length
+margin = 110                     # maximal line length
 whitespace_in_kwargs = true      # f(a = b) instead of f(a=b)
 whitespace_ops_in_indices = true # [a + b] instead of [a+b]
 whitespace_typedefs = true       # struct A <: B instead of struct A<:B
