@@ -4,6 +4,7 @@ using Test
 
 println("Running GraphUtils tests...")
 
+
 @testset "construct_graph!" begin
     # case 1 with accepted codon set with optional title
     @testset "case 1" begin
@@ -95,6 +96,8 @@ println("Running GraphUtils tests...")
 
 end
 
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
 @testset "create_vertices!" begin
     # case 1
     @testset "case 1" begin
@@ -145,6 +148,8 @@ end
     end
 end
 
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
 @testset "connect_edges!" begin
     codon_set = LongDNA{4}.(["ATG", "TTC"])
     data = CodonGraphData(codon_set)
@@ -169,3 +174,6 @@ end
           Dict("AT" => 5, "A" => 1, "T" => 4, "C" => 2, "TG" => 7, "TC" => 6, "G" => 3, "TT" => 8)
     @test data.base_vertex_labels[data.vertex_index["TG"]] == "TG"
 end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------

@@ -6,6 +6,7 @@ using CairoMakie
 using GraphMakie
 using Graphs
 using BioSequences
+using NetworkLayout
 
 
 # debug logging
@@ -184,10 +185,54 @@ for field in fieldnames(typeof(aaa))
 end
 
 
-graph = SimpleDiGraph(5)
-add_edge!(graph, 1, 2)
-add_edge!(graph, 2, 3)
-add_edge!(graph, 4, 5)
-add_edge!(graph, 5, 4)
-graphplot(graph)
-is_circular(graph)
+function test()
+    graph = SimpleDiGraph(8)
+    add_edge!(graph, 1, 2)
+    add_edge!(graph, 2, 3)
+    add_edge!(graph, 3, 4)
+    add_edge!(graph, 4, 5)
+    add_edge!(graph, 5, 1)
+    add_edge!(graph, 1, 6)
+    add_edge!(graph, 6, 7)
+    add_edge!(graph, 7, 8)
+    add_edge!(graph, 8, 1)
+    add_edge!(graph, 2, 8)
+
+    println("is_comma_free: $(is_comma_free(graph, show_debug = true))")
+    show_temp(graph)
+end
+
+test()
+
+function show_temp(graph)
+    labels = string.(1:nv(graph))
+    fig = Figure(size = (1800, 900))
+    ax = Axis(
+        fig[1, 1];
+        xgridvisible = false,
+        ygridvisible = false,
+        xticksvisible = false,
+        yticksvisible = false,
+        xticklabelsvisible = false,
+        yticklabelsvisible = false,
+    )
+    hidespines!(ax) # remove axis spines
+    ax.title = "show_temp"
+    graphplot!(
+        ax,
+        graph;
+        layout = Spring(C = 1.0),
+        nlabels = labels,
+        nlabels_color = :white,
+        nlabels_size = 18,
+        nlabels_offset = Point2f(0, 0),
+        nlabels_align = (:center, :center),
+        node_color = :black,
+        node_size = 50,
+        arrow_shift = :end,
+        arrow_size = 12,
+        edge_width = 2,
+        edge_curvature = 0.9,
+    )
+    display(fig)
+end
