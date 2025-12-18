@@ -238,16 +238,8 @@ function show_temp(graph)
     display(fig)
 end
 
-
-
-is_self_data = CodonGraphData(LongDNA{4}.(["ATA", "TAT", "CCA"]))
-is_self_data = CodonGraphData(LongDNA{4}.(["AAT"]))
-construct_graph!(is_self_data; show_plot = true, show_debug = false)
-is_self_complementary(is_self_data; show_plot = true, show_debug = true)
-
-data1 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
-construct_graph!(data1)
-data2 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
-construct_graph!(data2)
-
-is_graphs_identical(data1, data2)
+codon_set = LongDNA{4}.(["AGT", "TAT", "CCT", "GAG", "AAC", "AAT", "GAT", "CCA"])
+data = CodonGraphData(codon_set)
+construct_graph!(data, show_plot = false, show_debug = false)
+is_circular(data.graph, show_debug = false)
+is_c3(data, show_plot = true, show_debug = false)

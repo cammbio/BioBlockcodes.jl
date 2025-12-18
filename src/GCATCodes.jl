@@ -20,6 +20,7 @@ export
     add_edge_by_label!,
     connect_edge_by_label!,
     display_cycles,
+    has_vertex_label,
     has_edge_label,
     is_c3,
     is_circular,
