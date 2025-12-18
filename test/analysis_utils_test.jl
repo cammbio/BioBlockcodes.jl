@@ -394,7 +394,6 @@ end
         construct_graph!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
         construct_graph!(data_2)
-
         @test is_graphs_identical(data_1, data_2)
     end
 
@@ -404,7 +403,6 @@ end
         construct_graph!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["AGC", "GTC", "TTA"]))
         construct_graph!(data_2)
-
         @test is_graphs_identical(data_1, data_2)
     end
 
@@ -414,7 +412,6 @@ end
         construct_graph!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["AGT", "ACG", "ATT"]))
         construct_graph!(data_2)
-
         @test !is_graphs_identical(data_1, data_2)
     end
 
@@ -424,9 +421,80 @@ end
         construct_graph!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["TAC", "GGA", "CTT"]))
         construct_graph!(data_2)
-
         @test is_graphs_identical(data_1, data_2) == is_graphs_identical(data_2, data_1)
     end
 end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+@testset "has_vertex_label" begin
+    # test existing vertex label, returns true
+    @testset "existing vertex label" begin
+        data = CodonGraphData(LongDNA{4}.(["ATG", "TAC", "GGA"]))
+        construct_graph!(data)
+        @test has_vertex_label(data.vertex_index, "AT")
+    end
+
+    # test non-existing vertex label, returns false
+    @testset "non-existing vertex label" begin
+        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
+        construct_graph!(data)
+        @test !has_vertex_label(data.vertex_index, "AA")
+    end
+end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+@testset "has_edge_label" begin
+    # test existing edge label, returns true
+    @testset "existing edge label" begin
+        data = CodonGraphData(LongDNA{4}.(["ATG", "TAC", "GGA"]))
+        construct_graph!(data)
+        @test has_edge_label(data, "AT", "G")
+    end
+
+    # test non-existing edge label, returns false
+    @testset "non-existing edge label" begin
+        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
+        construct_graph!(data)
+        @test !has_edge_label(data, "GG", "T")
+    end
+
+    # test edge label with non-existing vertices, returns false
+    @testset "edge label with non-existing vertices" begin
+        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
+        construct_graph!(data)
+        @test !has_edge_label(data, "CG", "CT")
+    end
+end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+@testset "is_c3" begin
+    # test codon set that is C3, returns true
+    @testset "C3 codon set" begin
+        codon_set = LongDNA{4}.(["ATT", "TAC", "GGA", "CCT"])
+        data = CodonGraphData(codon_set)
+        construct_graph!(data)
+        @test is_c3(data)
+    end
+
+    # test codon set that is not circular aka. not C3, returns false
+    @testset "non-C3 codon set" begin
+        codon_set = LongDNA{4}.(["ATG", "TAC", "GGA", "CCT", "AAA"])
+        data = CodonGraphData(codon_set)
+        construct_graph!(data)
+        @test !is_c3(data)
+    end
+
+    # test codon set that is circular but not C3 aka. shifted graph is not circular, returns false
+    @testset "circular but non-C3 codon set" begin
+        codon_set = LongDNA{4}.(["AGT", "TAT", "CCT", "GAG", "AAC", "AAT", "GAT", "CCA"])
+        data = CodonGraphData(codon_set)
+        construct_graph!(data)
+        @test !is_c3(data)
+    end
+end
+
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------

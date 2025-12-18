@@ -93,7 +93,7 @@ end
 
 
 # check if a set of codons is self-complementary by checking if the graph G(X) is identical to its complemented, reversed graph
-function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = true)
+function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 &&
         throw(ArgumentError("Graph has no vertices! Cannot determine if self-complementary."))
