@@ -4,6 +4,7 @@ using Test
 
 println("Running Types tests...")
 
+
 @testset "CodonGraphData constructor" begin
     # happy path
     @testset "happy path" begin
@@ -43,3 +44,6 @@ println("Running Types tests...")
         @test_throws ArgumentError CodonGraphData(codon_set)
     end
 end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------

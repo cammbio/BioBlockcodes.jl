@@ -19,13 +19,14 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     for vertex in vertices(graph)
         if state_array[vertex] == 0
             if dfs_cycle_detection(graph, vertex, state_array; show_debug = show_debug)
-                show_debug && "Cycle detected in graph -> Graph is not acyclic aka. not circular"
+                show_debug &&
+                    @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
     end
 
-    show_debug && "No cycles detected in graph -> Graph is acyclic aka. circular"
+    show_debug && @debug "No cycles detected in graph -> Graph is acyclic aka. circular"
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
@@ -56,14 +57,20 @@ end
 
 # check if a set of codons is comma-free by checking if a path longer than 2 exists
 function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
+    # do not allow empty graphs
+    nv(graph) == 0 && throw(ArgumentError("Graph is empty! Cannot determine if comma-free."))
+    # do not allow graphs with no edges
+    ne(graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if comma-free."))
+
+    # perform depth-limited DFS for each vertice
     for vertex in vertices(graph)
         if dfs_depth_limited(graph, vertex, 0; show_debug = show_debug)
-            show_debug && "Path longer than 2 found in graph -> codon set is not comma-free"
+            show_debug && @debug "Path longer than 2 found in graph -> codon set is not comma-free"
             return false # path longer than 2 found
         end
     end
 
-    show_debug && "No paths longer than 2 found in graph -> codon set is comma-free"
+    show_debug && @debug "No paths longer than 2 found in graph -> codon set is comma-free"
     return true # no paths longer than 2 found
 end
 
@@ -79,7 +86,6 @@ function dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int; show_d
             return true
         end
     end
-
     return false
 end
 
@@ -98,14 +104,14 @@ function is_self_complementary(
         CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
     construct_graph!(data_complemented_reversed; show_plot = show_plot, show_debug = show_debug)
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
-        show_debug && """Original codon set:
+        show_debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
         Graphs are identical -> original codon set is self-complementary"""
         return true
     else
-        show_debug && """Original codon set:
+        show_debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
@@ -211,10 +217,10 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
     if is_circular(data.graph; show_debug = show_debug) &&
        is_circular(shifted_data_by_1.graph; show_debug = show_debug) &&
        is_circular(shifted_data_by_2.graph; show_debug = show_debug)
-        show_debug && "G(X), α₁(X) and α₂ are circular -> codon set is C3"
+        show_debug && @debug "G(X), α₁(X) and α₂ are circular -> codon set is C3"
         return true
     else
-        show_debug && "G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3"
+        show_debug && @debug "G(X), α₁(X) or α₂(X) is not circular -> codon set is not C3"
         return false
     end
 end
@@ -340,7 +346,7 @@ function display_cycles(data::CodonGraphData; show_debug::Bool = false)
         # get all vertice labels 
         # join every vertice label in the cycle with " -> " and print it
         show_debug && join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> ")
-        show_debug && "Cycle length: $(length(cycle))"
+        show_debug && @debug "Cycle length: $(length(cycle))"
     end
-    show_debug && "Amount of cycles found: $(length(cycles))"
+    show_debug && @debug "Amount of cycles found: $(length(cycles))"
 end
