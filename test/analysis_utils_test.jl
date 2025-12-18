@@ -372,23 +372,61 @@ end
     @testset "self-complementary codon set" begin
         codon_set = LongDNA{4}.(["ATG", "CAT", "CTT", "AAG"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data; show_debug = false, show_plot = false)
-        @test is_self_complementary(data; show_debug = false, show_plot = false)
+        construct_graph!(data)
+        @test is_self_complementary(data)
     end
 
     # test non-self-complementary codon set, returns false
     @testset "non-self-complementary codon set" begin
         codon_set = LongDNA{4}.(["AGT", "TGA", "CAA", "TGT", "GGA"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data; show_debug = false, show_plot = false)
-        @test !is_self_complementary(data; show_debug = false, show_plot = false)
+        construct_graph!(data)
+        @test !is_self_complementary(data)
     end
 end
 
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------
 @testset "is_graphs_identical" begin
+    # test identical graphs from CodonGraphData objects, returns true
+    @testset "identical graphs" begin
+        data_1 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
+        construct_graph!(data_1)
+        data_2 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
+        construct_graph!(data_2)
 
+        @test is_graphs_identical(data_1, data_2)
+    end
+
+    # test identical graphs from CodonGraphData objects with same codon set but different order, returns true
+    @testset "identical graphs with different codon order" begin
+        data_1 = CodonGraphData(LongDNA{4}.(["GTC", "TTA", "AGC"]))
+        construct_graph!(data_1)
+        data_2 = CodonGraphData(LongDNA{4}.(["AGC", "GTC", "TTA"]))
+        construct_graph!(data_2)
+
+        @test is_graphs_identical(data_1, data_2)
+    end
+
+    # test non-identical graphs from CodonGraphData objects, returns false
+    @testset "non-identical graphs" begin
+        data_1 = CodonGraphData(LongDNA{4}.(["AGT", "ACG", "ATC"]))
+        construct_graph!(data_1)
+        data_2 = CodonGraphData(LongDNA{4}.(["AGT", "ACG", "ATT"]))
+        construct_graph!(data_2)
+
+        @test !is_graphs_identical(data_1, data_2)
+    end
+
+    # test method call symmetry, returns same result both ways
+    @testset "method call symmetry" begin
+        data_1 = CodonGraphData(LongDNA{4}.(["TAC", "GGA", "CTT"]))
+        construct_graph!(data_1)
+        data_2 = CodonGraphData(LongDNA{4}.(["TAC", "GGA", "CTT"]))
+        construct_graph!(data_2)
+
+        @test is_graphs_identical(data_1, data_2) == is_graphs_identical(data_2, data_1)
+    end
 end
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------
