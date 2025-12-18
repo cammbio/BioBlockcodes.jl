@@ -37,10 +37,10 @@ println("Running AnalysisUtils tests...")
         @test !is_circular(graph)
     end
 
-    # test graph with single vertex and no edges, returns true
+    # test graph with single vertex and no edges, returns ArgumentError
     @testset "single vertex no edges" begin
         graph = SimpleDiGraph(1)
-        @test is_circular(graph)
+        @test_throws ArgumentError is_circular(graph)
     end
 
     # test graph with disconnected components, one cyclic and one acyclic, returns false
@@ -367,4 +367,28 @@ end
 
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+@testset "is_self_complementary" begin
+    # test self-complementary codon set, returns true
+    @testset "self-complementary codon set" begin
+        codon_set = LongDNA{4}.(["ATG", "CAT", "CTT", "AAG"])
+        data = CodonGraphData(codon_set)
+        construct_graph!(data; show_debug = false, show_plot = false)
+        @test is_self_complementary(data; show_debug = false, show_plot = false)
+    end
 
+    # test non-self-complementary codon set, returns false
+    @testset "non-self-complementary codon set" begin
+        codon_set = LongDNA{4}.(["AGT", "TGA", "CAA", "TGT", "GGA"])
+        data = CodonGraphData(codon_set)
+        construct_graph!(data; show_debug = false, show_plot = false)
+        @test !is_self_complementary(data; show_debug = false, show_plot = false)
+    end
+end
+
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+@testset "is_graphs_identical" begin
+
+end
+
+# ------------------------------------ NEXT FUNCTION -------------------------------------------------------

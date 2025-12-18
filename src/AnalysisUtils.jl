@@ -10,8 +10,10 @@ Returns true if the graph is circular aka. acyclic
 """
 # check if a set of codons is circular by checking if the graph is acyclic
 function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
-    # check if graph is empty and throw ArgumentError
-    nv(graph) == 0 && throw(ArgumentError("Graph is empty! Cannot determine if circular."))
+    # do not allow graph with no vertices
+    nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if circular."))
+    # do not allow graphs with no edges
+    ne(graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if circular."))
     # state_array to keep track of all vertices (0 = unvisited, 1 = visiting, 2 = visited)
     state_array = fill(0, nv(graph))
 
@@ -19,8 +21,7 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     for vertex in vertices(graph)
         if state_array[vertex] == 0
             if dfs_cycle_detection(graph, vertex, state_array; show_debug = show_debug)
-                show_debug &&
-                    @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
+                show_debug && @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
@@ -29,6 +30,7 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     show_debug && @debug "No cycles detected in graph -> Graph is acyclic aka. circular"
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
+
 
 # recursive DFS to detect cycles
 function dfs_cycle_detection(
@@ -57,8 +59,8 @@ end
 
 # check if a set of codons is comma-free by checking if a path longer than 2 exists
 function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
-    # do not allow empty graphs
-    nv(graph) == 0 && throw(ArgumentError("Graph is empty! Cannot determine if comma-free."))
+    # do not allow graph with no vertices
+    nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if comma-free."))
     # do not allow graphs with no edges
     ne(graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if comma-free."))
 
@@ -90,19 +92,23 @@ function dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int; show_d
 end
 
 
-# check if a set of codons is self-complementary by checking if the graph G(X) is equal to its inverted Graph
-function is_self_complementary(
-    data::CodonGraphData;
-    show_plot::Bool = true,
-    show_debug::Bool = false,
-)
-    # create complement reversed codons
-    codon_set_complemented_reversed =
-        get_complemented_reversed_codon_set(data; show_debug = show_debug)
-    # create new graph with complement_reversed_codon_set to compare with original graph
+# check if a set of codons is self-complementary by checking if the graph G(X) is identical to its complemented, reversed graph
+function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = true)
+    # do not allow graphs with no vertices
+    nv(data.graph) == 0 &&
+        throw(ArgumentError("Graph has no vertices! Cannot determine if self-complementary."))
+    # do not allow graphs with no edges
+    ne(data.graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if self-complementary."))
+
+    # create complemented, reversed codon set
+    codon_set_complemented_reversed = get_complemented_reversed_codon_set(data; show_debug = show_debug)
+
+    # create complemented, reversed graph
     data_complemented_reversed =
         CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
-    construct_graph!(data_complemented_reversed; show_plot = show_plot, show_debug = show_debug)
+    construct_graph!(data_complemented_reversed; show_debug = show_debug, show_plot = show_plot)
+
+    # compare original graph with complemented, reversed graph
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
         show_debug && @debug """Original codon set:
         $(data.codon_set)
@@ -122,11 +128,7 @@ end
 
 
 # compare two graphs for identical structure
-function is_graphs_identical(
-    data_1::CodonGraphData,
-    data_2::CodonGraphData;
-    show_debug::Bool = false,
-)
+function is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false)
     # check if same amount of vertices and edges
     show_debug && @debug """Comparing graphs...
     Graph 1: nv=$(nv(data_1.graph)), ne=$(ne(data_1.graph))
@@ -145,13 +147,8 @@ function is_graphs_identical(
     for index in 1:nv(data_1.graph)
         show_debug && @debug """In Graph 1: vertice $(index): $(data_1.all_vertex_labels[index])
         In Graph 2: vertice $(index): $(data_2.all_vertex_labels[index])"""
-        if !has_vertex_label(
-            data_2.vertex_index,
-            data_1.all_vertex_labels[index],
-            show_debug = show_debug,
-        )
-            show_debug &&
-                @debug "vertice label $(data_1.all_vertex_labels[index]) NOT found in Graph 2"
+        if !has_vertex_label(data_2.vertex_index, data_1.all_vertex_labels[index], show_debug = show_debug)
+            show_debug && @debug "vertice label $(data_1.all_vertex_labels[index]) NOT found in Graph 2"
             return false
         end
     end
@@ -172,18 +169,19 @@ function is_graphs_identical(
             return false # edge not found
         end
     end
-
     return true # graphs are identical
 end
 
 
+# check if a vertex label exists in the graph
+function has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false)
+    show_debug && @debug "Checking if vertice label $label exists in graph..."
+    return haskey(vertex_index, label)
+end
+
+
 # check if edge exists in graph between two vertice labels
-function has_edge_label(
-    data::CodonGraphData,
-    src_label::String,
-    dst_label::String;
-    show_debug::Bool = false,
-)
+function has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; show_debug::Bool = false)
     # check if labels exist
     haskey(data.vertex_index, src_label) || return false
     haskey(data.vertex_index, dst_label) || return false
@@ -195,12 +193,6 @@ function has_edge_label(
 end
 
 
-# check if a vertice labels exists in the graph
-function has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false)
-    return haskey(vertex_index, label)
-end
-
-
 # check if a set of codons is C3 by checking if the two shifted graphs α₁(X) and α₂ are circular
 function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
     # show original graph
@@ -209,9 +201,9 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
     end
     # create shifted graph
     shifted_data_by_1 =
-        create_shifted_graph(data.codon_set, 1; show_plot = show_plot, show_debug = show_debug)
+        create_shifted_graph(data.codon_set, 1; show_debug = show_debug, show_plot = show_plot)
     shifted_data_by_2 =
-        create_shifted_graph(data.codon_set, 2; show_plot = show_plot, show_debug = show_debug)
+        create_shifted_graph(data.codon_set, 2; show_debug = show_debug, show_plot = show_plot)
 
     # check if original graph and both shifted graphs are circular
     if is_circular(data.graph; show_debug = show_debug) &&
@@ -238,17 +230,13 @@ function create_shifted_graph(
 
     # create new CodonGraphData for shifted graph
     shifted_data = CodonGraphData(shifted_codon_set; plot_title = "Shifted graph by $shift_by")
-    construct_graph!(shifted_data; show_plot = show_plot, show_debug = show_debug)
+    construct_graph!(shifted_data; show_debug = show_debug, show_plot = show_plot)
     return shifted_data
 end
 
 
 # shift a codon set by k positions to the left
-function left_shift_codon_set(
-    codon_set::Vector{LongDNA{4}},
-    shift_by::Int;
-    show_debug::Bool = false,
-)
+function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon_set[1]))
     # shift every codon from codon_set
