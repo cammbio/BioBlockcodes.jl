@@ -1,11 +1,11 @@
 using CairoMakie
 using GraphMakie
 using NetworkLayout
-# -------------------------------------------------- VARIABLES --------------------------------------------------
+# ---------------------------------------------- VARIABLES ----------------------------------------------
 
-# -------------------------------------------------- CONSTANTS --------------------------------------------------
+# ---------------------------------------------- CONSTANTS ----------------------------------------------
 
-# -------------------------------------------------- FUNCTIONS --------------------------------------------------
+# ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # creates and shows a plot representing the corresponding data
 function show_graph(data::CodonGraphData; show_debug::Bool = false)
     show_debug && @debug "Showing graph..."
@@ -49,7 +49,7 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
     show_debug && @debug "Showing multiple graphs..."
     # get grid size
     amount_graphs = length(data_list)
-    number_rows, number_columns = grid_size(amount_graphs)
+    number_rows, number_columns = _grid_size(amount_graphs)
     # create plot figure
     fig = Figure(size = (1800, 900))
     # add each graph to figure
@@ -92,7 +92,7 @@ end
 
 
 # returns grid size (number_rows, number_columns) for n plots
-function grid_size(amount_graphs::Int)
+function _grid_size(amount_graphs::Int)
     number_columns = max(1, ceil(Int, sqrt(amount_graphs)))
     number_rows = ceil(Int, amount_graphs / number_columns)
     return number_rows, number_columns

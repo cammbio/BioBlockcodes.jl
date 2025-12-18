@@ -1,15 +1,15 @@
-# -------------------------------------------------- VARIABLES --------------------------------------------------
+# ---------------------------------------------- VARIABLES ----------------------------------------------
 
-# -------------------------------------------------- CONSTANTS --------------------------------------------------
+# ---------------------------------------------- CONSTANTS ----------------------------------------------
 
-# -------------------------------------------------- FUNCTIONS --------------------------------------------------
+# ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # returns the reversed complemented codon set
-function get_complemented_reversed_codon_set(data::CodonGraphData; show_debug::Bool = false)
+function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
     temp_codon_set = get_complemented_codon_set(
-        get_reversed_codon_set(data.codon_set; show_debug = show_debug),
+        get_reversed_codon_set(codon_set; show_debug = show_debug),
         show_debug = show_debug,
     )
-    show_debug && @debug "Original codon set: $(data.codon_set)
+    show_debug && @debug "Original codon set: $(codon_set)
     -> Complemented, reversed codon set: $temp_codon_set"
 
     return temp_codon_set
@@ -22,8 +22,7 @@ function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::B
         # add the reversed complemented codon to the reversed_codons set
         push!(complemented_codons, get_complemented_codon(codon; show_debug = show_debug))
     end
-    show_debug &&
-        @debug "Original codon set: $codon_set -> complemented codon set: $complemented_codons"
+    show_debug && @debug "Original codon set: $codon_set -> complemented codon set: $complemented_codons"
 
     return complemented_codons
 end
@@ -71,4 +70,33 @@ function get_complemented_base(base::Char; show_debug::Bool = false)
     show_debug && @debug "Original base: $base, -> complemented base: $(BASE_COMPLEMENT[base])"
 
     return BASE_COMPLEMENT[base]
+end
+
+
+# shift a codon set by k positions to the left
+function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
+    # limit shift_by to length of codon
+    shift_by = mod(shift_by, length(codon_set[1]))
+    # shift every codon from codon_set
+    shifted_codon_set = Vector{LongDNA{4}}()
+    for codon in codon_set
+        # cut of first shift_by characters and append them to the end
+        shifted_codon = left_shift_codon(codon, shift_by; show_debug = show_debug)
+        push!(shifted_codon_set, shifted_codon)
+    end
+    show_debug && @debug """Original codon set: $codon_set
+    -> shifted codon set by $shift_by: $shifted_codon_set"""
+    return shifted_codon_set
+end
+
+
+# shift a codon by k positions to the left
+function left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
+    # limit shift_by to length of codon
+    shift_by = mod(shift_by, length(codon))
+    # cut of first shift_by characters and append them to the end
+    shifted_codon = codon[(shift_by + 1):end] * codon[1:shift_by]
+    show_debug && @debug """Original codon: $codon
+    -> shifted codon by $shift_by: $shifted_codon"""
+    return shifted_codon
 end

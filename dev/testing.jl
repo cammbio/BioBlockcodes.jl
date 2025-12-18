@@ -48,7 +48,7 @@ construct_graph!(data; show_plot = true, show_debug = false)
 is_circular(data.graph, show_debug = false)
 is_comma_free(data.graph, show_debug = false)
 is_self_complementary(data, show_plot = true, show_debug = false)
-is_c3(data, show_plot = false, show_debug = false)
+is_c3(data, show_plot = true, show_debug = false)
 
 
 
