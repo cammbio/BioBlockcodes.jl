@@ -17,6 +17,29 @@ mutable struct CodonGraphData
     vertex_index::Dict{String, Int} # from vertice label to vertice index ("AA" => 3)
     plot_title::String # title of the plot
 
+    """
+        CodonGraphData(codon_set::Vector{LongDNA{4}}; plot_title::String = "")
+
+    Create a `CodonGraphData` instance with an empty graph and initialized fields.
+
+    # Arguments
+    - `codon_set::Vector{LongDNA{4}}`: Codon set for the graph.
+
+    # Keyword Arguments
+    - `plot_title::String`: Title for plotting (default: empty).
+
+    # Returns
+    - `CodonGraphData`: New graph data instance.
+
+    # Throws
+    - `ArgumentError`: If `codon_set` is empty, not length-3, or contains duplicates.
+
+    # Example
+    ```julia
+    codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
+    CodonGraphData(codon_set; plot_title = "Example")
+    ```
+    """
     # inner constructor to initialize empty graph, vectors and dicts
     function CodonGraphData(codon_set::Vector{LongDNA{4}}; plot_title::String = "")
         # do not allow empty codon sets

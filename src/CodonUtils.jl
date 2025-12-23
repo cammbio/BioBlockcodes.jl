@@ -3,7 +3,29 @@
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
-# returns the reversed complemented codon set
+"""
+    get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+
+Return the complemented and reversed codons for every codon in `codon_set`.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to transform.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Vector{LongDNA{4}}`: Complemented and reversed codon set.
+
+# Throws
+- None.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["AAA", "AAC"])
+get_complemented_reversed_codon_set(codon_set)
+```
+"""
 function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
     temp_codon_set = get_complemented_codon_set(
         get_reversed_codon_set(codon_set; show_debug = show_debug),
@@ -15,7 +37,29 @@ function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show
     return temp_codon_set
 end
 
-# returns the complemented codon set
+"""
+    get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+
+Return the complemented codons for every codon in `codon_set`.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to transform.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Vector{LongDNA{4}}`: Complemented codon set.
+
+# Throws
+- None.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["AAA", "AAC"])
+get_complemented_codon_set(codon_set)
+```
+"""
 function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
     complemented_codons = Vector{LongDNA{4}}()
     for codon in codon_set
@@ -28,7 +72,29 @@ function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::B
 end
 
 
-# returns the reversed codon set
+"""
+    get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+
+Return the reversed codons for every codon in `codon_set`.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to transform.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Vector{LongDNA{4}}`: Reversed codon set.
+
+# Throws
+- None.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["AAA", "AAC"])
+get_reversed_codon_set(codon_set)
+```
+"""
 function get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
     reversed_codons = Vector{LongDNA{4}}()
     for codon in codon_set
@@ -41,7 +107,28 @@ function get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool 
 end
 
 
-# returns the complemented codon
+"""
+    get_complemented_codon(codon::LongDNA{4}; show_debug::Bool = false)
+
+Return the complemented codon. Assumes a codon length of 3.
+
+# Arguments
+- `codon::LongDNA{4}`: Codon to complement.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `LongDNA{4}`: Complemented codon.
+
+# Throws
+- None.
+
+# Example
+```julia
+get_complemented_codon(LongDNA{4}("AAA"))
+```
+"""
 function get_complemented_codon(codon::LongDNA{4}; show_debug::Bool = false)
     complemented_codon = BioSequences.complement(codon)
 
@@ -52,7 +139,28 @@ function get_complemented_codon(codon::LongDNA{4}; show_debug::Bool = false)
 end
 
 
-# returns the reversed codon
+"""
+    get_reversed_codon(codon::LongDNA{4}; show_debug::Bool = false)
+
+Return the reversed codon. Assumes a codon length of 3.
+
+# Arguments
+- `codon::LongDNA{4}`: Codon to reverse.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `LongDNA{4}`: Reversed codon.
+
+# Throws
+- None.
+
+# Example
+```julia
+get_reversed_codon(LongDNA{4}("AAA"))
+```
+"""
 function get_reversed_codon(codon::LongDNA{4}; show_debug::Bool = false)
     reversed_codon = reverse(codon)
 
@@ -63,7 +171,28 @@ function get_reversed_codon(codon::LongDNA{4}; show_debug::Bool = false)
 end
 
 
-# returns the complemented base
+"""
+    get_complemented_base(base::Char; show_debug::Bool = false)
+
+Return the complemented base using `BASE_COMPLEMENT`.
+
+# Arguments
+- `base::Char`: Base to complement.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Char`: Complemented base.
+
+# Throws
+- `AssertionError`: If `base` is not in `BASE_COMPLEMENT`.
+
+# Example
+```julia
+get_complemented_base('A')
+```
+"""
 function get_complemented_base(base::Char; show_debug::Bool = false)
     @assert haskey(BASE_COMPLEMENT, base)
     "Base is invalid. Only A, C, G, T are allowed."
@@ -73,7 +202,30 @@ function get_complemented_base(base::Char; show_debug::Bool = false)
 end
 
 
-# shift a codon set by k positions to the left
+"""
+    left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
+
+Return a new codon set where each codon is left-shifted by `shift_by`.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to shift.
+- `shift_by::Int`: Amount to shift.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Vector{LongDNA{4}}`: Shifted codon set.
+
+# Throws
+- None.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["AAA", "AAC"])
+left_shift_codon_set(codon_set, 1)
+```
+"""
 function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon_set[1]))
@@ -90,7 +242,29 @@ function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show
 end
 
 
-# shift a codon by k positions to the left
+"""
+    left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
+
+Return `codon` left-shifted by `shift_by`.
+
+# Arguments
+- `codon::LongDNA{4}`: Codon to shift.
+- `shift_by::Int`: Amount to shift.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `LongDNA{4}`: Shifted codon.
+
+# Throws
+- None.
+
+# Example
+```julia
+left_shift_codon(LongDNA{4}("AAA"), 1)
+```
+"""
 function left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon))
