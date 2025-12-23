@@ -4,11 +4,30 @@
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-is_circular(data::CodonGraphData) -> Bool
+    is_circular(graph::SimpleDiGraph; show_debug::Bool = false) -> Bool
 
-Returns true if the graph is circular aka. acyclic
+Return `true` if the graph is acyclic (circular).
+
+# Arguments
+- `graph::SimpleDiGraph`: Graph to analyze.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the graph is acyclic, otherwise `false`.
+
+# Throws
+- `ArgumentError`: If the graph has no vertices or no edges.
+
+# Example
+```julia
+g = SimpleDiGraph(3)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 3)
+is_circular(g)
+```
 """
-# check if a set of codons is circular by checking if the graph is acyclic
 function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     # do not allow graph with no vertices
     nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if circular."))
@@ -31,8 +50,32 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
+"""
+    is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false) -> Bool
 
-# check if a set of codons is C3 by checking if the two shifted graphs α₁(X) and α₂ are circular
+Return `true` if the codon set is C3 (original graph and both shifted graphs by 1 and 2 frames are circular).
+
+# Arguments
+- `data::CodonGraphData`: CodonGraphData object containing the codon set.
+
+# Keyword Arguments
+- `show_plot::Bool`: Whether to show the plots of the graphs (default: false).
+- `show_debug::Bool`: Whether to show debug information (default: false).
+
+# Returns
+- `Bool`: `true` if the codon set is C3, otherwise `false`.
+
+# Throws
+- `ArgumentError`: If the graph has no vertices or no edges.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
+data = CodonGraphData(codon_set)
+construct_graph!(data; show_plot = true, show_debug = true)
+is_c3(data; show_plot = true, show_debug = true)
+```
+"""
 function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false)
     # show original graph
     if show_plot
@@ -57,7 +100,31 @@ function is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool =
 end
 
 
-# check if a set of codons is comma-free by checking if a path longer than 2 exists
+"""
+    is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false) -> Bool
+
+Return `true` if no path longer than 2 exists in the graph.
+
+# Arguments
+- `graph::SimpleDiGraph`: Graph to analyze.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the graph is comma-free, otherwise `false`.
+
+# Throws
+- `ArgumentError`: If the graph has no vertices or no edges.
+
+# Example
+```julia
+g = SimpleDiGraph(3)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 3)
+is_comma_free(g)
+```
+"""
 function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
     # do not allow graph with no vertices
     nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if comma-free."))
@@ -77,9 +144,31 @@ function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
 end
 
 
+"""
+    is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false) -> Bool
 
+Return `true` if the graph matches its complemented, reversed graph.
 
-# check if a set of codons is self-complementary by checking if the graph G(X) is identical to its complemented, reversed graph
+# Arguments
+- `data::CodonGraphData`: Codon graph data to analyze.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+- `show_plot::Bool`: Whether to show plots.
+
+# Returns
+- `Bool`: `true` if the graph is self-complementary, otherwise `false`.
+
+# Throws
+- `ArgumentError`: If the graph has no vertices or no edges.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+is_self_complementary(data)
+```
+"""
 function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 &&
@@ -115,7 +204,33 @@ function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, s
 end
 
 
-# compare two graphs for identical structure
+"""
+    is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false) -> Bool
+
+Return `true` if both graphs have identical structure and labels.
+
+# Arguments
+- `data_1::CodonGraphData`: First graph to compare.
+- `data_2::CodonGraphData`: Second graph to compare.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if both graphs match, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+data_1 = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+data_2 = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data_1)
+construct_graph!(data_2)
+is_graphs_identical(data_1, data_2)
+```
+"""
 function is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false)
     # check if same amount of vertices and edges
     show_debug && @debug """Comparing graphs...
@@ -161,14 +276,62 @@ function is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; sho
 end
 
 
-# check if a vertex label exists in the graph
+"""
+    has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false) -> Bool
+
+Return `true` if `label` exists in `vertex_index`.
+
+# Arguments
+- `vertex_index::Dict{String, Int}`: Mapping of labels to indices.
+- `label::String`: Label to check.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the label exists, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+vertex_index = Dict("A" => 1)
+has_vertex_label(vertex_index, "A")
+```
+"""
 function has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false)
     show_debug && @debug "Checking if vertice label $label exists in graph..."
     return haskey(vertex_index, label)
 end
 
 
-# check if edge exists in graph between two vertice labels
+"""
+    has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; show_debug::Bool = false) -> Bool
+
+Return `true` if an edge exists from `src_label` to `dst_label`.
+
+# Arguments
+- `data::CodonGraphData`: Graph data with label indices.
+- `src_label::String`: Source label.
+- `dst_label::String`: Destination label.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the edge exists, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+has_edge_label(data, "C", "GT")
+```
+"""
 function has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; show_debug::Bool = false)
     # check if labels exist
     haskey(data.vertex_index, src_label) || return false
@@ -182,6 +345,36 @@ end
 
 
 # recursive DFS to detect cycles
+"""
+    _dfs_cycle_detection(
+        graph::SimpleDiGraph,
+        vertex::Int,
+        state_array::Vector{Int};
+        show_debug::Bool = false,
+    ) -> Bool
+
+Return `true` if a cycle is detected during DFS.
+
+# Arguments
+- `graph::SimpleDiGraph`: Graph to traverse.
+- `vertex::Int`: Start vertex.
+- `state_array::Vector{Int}`: Visit state for each vertex.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if a cycle is found, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+state = [0, 0, 0]
+_dfs_cycle_detection(SimpleDiGraph(3), 1, state)
+```
+"""
 function _dfs_cycle_detection(
     graph::SimpleDiGraph,
     vertex::Int,
@@ -207,6 +400,30 @@ end
 
 
 # recursive depth-limited DFS to find paths longer than 2
+"""
+    _dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int; show_debug::Bool = false) -> Bool
+
+Return `true` if a path with length >= 3 is found.
+
+# Arguments
+- `graph::SimpleDiGraph`: Graph to traverse.
+- `vertex::Int`: Start vertex.
+- `depth::Int`: Current depth.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if a path length >= 3 is found, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+_dfs_depth_limited(SimpleDiGraph(3), 1, 0)
+```
+"""
 function _dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int; show_debug::Bool = false)
     if depth >= 3
         return true # Pfad mit Länge >= 3 gefunden
