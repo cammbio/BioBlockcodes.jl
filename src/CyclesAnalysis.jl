@@ -3,7 +3,30 @@
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
-# show all cycles in the graph
+"""
+    display_cycles(data::CodonGraphData; show_debug::Bool = false)
+
+Find and display all cycles in `data.graph`.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to analyze.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Prints cycle info when `show_debug` is true.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+display_cycles(data; show_debug = true)
+```
+"""
 function display_cycles(data::CodonGraphData; show_debug::Bool = false)
     cycles = simplecycles(data.graph)
     show_debug && @debug """Found $(length(cycles)) cycles in graph.

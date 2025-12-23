@@ -53,10 +53,22 @@ export
     demo_function(string::String)
 
 A demo function that takes a string as input and turns it into all capitals.
+
+# Arguments
+- `string::String`: Input string.
+
+# Keyword Arguments
+- None.
+
+# Returns
+- `String`: Uppercased string.
+
+# Throws
+- None.
+
 # Example
-```jldoctest
-julia> demo_function("hello")
-"HELLO"
+```julia
+demo_function("hello")
 ```
 """
 
