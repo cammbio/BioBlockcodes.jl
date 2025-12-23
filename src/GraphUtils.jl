@@ -7,6 +7,30 @@ using Graphs
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # construct graph from data
+"""
+    construct_graph!(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
+
+Construct the graph for `data` from its codon set.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to populate.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+- `show_plot::Bool`: Whether to show the graph plot.
+
+# Returns
+- `Nothing`: Mutates `data` in place.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+```
+"""
 function construct_graph!(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
     # check if any duplicates in codons
     if length(data.codon_set) == length(unique(data.codon_set)) # no duplicates if true
@@ -51,6 +75,29 @@ end
 
 
 # create needed vertices for the graph by iterating through codons and collecting all singular and tuple bases
+"""
+    create_vertices!(data::CodonGraphData; show_debug::Bool = false)
+
+Create the vertices required for `data` from its codon set.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to populate.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Mutates `data` in place.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+create_vertices!(data)
+```
+"""
 function create_vertices!(data::CodonGraphData; show_debug::Bool = false)
     # use a temporary set to avoid duplicates and increase lookup speed
     temp_labels = Set{String}()
@@ -80,6 +127,30 @@ end
 
 # connect the vertices in the graph based on the codons by connecting the first base to the second tuple and
 # the first tuple to the third base
+"""
+    connect_edges!(data::CodonGraphData; show_debug::Bool = false)
+
+Connect edges in `data` based on its codon set.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to populate.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Mutates `data` in place.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+create_vertices!(data)
+connect_edges!(data)
+```
+"""
 function connect_edges!(data::CodonGraphData; show_debug::Bool = false)
     graph = data.graph
     vertex_index = data.vertex_index
@@ -109,6 +180,31 @@ end
 
 
 # function to add a new vertice to a graph data structure
+"""
+    add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false) -> Bool
+
+Add a vertex with `label` to the graph if it does not already exist.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to modify.
+- `label::String`: Vertex label to add.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the vertex was added, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+add_vertex_by_label!(data, "AAA")
+```
+"""
 function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
     if label in data.all_vertex_labels # vertice already exists
         show_debug && @debug "Vertice $label already exists in graph -> not added."
@@ -125,6 +221,37 @@ end
 
 
 # function to add a new edge to a graph data structure
+"""
+    add_edge_by_label!(
+        data::CodonGraphData,
+        from_label::String,
+        to_label::String;
+        show_debug::Bool = false,
+    ) -> Bool
+
+Add a labeled edge if it does not already exist.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to modify.
+- `from_label::String`: Source label.
+- `to_label::String`: Destination label.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Bool`: `true` if the edge was added, otherwise `false`.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+add_edge_by_label!(data, "C", "GT")
+```
+"""
 function add_edge_by_label!(
     data::CodonGraphData,
     from_label::String,
@@ -144,6 +271,37 @@ end
 
 
 # connect one edge label to another
+"""
+    connect_edge_by_label!(
+        data::CodonGraphData,
+        from_label::String,
+        to_label::String;
+        show_debug::Bool = false,
+    )
+
+Connect one labeled edge to another.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to modify.
+- `from_label::String`: Source label.
+- `to_label::String`: Destination label.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Mutates `data` in place.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+connect_edge_by_label!(data, "C", "GT")
+```
+"""
 function connect_edge_by_label!(
     data::CodonGraphData,
     from_label::String,
@@ -158,6 +316,36 @@ end
 
 
 # create shifted graph αₖ(X) from original graph by shifting codons by k positions
+"""
+    create_shifted_graph(
+        codon_set::Vector{LongDNA{4}},
+        shift_by::Int;
+        show_plot::Bool = false,
+        show_debug::Bool = false,
+    ) -> CodonGraphData
+
+Create a shifted graph from `codon_set` by left-shifting each codon.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to shift.
+- `shift_by::Int`: Amount to shift.
+
+# Keyword Arguments
+- `show_plot::Bool`: Whether to show the graph plot.
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `CodonGraphData`: New shifted graph data.
+
+# Throws
+- None.
+
+# Example
+```julia
+codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
+create_shifted_graph(codon_set, 1)
+```
+"""
 function create_shifted_graph(
     codon_set::Vector{LongDNA{4}},
     shift_by::Int;

@@ -6,7 +6,30 @@ using NetworkLayout
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
-# creates and shows a plot representing the corresponding data
+"""
+    show_graph(data::CodonGraphData; show_debug::Bool = false)
+
+Create and display a plot representing `data`.
+
+# Arguments
+- `data::CodonGraphData`: Graph data to visualize.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Displays a figure.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+show_graph(data)
+```
+"""
 function show_graph(data::CodonGraphData; show_debug::Bool = false)
     show_debug && @debug "Showing graph..."
     # create plot figure
@@ -44,7 +67,30 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
 end
 
 
-# creates and shows multiple plots representing the corresponding data
+"""
+    show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+
+Create and display a grid of plots for `data_list`.
+
+# Arguments
+- `data_list::Vector{CodonGraphData}`: Graph data list to visualize.
+
+# Keyword Arguments
+- `show_debug::Bool`: Whether to emit debug logs.
+
+# Returns
+- `Nothing`: Displays a figure.
+
+# Throws
+- None.
+
+# Example
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph!(data)
+show_multiple_graphs([data])
+```
+"""
 function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
     show_debug && @debug "Showing multiple graphs..."
     # get grid size
@@ -91,7 +137,28 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
 end
 
 
-# returns grid size (number_rows, number_columns) for n plots
+"""
+    _grid_size(amount_graphs::Int) -> Tuple{Int, Int}
+
+Return the grid size (number_rows, number_columns) for `amount_graphs`.
+
+# Arguments
+- `amount_graphs::Int`: Number of graphs to place.
+
+# Keyword Arguments
+- None.
+
+# Returns
+- `Tuple{Int, Int}`: `(number_rows, number_columns)` grid size.
+
+# Throws
+- None.
+
+# Example
+```julia
+_grid_size(5)
+```
+"""
 function _grid_size(amount_graphs::Int)
     number_columns = max(1, ceil(Int, sqrt(amount_graphs)))
     number_rows = ceil(Int, amount_graphs / number_columns)
