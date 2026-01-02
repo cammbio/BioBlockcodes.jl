@@ -247,3 +247,16 @@ is_circular(data.graph, show_debug = true)
 is_c3(data, show_plot = true, show_debug = true)
 
 add_vertex_by_label!(data, "AAT", show_debug = true)
+
+get_complemented_reversed_codon_set(LongDNA{4}.(["AC"]); show_debug = true)
+
+get_reversed_codon(LongDNA{4}("ACA"); show_debug = true)
+
+isempty(LongDNA{4}.(["", ""]))
+
+BioSequences.complement(LongDNA{4}.("AA"))
+
+BioSequences.reverse(LongDNA{4}("ATG"))
+get_reversed_codon(LongDNA{4}("ATG"))
+
+get_complemented_base('A'; show_debug = true)
