@@ -25,17 +25,24 @@ Create and display a plot representing `data`.
 
 # Throws
 
-  - None.
+  - ArgumentError: If length of `all_vertex_labels` is not equal to number of vertices.
 
 # Example
 
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
 construct_graph_data!(data)
-show_graph(data)    # create plot figure
+show_graph(data)
 ```
 """
 function show_graph(data::CodonGraphData; show_debug::Bool = false)
+    # check if length of all_vertex_labels is equal to number of vertices
+    length(data.all_vertex_labels) != nv(data.graph) && throw(
+        ArgumentError(
+            "Length of all_vertex_labels ($(length(data.all_vertex_labels))) is not equal to number of vertices ($(nv(data.graph))).",
+        ),
+    )
+
     show_debug && @debug "Showing graph..."
     # create plot figure
     fig = Figure(size = (1800, 900))
@@ -50,7 +57,6 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
     )
     hidespines!(ax) # remove axis spines
     ax.title = data.plot_title
-    # combine vertice labels with manually added vertice labels
     show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
     graphplot!(
         ax,
@@ -91,27 +97,39 @@ Create and display a grid of plots for `data_list`.
 
 # Throws
 
-  - None.
+  - ArgumentError: If `data_list` is empty.
+  - ArgumentError: If length of `all_vertex_labels` is not equal to number of vertices for any data.
 
 # Example
 
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
 construct_graph_data!(data)
-show_multiple_graphs([data])    # get grid size
+show_multiple_graphs([data])
 ```
 """
 function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+    # do not allow empty data_list
+    isempty(data_list) && throw(ArgumentError("data_list cannot be empty."))
+    # check if length of all_vertex_labels is equal to number of vertices for each data
+    for data in data_list
+        length(data.all_vertex_labels) != nv(data.graph) && throw(
+            ArgumentError(
+                "Length of all_vertex_labels ($(length(data.all_vertex_labels))) is not equal to number of vertices ($(nv(data.graph))).",
+            ),
+        )
+    end
+
     show_debug && @debug "Showing multiple graphs..."
     # get grid size
-    amount_graphs = length(data_list)
-    number_rows, number_columns = _grid_size(amount_graphs)
+    number_columns = _get_columns_amount(length(data_list))
     # create plot figure
     fig = Figure(size = (1800, 900))
     # add each graph to figure
     for (index, data) in enumerate(data_list)
-        row = fld(index - 1, number_columns) + 1
-        column = mod(index - 1, number_columns) + 1
+        quotient, remainder = divrem(index - 1, number_columns)
+        row = quotient + 1
+        column = remainder + 1
         show_debug && @debug "index: $index, row: $row, column: $column"
         ax = Axis(
             fig[row, column];
@@ -123,8 +141,6 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
             yticklabelsvisible = false,
         )
         ax.title = data.plot_title
-        # combine vertice labels with manually added vertice labels
-        combine_vertice_labels = vcat(data.vertice_labels, data.added_vertice_labels)
         show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
         graphplot!(
             ax,
@@ -174,8 +190,7 @@ Return the grid size (number_rows, number_columns) for `amount_graphs`.
 _grid_size(5)
 ```
 """
-function _grid_size(amount_graphs::Int)
+function _get_columns_amount(amount_graphs::Int)
     number_columns = max(1, ceil(Int, sqrt(amount_graphs)))
-    number_rows = ceil(Int, amount_graphs / number_columns)
-    return number_rows, number_columns
+    return number_columns
 end
