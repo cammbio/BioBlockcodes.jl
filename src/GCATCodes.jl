@@ -21,7 +21,7 @@ export
     is_comma_free,
     is_self_complementary,
     is_c3,
-    is_graphs_identical,
+    is_codon_graphs_identical,
     _has_vertex_label,
     _has_edge_label,
     # CodonUtils.jl
