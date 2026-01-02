@@ -5,13 +5,13 @@ using Test
 println("Running GraphUtils tests...")
 
 
-@testset "construct_graph!" begin
+@testset "construct_graph_data!" begin
     # case 1 with accepted codon set with optional title
     @testset "case 1" begin
         codon_set = LongDNA{4}.(["CCA", "ATG"])
         plot_title = "Test title"
         data = CodonGraphData(codon_set; plot_title = plot_title)
-        construct_graph!(data; show_plot = false, show_debug = false)
+        construct_graph_data!(data; show_debug = false)
 
         # test graph content
         # check that right amount of vertices and edges are in the graph
@@ -50,7 +50,7 @@ println("Running GraphUtils tests...")
     @testset "case 2" begin
         codon_set = LongDNA{4}.(["GTA", "GTT", "GCA"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data; show_plot = false, show_debug = false)
+        construct_graph_data!(data; show_debug = false)
 
         # test graph content
         # check that right amount of vertices and edges are in the graph
@@ -80,16 +80,8 @@ println("Running GraphUtils tests...")
               [("G", "TA"), ("GT", "A"), ("G", "TT"), ("GT", "T"), ("G", "CA"), ("GC", "A")]
         @test data.base_edge_labels == data.all_edge_labels
         @test isempty(data.added_edge_labels)
-        @test data.vertex_index == Dict(
-            "A" => 1,
-            "T" => 3,
-            "CA" => 4,
-            "GC" => 5,
-            "G" => 2,
-            "GT" => 6,
-            "TA" => 7,
-            "TT" => 8,
-        )
+        @test data.vertex_index ==
+              Dict("A" => 1, "T" => 3, "CA" => 4, "GC" => 5, "G" => 2, "GT" => 6, "TA" => 7, "TT" => 8)
         @test data.base_vertex_labels[data.vertex_index["GC"]] == "GC"
         @test data.plot_title == ""
     end
@@ -98,12 +90,12 @@ end
 
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------
-@testset "create_vertices!" begin
+@testset "add_vertices_by_codon_set!" begin
     # case 1
     @testset "case 1" begin
         codon_set = LongDNA{4}.(["AAC", "GTT"])
         data = CodonGraphData(codon_set)
-        create_vertices!(data; show_debug = false)
+        add_vertices_by_codon_set!(data; show_debug = false)
 
         # test graph content
         @test nv(data.graph) == length(data.all_vertex_labels)
@@ -127,7 +119,7 @@ end
     @testset "case 2" begin
         codon_set = LongDNA{4}.(["AAC", "CAA"])
         data = CodonGraphData(codon_set)
-        create_vertices!(data; show_debug = false)
+        add_vertices_by_codon_set!(data; show_debug = false)
 
         # test graph content
         @test nv(data.graph) == length(data.all_vertex_labels)
@@ -150,12 +142,12 @@ end
 
 
 # ------------------------------------ NEXT FUNCTION -------------------------------------------------------
-@testset "connect_edges!" begin
+@testset "add_edges_by_codon_set!" begin
     codon_set = LongDNA{4}.(["ATG", "TTC"])
     data = CodonGraphData(codon_set)
-    create_vertices!(data; show_debug = false)
+    add_vertices_by_codon_set!(data; show_debug = false)
     data.vertex_index = Dict(label => index for (index, label) in enumerate(data.all_vertex_labels))
-    connect_edges!(data; show_debug = false)
+    add_edges_by_codon_set!(data; show_debug = false)
 
     # test graph content
     @test nv(data.graph) == length(data.all_vertex_labels)
