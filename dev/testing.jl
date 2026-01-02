@@ -43,13 +43,13 @@ codon_x0 =
     ])
 # first data for first graph with codon_x0
 data = CodonGraphData(codon_x0; plot_title = "Codon set: $codon_x0")
-construct_graph_data!(data; show_plot = true, show_debug = false)
+construct_graph_data!(data; show_debug = false)
 show_graph(data; show_debug = false)
 # check properties of graph
 is_circular(data.graph, show_debug = false)
 is_comma_free(data.graph, show_debug = false)
-is_self_complementary(data, show_plot = true, show_debug = false)
-is_c3(data, show_plot = true, show_debug = false)
+is_self_complementary(data, show_debug = false)
+is_c3(data, show_debug = false)
 
 
 
@@ -60,11 +60,11 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
         println("""Testing codon set #$row:
         $(test_data.codon_set)
         """)
-        construct_graph_data!(test_data, show_plot = false, show_debug = false)
+        construct_graph_data!(test_data, show_debug = false)
         is_circular(test_data, show_debug = false)
         is_comma_free(test_data, show_debug = false)
-        is_self_complementary(test_data, show_plot = false, show_debug = false)
-        is_c3(test_data, show_plot = false, show_debug = false)
+        is_self_complementary(test_data, show_debug = false)
+        is_c3(test_data, show_debug = false)
         if row == 1
             break
         end
@@ -77,7 +77,7 @@ example_codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
 # example for cycle detection
 example_data = CodonGraphData(example_codon_set)
 
-reverse_data = CodonGraphData(get_reverse_codon_set(example_codon_set))
+reverse_data = CodonGraphData(get_reversed_codon_set(example_codon_set))
 
 alpha_1_data = CodonGraphData(left_shift_codon_set(example_codon_set, 1))
 
@@ -85,11 +85,11 @@ alpha_2_data = CodonGraphData(left_shift_codon_set(example_codon_set, 2))
 
 manually_adjusted_data = CodonGraphData(example_codon_set)
 
-construct_graph_data!(example_data; show_plot = true, show_debug = false)
-construct_graph_data!(reverse_data; show_plot = true, show_debug = false)
-construct_graph_data!(alpha_1_data; show_plot = true, show_debug = false)
-construct_graph_data!(alpha_2_data; show_plot = true, show_debug = false)
-construct_graph_data!(manually_adjusted_data; show_plot = true, show_debug = false)
+construct_graph_data!(example_data; show_debug = false)
+construct_graph_data!(reverse_data; show_debug = false)
+construct_graph_data!(alpha_1_data; show_debug = false)
+construct_graph_data!(alpha_2_data; show_debug = false)
+construct_graph_data!(manually_adjusted_data; show_debug = false)
 
 # get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
 for codon in data.codon_set
@@ -109,23 +109,11 @@ println(vcat(alpha_1_data.vertice_labels, alpha_1_data.added_vertice_labels))
 println(vcat(alpha_2_data.vertice_labels, alpha_2_data.added_vertice_labels))
 println(vcat(manually_adjusted_data.vertice_labels, manually_adjusted_data.added_vertice_labels))
 
+data_list = [example_data]
 data_list = [example_data, reverse_data, alpha_1_data, alpha_2_data, manually_adjusted_data]
 names = ["example_data", "reverse_data", "alpha_1_data", "alpha_2_data", "manually_adjusted_data"]
 show_multiple_graphs(data_list; show_debug = true)
-
-for edge in example_data.edge_labels
-    println("Edge in example_data: $(edge[1]) -> $(edge[2])")
-end
-for edge in reverse_data.edge_labels
-    println("Edge in reverse_data: $(edge[1]) -> $(edge[2])")
-end
-for edge in alpha_1_data.edge_labels
-    println("Edge in alpha_1_data: $(edge[1]) -> $(edge[2])")
-end
-for edge in alpha_2_data.edge_labels
-    println("Edge in alpha_2_data: $(edge[1]) -> $(edge[2])")
-end
-
+show_graph(example_data; show_debug = true)
 
 for i in 1:(length(data_list) - 1), j in (i + 1):length(data_list)
     common_edges = intersect(data_list[i].edge_labels, data_list[j].edge_labels)
@@ -157,7 +145,7 @@ function merge_codon_graphs(
     return merged_data
 end
 merged_data = merge_codon_graphs(alpha_1_data, alpha_2_data; show_debug = false)
-construct_graph_data!(merged_data; show_plot = true, show_debug = false)
+construct_graph_data!(merged_data; show_debug = false)
 
 show_graph(data; show_debug = false)
 display_cycles(merged_data, show_debug = true)
@@ -167,20 +155,20 @@ display_cycles(data, show_debug = true)
 codon_set_1 = LongDNA{4}.(["AAC", "GTT"])
 test_data_1 = CodonGraphData(codon_set_1)
 isempty(LongDNA{4}.([""]))
-construct_graph_data!(test_data_1; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_1; show_debug = false)
 codon_set_2 = LongDNA{4}.(["GTA", "GTT", "GCA", "GCG"])
 test_data_2 = CodonGraphData(codon_set_2)
-construct_graph_data!(test_data_2; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_2; show_debug = false)
 codon_set_3 = LongDNA{4}.(["ACT", "AAA", "CGA", "CCG", "TTC", "ATA"])
 test_data_3 = CodonGraphData(codon_set_3)
-construct_graph_data!(test_data_3; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_3; show_debug = false)
 
 println(test_data_1.all_edge_labels)
 println(test_data_2.all_edge_labels)
 println(test_data_3.all_edge_labels)
 
 aaa = CodonGraphData(LongDNA{4}.(["GTA", "GTT", "GCA"]))
-construct_graph_data!(aaa; show_plot = true, show_debug = false)
+construct_graph_data!(aaa; show_debug = false)
 
 for field in fieldnames(typeof(aaa))
     println("$field: $(getfield(aaa, field))\n")
