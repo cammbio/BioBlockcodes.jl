@@ -12,22 +12,27 @@ using NetworkLayout
 Create and display a plot representing `data`.
 
 # Arguments
-- `data::CodonGraphData`: Graph data to visualize.
+
+  - `data::CodonGraphData`: Graph data to visualize.
 
 # Keyword Arguments
-- `show_debug::Bool`: Whether to emit debug logs.
+
+  - `show_debug::Bool`: Whether to emit debug logs.
 
 # Returns
-- `Nothing`: Displays a figure.
+
+  - `Nothing`: Displays a figure.
 
 # Throws
-- None.
+
+  - None.
 
 # Example
+
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
-construct_graph!(data)
-show_graph(data)
+construct_graph_data!(data)
+show_graph(data)    # create plot figure
 ```
 """
 function show_graph(data::CodonGraphData; show_debug::Bool = false)
@@ -73,22 +78,27 @@ end
 Create and display a grid of plots for `data_list`.
 
 # Arguments
-- `data_list::Vector{CodonGraphData}`: Graph data list to visualize.
+
+  - `data_list::Vector{CodonGraphData}`: Graph data list to visualize.
 
 # Keyword Arguments
-- `show_debug::Bool`: Whether to emit debug logs.
+
+  - `show_debug::Bool`: Whether to emit debug logs.
 
 # Returns
-- `Nothing`: Displays a figure.
+
+  - `Nothing`: Displays a figure.
 
 # Throws
-- None.
+
+  - None.
 
 # Example
+
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
-construct_graph!(data)
-show_multiple_graphs([data])
+construct_graph_data!(data)
+show_multiple_graphs([data])    # get grid size
 ```
 """
 function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
@@ -143,18 +153,23 @@ end
 Return the grid size (number_rows, number_columns) for `amount_graphs`.
 
 # Arguments
-- `amount_graphs::Int`: Number of graphs to place.
+
+  - `amount_graphs::Int`: Number of graphs to place.
 
 # Keyword Arguments
-- None.
+
+  - None.
 
 # Returns
-- `Tuple{Int, Int}`: `(number_rows, number_columns)` grid size.
+
+  - `Tuple{Int, Int}`: `(number_rows, number_columns)` grid size.
 
 # Throws
-- None.
+
+  - None.
 
 # Example
+
 ```julia
 _grid_size(5)
 ```
