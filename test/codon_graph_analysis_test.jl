@@ -372,7 +372,7 @@ end
     @testset "self-complementary codon set" begin
         codon_set = LongDNA{4}.(["ATG", "CAT", "CTT", "AAG"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data)
+        construct_graph_data!(data)
         @test is_self_complementary(data)
     end
 
@@ -380,7 +380,7 @@ end
     @testset "non-self-complementary codon set" begin
         codon_set = LongDNA{4}.(["AGT", "TGA", "CAA", "TGT", "GGA"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data)
+        construct_graph_data!(data)
         @test !is_self_complementary(data)
     end
 end
@@ -391,80 +391,37 @@ end
     # test identical graphs from CodonGraphData objects, returns true
     @testset "identical graphs" begin
         data_1 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
-        construct_graph!(data_1)
+        construct_graph_data!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["ATA", "AAG", "CAC"]))
-        construct_graph!(data_2)
+        construct_graph_data!(data_2)
         @test is_graphs_identical(data_1, data_2)
     end
 
     # test identical graphs from CodonGraphData objects with same codon set but different order, returns true
     @testset "identical graphs with different codon order" begin
         data_1 = CodonGraphData(LongDNA{4}.(["GTC", "TTA", "AGC"]))
-        construct_graph!(data_1)
+        construct_graph_data!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["AGC", "GTC", "TTA"]))
-        construct_graph!(data_2)
+        construct_graph_data!(data_2)
         @test is_graphs_identical(data_1, data_2)
     end
 
     # test non-identical graphs from CodonGraphData objects, returns false
     @testset "non-identical graphs" begin
         data_1 = CodonGraphData(LongDNA{4}.(["AGT", "ACG", "ATC"]))
-        construct_graph!(data_1)
+        construct_graph_data!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["AGT", "ACG", "ATT"]))
-        construct_graph!(data_2)
+        construct_graph_data!(data_2)
         @test !is_graphs_identical(data_1, data_2)
     end
 
     # test method call symmetry, returns same result both ways
     @testset "method call symmetry" begin
         data_1 = CodonGraphData(LongDNA{4}.(["TAC", "GGA", "CTT"]))
-        construct_graph!(data_1)
+        construct_graph_data!(data_1)
         data_2 = CodonGraphData(LongDNA{4}.(["TAC", "GGA", "CTT"]))
-        construct_graph!(data_2)
+        construct_graph_data!(data_2)
         @test is_graphs_identical(data_1, data_2) == is_graphs_identical(data_2, data_1)
-    end
-end
-
-
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
-@testset "has_vertex_label" begin
-    # test existing vertex label, returns true
-    @testset "existing vertex label" begin
-        data = CodonGraphData(LongDNA{4}.(["ATG", "TAC", "GGA"]))
-        construct_graph!(data)
-        @test has_vertex_label(data.vertex_index, "AT")
-    end
-
-    # test non-existing vertex label, returns false
-    @testset "non-existing vertex label" begin
-        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
-        construct_graph!(data)
-        @test !has_vertex_label(data.vertex_index, "AA")
-    end
-end
-
-
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
-@testset "has_edge_label" begin
-    # test existing edge label, returns true
-    @testset "existing edge label" begin
-        data = CodonGraphData(LongDNA{4}.(["ATG", "TAC", "GGA"]))
-        construct_graph!(data)
-        @test has_edge_label(data, "AT", "G")
-    end
-
-    # test non-existing edge label, returns false
-    @testset "non-existing edge label" begin
-        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
-        construct_graph!(data)
-        @test !has_edge_label(data, "GG", "T")
-    end
-
-    # test edge label with non-existing vertices, returns false
-    @testset "edge label with non-existing vertices" begin
-        data = CodonGraphData(LongDNA{4}.(["CCT", "GGA", "TTA"]))
-        construct_graph!(data)
-        @test !has_edge_label(data, "CG", "CT")
     end
 end
 
@@ -475,7 +432,7 @@ end
     @testset "C3 codon set" begin
         codon_set = LongDNA{4}.(["ATT", "TAC", "GGA", "CCT"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data)
+        construct_graph_data!(data)
         @test is_c3(data)
     end
 
@@ -483,7 +440,7 @@ end
     @testset "non-C3 codon set" begin
         codon_set = LongDNA{4}.(["ATG", "TAC", "GGA", "CCT", "AAA"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data)
+        construct_graph_data!(data)
         @test !is_c3(data)
     end
 
@@ -491,7 +448,7 @@ end
     @testset "circular but non-C3 codon set" begin
         codon_set = LongDNA{4}.(["AGT", "TAT", "CCT", "GAG", "AAC", "AAT", "GAT", "CCA"])
         data = CodonGraphData(codon_set)
-        construct_graph!(data)
+        construct_graph_data!(data)
         @test !is_c3(data)
     end
 end

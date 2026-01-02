@@ -56,7 +56,7 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
 end
 
 """
-    is_c3(data::CodonGraphData; show_plot::Bool = false, show_debug::Bool = false) -> Bool
+    is_c3(data::CodonGraphData; show_debug::Bool = false) -> Bool
 
 Return `true` if the codon set is C3 (original graph and both shifted graphs by 1 and 2 frames are circular).
 
@@ -66,7 +66,6 @@ Return `true` if the codon set is C3 (original graph and both shifted graphs by 
 
 # Keyword Arguments
 
-  - `show_plot::Bool`: Whether to show the plots of the graphs (default: false).
   - `show_debug::Bool`: Whether to show debug information (default: false).
 
 # Returns
@@ -82,8 +81,8 @@ Return `true` if the codon set is C3 (original graph and both shifted graphs by 
 ```julia
 codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
 data = CodonGraphData(codon_set)
-construct_graph_data!(data; show_plot = true, show_debug = true)    # show original graph
-is_c3(data; show_plot = true, show_debug = true)
+construct_graph_data!(data; show_debug = true)    # show original graph
+is_c3(data; show_debug = true)
 ```
 """
 function is_c3(data::CodonGraphData; show_debug::Bool = false)
@@ -156,7 +155,7 @@ end
 
 
 """
-    is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false) -> Bool
+    is_self_complementary(data::CodonGraphData; show_debug::Bool = false) -> Bool
 
 Return `true` if the graph matches its complemented, reversed graph.
 
@@ -167,7 +166,6 @@ Return `true` if the graph matches its complemented, reversed graph.
 # Keyword Arguments
 
   - `show_debug::Bool`: Whether to emit debug logs.
-  - `show_plot::Bool`: Whether to show plots.
 
 # Returns
 
@@ -185,7 +183,7 @@ construct_graph_data!(data)    # do not allow graphs with no vertices
 is_self_complementary(data)
 ```
 """
-function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, show_plot::Bool = false)
+function is_self_complementary(data::CodonGraphData; show_debug::Bool = false)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 &&
         throw(ArgumentError("Graph has no vertices! Cannot determine if self-complementary."))
@@ -199,7 +197,7 @@ function is_self_complementary(data::CodonGraphData; show_debug::Bool = false, s
     # create complemented, reversed graph
     data_complemented_reversed =
         CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
-    construct_graph_data!(data_complemented_reversed; show_debug = show_debug, show_plot = show_plot)
+    construct_graph_data!(data_complemented_reversed; show_debug = show_debug)
 
     # compare original graph with complemented, reversed graph
     if is_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
