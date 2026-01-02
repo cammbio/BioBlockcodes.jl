@@ -9,21 +9,26 @@
 Find and display all cycles in `data.graph`.
 
 # Arguments
-- `data::CodonGraphData`: Graph data to analyze.
+
+  - `data::CodonGraphData`: Graph data to analyze.
 
 # Keyword Arguments
-- `show_debug::Bool`: Whether to emit debug logs.
+
+  - `show_debug::Bool`: Whether to emit debug logs.
 
 # Returns
-- `Nothing`: Prints cycle info when `show_debug` is true.
+
+  - `Nothing`: Prints cycle info when `show_debug` is true.
 
 # Throws
-- None.
+
+  - None.
 
 # Example
+
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
-construct_graph!(data)
+construct_graph_data!(data)
 display_cycles(data; show_debug = true)
 ```
 """
