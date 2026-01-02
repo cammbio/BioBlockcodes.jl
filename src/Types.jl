@@ -32,7 +32,9 @@ mutable struct CodonGraphData
     - `CodonGraphData`: New graph data instance.
 
     # Throws
-    - `ArgumentError`: If `codon_set` is empty, not length-3, or contains duplicates.
+    - `ArgumentError`: If `codon_set` is empty.
+    - `ArgumentError`: If any codon in `codon_set` does not have length 3.
+    - `ArgumentError`: If `codon_set` contains duplicate codons.
 
     # Example
     ```julia

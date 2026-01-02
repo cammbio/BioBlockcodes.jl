@@ -239,24 +239,45 @@ function show_temp(graph)
     display(fig)
 end
 
+codon_set =
+    LongDNA{
+        4,
+    }.([
+        "AAC",
+        "GTT",
+        "AAG",
+        "CTT",
+        "AAT",
+        "ATT",
+        "ACC",
+        "GGT",
+        "ACG",
+        "CGT",
+        "ACT",
+        "AGT",
+        "AGC",
+        "GCT",
+        "AGG",
+        "CCT",
+        "CCG",
+        "CGG",
+        "TCA",
+        "TGA",
+    ])
 codon_set = LongDNA{4}.(["AGT", "TAT", "CCT", "GAG", "AAC", "AAT", "GAT", "CCA"])
 data = CodonGraphData(codon_set)
-construct_graph_data!(data, show_debug = false)
-show_graph(data, show_debug = false)
-is_circular(data.graph, show_debug = true)
-is_c3(data, show_plot = true, show_debug = true)
+construct_graph_data!(data; show_debug = false)
+show_graph(data; show_debug = false)
+is_circular(data.graph; show_debug = true)
+is_c3(data; show_debug = true)
 
-add_vertex_by_label!(data, "AAT", show_debug = true)
-
-get_complemented_reversed_codon_set(LongDNA{4}.(["AC"]); show_debug = true)
-
-get_reversed_codon(LongDNA{4}("ACA"); show_debug = true)
-
-isempty(LongDNA{4}.(["", ""]))
-
-BioSequences.complement(LongDNA{4}.("AA"))
-
-BioSequences.reverse(LongDNA{4}("ATG"))
-get_reversed_codon(LongDNA{4}("ATG"))
-
-get_complemented_base('A'; show_debug = true)
+# read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
+in_path = "files/216_maximal_self_complementary_c3_codes.txt"
+out_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
+open(out_path, "w") do out
+    for line in eachline(in_path)
+        codon_array = split(line)
+        formatted = "[" * join("\"" .* codon_array .* "\"", ", ") * "]"
+        println(out, formatted)
+    end
+end
