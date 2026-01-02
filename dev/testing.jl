@@ -43,7 +43,8 @@ codon_x0 =
     ])
 # first data for first graph with codon_x0
 data = CodonGraphData(codon_x0; plot_title = "Codon set: $codon_x0")
-construct_graph!(data; show_plot = true, show_debug = false)
+construct_graph_data!(data; show_plot = true, show_debug = false)
+show_graph(data; show_debug = false)
 # check properties of graph
 is_circular(data.graph, show_debug = false)
 is_comma_free(data.graph, show_debug = false)
@@ -59,7 +60,7 @@ open("files/216_maximal_self_complementary_c3_codes.txt", "r") do f
         println("""Testing codon set #$row:
         $(test_data.codon_set)
         """)
-        construct_graph!(test_data, show_plot = false, show_debug = false)
+        construct_graph_data!(test_data, show_plot = false, show_debug = false)
         is_circular(test_data, show_debug = false)
         is_comma_free(test_data, show_debug = false)
         is_self_complementary(test_data, show_plot = false, show_debug = false)
@@ -84,11 +85,11 @@ alpha_2_data = CodonGraphData(left_shift_codon_set(example_codon_set, 2))
 
 manually_adjusted_data = CodonGraphData(example_codon_set)
 
-construct_graph!(example_data; show_plot = true, show_debug = false)
-construct_graph!(reverse_data; show_plot = true, show_debug = false)
-construct_graph!(alpha_1_data; show_plot = true, show_debug = false)
-construct_graph!(alpha_2_data; show_plot = true, show_debug = false)
-construct_graph!(manually_adjusted_data; show_plot = true, show_debug = false)
+construct_graph_data!(example_data; show_plot = true, show_debug = false)
+construct_graph_data!(reverse_data; show_plot = true, show_debug = false)
+construct_graph_data!(alpha_1_data; show_plot = true, show_debug = false)
+construct_graph_data!(alpha_2_data; show_plot = true, show_debug = false)
+construct_graph_data!(manually_adjusted_data; show_plot = true, show_debug = false)
 
 # get N₂ and N₃N₁ for each codon and add them as vertices and edges between them
 for codon in data.codon_set
@@ -156,7 +157,7 @@ function merge_codon_graphs(
     return merged_data
 end
 merged_data = merge_codon_graphs(alpha_1_data, alpha_2_data; show_debug = false)
-construct_graph!(merged_data; show_plot = true, show_debug = false)
+construct_graph_data!(merged_data; show_plot = true, show_debug = false)
 
 show_graph(data; show_debug = false)
 display_cycles(merged_data, show_debug = true)
@@ -166,20 +167,20 @@ display_cycles(data, show_debug = true)
 codon_set_1 = LongDNA{4}.(["AAC", "GTT"])
 test_data_1 = CodonGraphData(codon_set_1)
 isempty(LongDNA{4}.([""]))
-construct_graph!(test_data_1; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_1; show_plot = true, show_debug = false)
 codon_set_2 = LongDNA{4}.(["GTA", "GTT", "GCA", "GCG"])
 test_data_2 = CodonGraphData(codon_set_2)
-construct_graph!(test_data_2; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_2; show_plot = true, show_debug = false)
 codon_set_3 = LongDNA{4}.(["ACT", "AAA", "CGA", "CCG", "TTC", "ATA"])
 test_data_3 = CodonGraphData(codon_set_3)
-construct_graph!(test_data_3; show_plot = true, show_debug = false)
+construct_graph_data!(test_data_3; show_plot = true, show_debug = false)
 
 println(test_data_1.all_edge_labels)
 println(test_data_2.all_edge_labels)
 println(test_data_3.all_edge_labels)
 
 aaa = CodonGraphData(LongDNA{4}.(["GTA", "GTT", "GCA"]))
-construct_graph!(aaa; show_plot = true, show_debug = false)
+construct_graph_data!(aaa; show_plot = true, show_debug = false)
 
 for field in fieldnames(typeof(aaa))
     println("$field: $(getfield(aaa, field))\n")
@@ -240,6 +241,9 @@ end
 
 codon_set = LongDNA{4}.(["AGT", "TAT", "CCT", "GAG", "AAC", "AAT", "GAT", "CCA"])
 data = CodonGraphData(codon_set)
-construct_graph!(data, show_plot = false, show_debug = false)
-is_circular(data.graph, show_debug = false)
-is_c3(data, show_plot = true, show_debug = false)
+construct_graph_data!(data, show_debug = false)
+show_graph(data, show_debug = false)
+is_circular(data.graph, show_debug = true)
+is_c3(data, show_plot = true, show_debug = true)
+
+add_vertex_by_label!(data, "AAT", show_debug = true)
