@@ -22,8 +22,8 @@ export
     is_self_complementary,
     is_c3,
     is_graphs_identical,
-    has_vertex_label,
-    has_edge_label,
+    _has_vertex_label,
+    _has_edge_label,
     # CodonUtils.jl
     get_complemented_reversed_codon_set,
     get_complemented_codon_set,
@@ -37,13 +37,14 @@ export
     # CyclesAnalysis.jl
     display_cycles,
     # GraphUtils.jl
-    construct_graph!,
-    create_vertices!,
-    connect_edges!,
+    construct_graph_data!,
+    _add_vertices_by_codon_set!,
+    _add_edges_by_codon_set!,
     add_vertex_by_label!,
     add_edge_by_label!,
-    connect_edge_by_label!,
+    _connect_edge_by_label!,
     create_shifted_graph,
+    _check_data_fields_empty,
     # PlotUtils.jl
     show_graph,
     show_multiple_graphs
