@@ -1,4 +1,4 @@
-Cycle count: 1886
+Cycle count: 1886, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "GCC", "GGC"
@@ -8,7 +8,7 @@ Codon set: "ACA", "TGT", "AGA", "TCT", "CCA", "TGG", "CGA", "TCG", "GCA", "TGC",
 Codon set: "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG"
 Codon set: "AAG", "CTT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "TAA", "TTA"
 
-Cycle count: 1909
+Cycle count: 1909, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "GCC", "GGC", "GGA", "TCC", "TCA", "TGA"
@@ -18,7 +18,7 @@ Codon set: "ACA", "TGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CCA", "TGG",
 Codon set: "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "TAA", "TTA"
 Codon set: "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 
-Cycle count: 2021
+Cycle count: 2021, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "GCC", "GGC", "GGA", "TCC"
@@ -28,7 +28,7 @@ Codon set: "ACA", "TGT", "AGA", "TCT", "AGG", "CCT", "CCA", "TGG", "CCG", "CGG",
 Codon set: "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "TAA", "TTA"
 Codon set: "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 
-Cycle count: 2493
+Cycle count: 2493, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "CCG", "CGG", "TCA", "TGA"
@@ -38,7 +38,7 @@ Codon set: "ACA", "TGT", "ACT", "AGT", "AGA", "TCT", "CCA", "TGG", "CGA", "TCG",
 Codon set: "AAG", "CTT", "AAT", "ATT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC"
 Codon set: "AAG", "CTT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC", "TAA", "TTA"
 
-Cycle count: 2528
+Cycle count: 2528, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
 Codon set: "AAG", "CTT", "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GCC", "GGC"
@@ -48,7 +48,7 @@ Codon set: "ACA", "TGT", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG",
 Codon set: "AGA", "TCT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "TAA", "TTA"
 Codon set: "AGA", "TCT", "CAA", "TTG", "CAC", "GTG", "CGA", "TCG", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 2780
+Cycle count: 2780, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "TAA", "TTA"
 Codon set: "AAC", "GTT", "AAG", "CTT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATG", "CAT", "CCG", "CGG", "GGA", "TCC"
@@ -58,7 +58,7 @@ Codon set: "ACA", "TGT", "AGA", "TCT", "AGG", "CCT", "CCA", "TGG", "CGA", "TCG",
 Codon set: "AAT", "ATT", "ACG", "CGT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC"
 Codon set: "AAT", "ATT", "AGC", "GCT", "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 
-Cycle count: 2962
+Cycle count: 2962, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC", "TAA", "TTA"
 Codon set: "AAC", "GTT", "AAG", "CTT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "CCG", "CGG", "GGA", "TCC", "TCA", "TGA"
@@ -68,7 +68,7 @@ Codon set: "ACA", "TGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CCA", "TGG",
 Codon set: "AAT", "ATT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC"
 Codon set: "AAT", "ATT", "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 
-Cycle count: 3343
+Cycle count: 3343, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "ATG", "CAT", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ACC", "GGT", "ATC", "GAT", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
@@ -78,7 +78,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ATG", "CAT", "CAA", "TTG",
 Codon set: "AAG", "CTT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "TAA", "TTA"
 Codon set: "AGA", "TCT", "CAA", "TTG", "CCA", "TGG", "CGA", "TCG", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 3664
+Cycle count: 3664, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ATC", "GAT", "CAG", "CTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "GAC", "GTC"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "GCC", "GGC", "GGA", "TCC", "TCA", "TGA"
@@ -88,7 +88,7 @@ Codon set: "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CAA", "TTG", "CCA", "TGG",
 Codon set: "ATG", "CAT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "TAA", "TTA"
 Codon set: "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA"
 
-Cycle count: 3846
+Cycle count: 3846, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "GCC", "GGC", "GGA", "TCC"
@@ -98,7 +98,7 @@ Codon set: "AGA", "TCT", "AGG", "CCT", "CAA", "TTG", "CCA", "TGG", "CCG", "CGG",
 Codon set: "ATG", "CAT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "TAA", "TTA"
 Codon set: "ATC", "GAT", "CAA", "TTG", "CAC", "GTG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA"
 
-Cycle count: 4059
+Cycle count: 4059, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTC", "GAG", "GAC", "GTC"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "TCA", "TGA"
@@ -108,7 +108,7 @@ Codon set: "ACA", "TGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CAG", "CTG",
 Codon set: "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4181
+Cycle count: 4181, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ATC", "GAT", "CAC", "GTG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA"
@@ -118,7 +118,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "AGG", "CCT", "ATG", "CAT",
 Codon set: "AAG", "CTT", "ATG", "CAT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "TAA", "TTA"
 Codon set: "AGA", "TCT", "CAA", "TTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "GCA", "TGC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4206
+Cycle count: 4206, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "ATG", "CAT", "CAG", "CTG", "CCG", "CGG"
@@ -128,7 +128,7 @@ Codon set: "ACA", "TGT", "AGA", "TCT", "CCA", "TGG", "GAC", "GTC", "GCA", "TGC",
 Codon set: "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTC", "GAG"
 Codon set: "AAG", "CTT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4344
+Cycle count: 4344, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC"
 Codon set: "AAG", "CTT", "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC"
@@ -138,7 +138,7 @@ Codon set: "ACA", "TGT", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG",
 Codon set: "AGA", "TCT", "AGG", "CCT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "TAA", "TTA", "TCA", "TGA"
 Codon set: "AGA", "TCT", "CAA", "TTG", "CAC", "GTG", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4378
+Cycle count: 4378, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTC", "GAG"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CAC", "GTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC"
@@ -148,7 +148,7 @@ Codon set: "ACA", "TGT", "AGA", "TCT", "AGG", "CCT", "CAG", "CTG", "CCA", "TGG",
 Codon set: "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4612
+Cycle count: 4612, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "ATG", "CAT", "CAG", "CTG", "CCG", "CGG", "CTC", "GAG"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "CAC", "GTG", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "ACC", "GGT", "AGA", "TCT", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
@@ -158,7 +158,7 @@ Codon set: "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT",
 Codon set: "CAA", "TTG", "CCA", "TGG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "GAA", "TTC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4840
+Cycle count: 4840, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC"
@@ -168,7 +168,7 @@ Codon set: "AGA", "TCT", "AGG", "CCT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG",
 Codon set: "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4888
+Cycle count: 4888, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "CAC", "GTG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
@@ -178,7 +178,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGG", "CCT",
 Codon set: "AAG", "CTT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "TAA", "TTA", "TCA", "TGA"
 Codon set: "AGA", "TCT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 4965
+Cycle count: 4965, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "ATC", "GAT", "CAG", "CTG", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "GAC", "GTC"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "TCA", "TGA"
@@ -188,7 +188,7 @@ Codon set: "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CAA", "TTG", "CAG", "CTG",
 Codon set: "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 5036
+Cycle count: 5036, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "GCC", "GGC", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ATC", "GAT", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA"
@@ -198,7 +198,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG",
 Codon set: "AAG", "CTT", "ATG", "CAT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC", "TAA", "TTA"
 Codon set: "ACT", "AGT", "AGA", "TCT", "CAA", "TTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "GCA", "TGC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 5093
+Cycle count: 5093, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "ATG", "CAT", "CAC", "GTG", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "AGA", "TCT", "AGC", "GCT", "ATC", "GAT", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
@@ -208,7 +208,7 @@ Codon set: "AGA", "TCT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG", "CAG", "CTG",
 Codon set: "CAA", "TTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "CTC", "GAG", "GAA", "TTC", "GCA", "TGC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CAC", "GTG", "CGA", "TCG", "GAA", "TTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 5128
+Cycle count: 5128, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACT", "AGT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "AAT", "ATT", "ACA", "TGT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGG", "CCT", "CAG", "CTG", "CCG", "CGG", "TCA", "TGA"
@@ -218,7 +218,7 @@ Codon set: "ACA", "TGT", "ACT", "AGT", "AGA", "TCT", "CCA", "TGG", "GAC", "GTC",
 Codon set: "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTC", "GAG", "GAC", "GTC"
 Codon set: "AAG", "CTT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 5251
+Cycle count: 5251, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "CCG", "CGG", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ATC", "GAT", "CAC", "GTG", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
 Codon set: "AAC", "GTT", "ACC", "GGT", "ATC", "GAT", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC", "TAA", "TTA"
@@ -228,7 +228,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "ATG", "CAT", "CAA", "TTG", "CAG", "CTG",
 Codon set: "AAG", "CTT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CCG", "CGG", "CTA", "TAG", "GAC", "GTC", "TAA", "TTA"
 Codon set: "ACT", "AGT", "AGA", "TCT", "CAA", "TTG", "CCA", "TGG", "CGA", "TCG", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 6250
+Cycle count: 6250, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "ATG", "CAT", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "AGC", "GCT", "ATC", "GAT", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
@@ -238,7 +238,7 @@ Codon set: "AAG", "CTT", "AGG", "CCT", "ATG", "CAT", "CAA", "TTG", "CAG", "CTG",
 Codon set: "CAA", "TTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "GAA", "TTC", "GCA", "TGC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CCA", "TGG", "CGA", "TCG", "GAA", "TTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 6330
+Cycle count: 6330, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGG", "CCT", "ATG", "CAT", "CAG", "CTG", "CCG", "CGG"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "ATC", "GAT", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGC", "GCT", "ATC", "GAT", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC"
@@ -248,7 +248,7 @@ Codon set: "AAG", "CTT", "AGG", "CCT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG",
 Codon set: "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "CTA", "TAG", "GAA", "TTC", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "CAA", "TTG", "CCA", "TGG", "GAA", "TTC", "GAC", "GTC", "GCA", "TGC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 6366
+Cycle count: 6366, codon set count: 8
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "AGA", "TCT", "AGC", "GCT", "AGG", "CCT", "GAC", "GTC", "GCC", "GGC", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ACT", "AGT", "ATC", "GAT", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC"
 Codon set: "AAC", "GTT", "CAC", "GTG", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC", "TAA", "TTA", "TCA", "TGA"
@@ -258,7 +258,7 @@ Codon set: "AAG", "CTT", "AAT", "ATT", "ACT", "AGT", "AGG", "CCT", "ATG", "CAT",
 Codon set: "AAG", "CTT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CTA", "TAG", "CTC", "GAG", "GAC", "GTC", "TAA", "TTA", "TCA", "TGA"
 Codon set: "ACT", "AGT", "AGA", "TCT", "CAA", "TTG", "CAG", "CTG", "CCA", "TGG", "CCG", "CGG", "CGA", "TCG", "GGA", "TCC", "TAA", "TTA", "TCA", "TGA"
 
-Cycle count: 8442
+Cycle count: 8442, codon set count: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "CCG", "CGG", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "GCC", "GGC", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAT", "ATT", "ACC", "GGT", "ATC", "GAT", "CAG", "CTG", "GAA", "TTC", "GAC", "GTC", "GCC", "GGC", "GGA", "TCC", "GTA", "TAC"
