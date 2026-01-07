@@ -119,6 +119,9 @@ function is_c3(data::CodonGraphData; show_debug::Bool = false)
                 show_debug && @debug "α$shift_lower(X) is circular"
             end
         end
+    else
+        show_debug && @debug "G(X) is not circular -> codon set is not C3"
+        return false
     end
     return true
 end

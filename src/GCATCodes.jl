@@ -35,7 +35,15 @@ export
     left_shift_codon_set,
     left_shift_codon,
     # CyclesAnalysis.jl
-    display_cycles,
+    display_all_cycles,
+    display_duplicate_cycles,
+    get_cycle_count,
+    get_cycles_of_length,
+    get_cycle_count_of_length,
+    get_cycles_from_vertex,
+    get_cycles_difference,
+    check_cycle_count_by_length,
+    get_max_cycle_length,
     # GraphUtils.jl
     construct_graph_data!,
     _add_vertices_by_codon_set!,
@@ -47,9 +55,9 @@ export
     _check_data_fields_empty,
     # PlotUtils.jl
     show_graph,
-    show_multiple_graphs
-
-
+    show_multiple_graphs,
+    # WriterUtils.jl
+    println_to_file
 """
     demo_function(string::String)
 
