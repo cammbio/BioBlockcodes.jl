@@ -42,7 +42,6 @@ codon_x0 =
         "TTC",
     ])
 
-
 # read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
 in_path = "files/216_maximal_self_complementary_c3_codes.txt"
 out_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
@@ -225,7 +224,7 @@ open(out_path, "r") do f
     open("files/codon_sets_grouped_by_cycle_count.txt", "w") do out
         redirect_stdout(out) do
             for key in sort(collect(keys(cycle_count_dict)))
-                println("Cycle count: $key")
+                println("Cycle count: $key, codon set count: $(length(cycle_count_dict[key]))")
                 for codon_set in cycle_count_dict[key]
                     codon_set_string = join("\"" .* string.(codon_set) .* "\"", ", ")
                     println("Codon set: $codon_set_string")
@@ -236,6 +235,59 @@ open(out_path, "r") do f
     end
     println("Codon sets grouped by cycle count written to files/codon_sets_grouped_by_cycle_count.txt")
 end
+
+# group codon sets by cycle count for cycles of length x
+open(out_path, "r") do f
+    cycle_count_length_dict = Dict{Int, Dict{Int, Vector{Vector{LongDNA{4}}}}}()
+    for line in eachline(f)
+        # construct graph data
+        codon_set = line_to_codon_set(line)
+        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+        construct_graph_data!(data; show_debug = false)
+
+        # manually add N₂ and N₃N₁ vertices and connect edges
+        add_n2_n3n1_vertices_and_edges!(data; show_debug = false)
+
+        for cycle_length in 2:50
+            # get cycle count of given length
+            cycle_count = get_cycle_count_of_length(data, cycle_length; show_debug = false)
+            if cycle_count != 0
+                inner_dict_by_length =
+                    get!(cycle_count_length_dict, cycle_length, Dict{Int, Vector{Vector{LongDNA{4}}}}())
+                push!(get!(inner_dict_by_length, cycle_count, Vector{Vector{LongDNA{4}}}()), codon_set)
+            end
+        end
+    end
+
+    # write result to file
+    open("files/codon_sets_grouped_by_cycle_count_and_cycle_length.txt", "w") do out
+        redirect_stdout(out) do
+            for length_key in sort(collect(keys(cycle_count_length_dict)))
+                println("Cycle length: $length_key")
+                for count_key in sort(collect(keys(cycle_count_length_dict[length_key])))
+                    println(
+                        "  Cycle count: $count_key, codon set count: $(length(cycle_count_length_dict[length_key][count_key]))",
+                    )
+                    for codon_set in cycle_count_length_dict[length_key][count_key]
+                        codon_set_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                        println("  Codon set: $codon_set_string")
+                    end
+                    println()
+                end
+            end
+        end
+    end
+    println(
+        "Codon sets grouped by cycle count and length written to files/codon_sets_grouped_by_cycle_count_and_length.txt",
+    )
+end
+
+
+
+
+
+
+
 
 # function to ad N₂ and N₃N₁ vertices and connect edges
 function add_n2_n3n1_vertices_and_edges!(data::CodonGraphData; show_debug::Bool = false)
