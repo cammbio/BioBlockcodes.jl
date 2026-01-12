@@ -324,3 +324,119 @@ codon_set =
 data = CodonGraphData(codon_set)
 construct_graph_data!(data; show_debug = false)
 show_graph(data; show_debug = false)
+
+
+
+
+# graph interactivity
+g = SimpleDiGraph(6)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 3)
+add_edge!(g, 3, 4)
+add_edge!(g, 4, 5)
+add_edge!(g, 5, 6)
+
+# vertex labels as strings
+labels = string.(1:nv(g))
+
+# hide vertices with even indices
+vis = [isodd(i) for i in 1:nv(g)]
+node_color = [vis[i] ? :black : RGBAf(0, 0, 0, 0) for i in 1:nv(g)]
+node_size = [vis[i] ? 50 : 0 for i in 1:nv(g)]
+label_color = [vis[i] ? :white : RGBAf(0, 0, 0, 0) for i in 1:nv(g)]
+
+fig = Figure(size = (900, 500))
+ax = Axis(
+    fig[1, 1];
+    xgridvisible = false,
+    ygridvisible = false,
+    xticksvisible = false,
+    yticksvisible = false,
+    xticklabelsvisible = false,
+    yticklabelsvisible = false,
+)
+hidespines!(ax)
+
+graphplot!(
+    ax,
+    g;
+    layout = Spring(C = 50.0),
+    nlabels = labels,
+    nlabels_color = label_color,
+    nlabels_size = 18,
+    nlabels_offset = Point2f(0, 0),
+    nlabels_align = (:center, :center),
+    node_color = node_color,
+    node_size = node_size,
+    arrow_shift = :end,
+    arrow_size = 12,
+    edge_width = 2,
+    edge_curvature = 0.9,
+)
+
+display(fig)
+
+using GLMakie
+using GraphMakie
+using Graphs
+g = wheel_graph(10)
+f, ax, p = graphplot(g, edge_width = [3 for i in 1:ne(g)], node_size = [10 for i in 1:nv(g)])
+
+deregister_interaction!(ax, :rectanglezoom)
+register_interaction!(ax, :nhover, NodeHoverHighlight(p))
+register_interaction!(ax, :ehover, EdgeHoverHighlight(p))
+register_interaction!(ax, :ndrag, NodeDrag(p))
+register_interaction!(ax, :edrag, EdgeDrag(p))
+
+deregister_interaction!(ax, :nhover)
+deregister_interaction!(ax, :ehover)
+deregister_interaction!(ax, :ndrag)
+deregister_interaction!(ax, :edrag)
+
+
+using Makie.Colors
+
+function action(idx, event, axis)
+    println("Clicked on node index: $idx")
+    p.node_color[][idx] = rand(RGB)
+    p.node_color[] = p.node_color[]
+    p.node_size[][idx] = p.node_size[][idx] + 5
+    p.node_size[] = p.node_size[]
+    println("New color: $(p.node_color[][idx]), New size: $(p.node_size[][idx])")
+end
+
+g = wheel_digraph(10)
+f, ax, p = graphplot(g, node_size = [30 for i in 1:nv(g)], node_color = [colorant"red" for i in 1:nv(g)])
+
+deregister_interaction!(ax, :rectanglezoom)
+register_interaction!(ax, :nodeclick, NodeClickHandler(action))
+
+
+# JSON test
+using JSON3
+using StructTypes
+using HTTP
+
+body = JSON3.read(http_request_body)
+
+nodes = body["nodes"]
+edges = body["edges"]
+
+struct Node
+    id::String
+    label::String
+    attrs::Dict{String, Any}
+end
+
+struct Edge
+    id::String
+    source::String
+    target::String
+    attrs::Dict{String, Any}
+end
+
+struct Graph
+    nodes::Vector{Node}
+    edges::Vector{Edge}
+    meta::Dict{String, Any}
+end
