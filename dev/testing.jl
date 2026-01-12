@@ -44,8 +44,8 @@ codon_x0 =
 
 # read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
 in_path = "files/216_maximal_self_complementary_c3_codes.txt"
-out_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
-open(out_path, "w") do out
+maximal_c3_codons_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
+open(maximal_c3_codons_path, "w") do out
     for line in eachline(in_path)
         codon_array = split(line)
         formatted = join("\"" .* codon_array .* "\"", ", ")
@@ -53,7 +53,7 @@ open(out_path, "w") do out
     end
 end
 
-open(out_path, "r") do f
+open(maximal_c3_codons_path, "r") do f
     # write all println output to file
     println("Running loop over all codon sets in file and performing analysis...")
     open("files/demo_output.txt", "w") do out
@@ -120,7 +120,7 @@ open(out_path, "r") do f
 end
 
 
-open(out_path, "r") do f
+open(maximal_c3_codons_path, "r") do f
     codon_set_size_count = Dict{Int, Int}()
     for line in eachline(f)
         codon_set = line_to_codon_set(line)
@@ -164,7 +164,7 @@ end
 
 
 # group codon sets by maximal cycle length
-open(out_path, "r") do f
+open(maximal_c3_codons_path, "r") do f
     maximal_cycle_length_dict = Dict{Int, Vector{Vector{LongDNA{4}}}}()
     for line in eachline(f)
         # construct graph data
@@ -203,7 +203,7 @@ end
 
 
 # group codon sets by cycle count
-open(out_path, "r") do f
+open(maximal_c3_codons_path, "r") do f
     cycle_count_dict = Dict{Int, Vector{Vector{LongDNA{4}}}}()
     for line in eachline(f)
         # construct graph data
@@ -237,7 +237,7 @@ open(out_path, "r") do f
 end
 
 # group codon sets by cycle count for cycles of length x
-open(out_path, "r") do f
+open(maximal_c3_codons_path, "r") do f
     cycle_count_length_dict = Dict{Int, Dict{Int, Vector{Vector{LongDNA{4}}}}}()
     for line in eachline(f)
         # construct graph data
@@ -263,10 +263,9 @@ open(out_path, "r") do f
     open("files/codon_sets_grouped_by_cycle_count_and_cycle_length.txt", "w") do out
         redirect_stdout(out) do
             for length_key in sort(collect(keys(cycle_count_length_dict)))
-                println("Cycle length: $length_key")
                 for count_key in sort(collect(keys(cycle_count_length_dict[length_key])))
                     println(
-                        "  Cycle count: $count_key, codon set count: $(length(cycle_count_length_dict[length_key][count_key]))",
+                        "The following $(length(cycle_count_length_dict[length_key][count_key])) codon sets contain $count_key cycles of length $length_key:",
                     )
                     for codon_set in cycle_count_length_dict[length_key][count_key]
                         codon_set_string = join("\"" .* string.(codon_set) .* "\"", ", ")
@@ -283,13 +282,131 @@ open(out_path, "r") do f
 end
 
 
+# check for each codon in each codon set if adding N₂ and N₃N₁ vertices and edges (per codon) keeps the graph C3 
+open(maximal_c3_codons_path, "r") do f
+    false_count = 0
+    true_count = 0
+    open("files/is_c3_after_adding_vertices_and_edges_of_only_one_codon.txt", "w") do out
+        redirect_stdout(out) do
+            for line in eachline(f)
+                # construct graph data
+                codon_set = line_to_codon_set(line)
+                println("Codon set: $line")
+                # manually add N₂ and N₃N₁ vertices and connect edges for each codon
+                for codon in codon_set
+                    data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+                    construct_graph_data!(data; show_debug = false)
+
+                    add_n2_n3n1_vertices_and_edges_for_codon!(data, codon; show_debug = false)
+                    result = is_c3(data; show_debug = false)
+                    if result
+                        true_count += 1
+                    else
+                        false_count += 1
+                    end
+                    println("""added N₂ and N₃N₁ vertices and edges for codon: $codon
+                    is_c3: $result""")
+                end
+            end
+        end
+    end
+    println(
+        """Codon set analysis per codon complete. Results written to files/is_c3_after_adding_vertices_and_edges_of_only_one_codon.txt
+        false_count: $false_count
+        true_count: $true_count""",
+    )
+end
+
+
+# check for each codon set which combination of codons keeps the graph C3 after adding N₂ and N₃N₁ vertices and edges
+open(maximal_c3_codons_path, "r") do f
+    open("files/codon_combinations_keeping_c3_property.txt", "w") do out
+        redirect_stdout(out) do
+            for line in eachline(f)
+                # construct graph data
+                codon_set = line_to_codon_set(line)
+                println("Codon set: $line")
+                n = length(codon_set)
+                # check all combinations of codons
+                for i in 1:n
+                    codon_combinations = collect(combinations(codon_set, i))
+                    for codon_combination in codon_combinations
+                        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+                        construct_graph_data!(data; show_debug = false)
+
+                        for codon in codon_combination
+                            add_n2_n3n1_vertices_and_edges_for_codon!(data, codon; show_debug = false)
+                        end
+
+                        result = is_c3(data; show_debug = false)
+                        if result
+                            codon_combination_string = join("\"" .* string.(codon_combination) .* "\"", ", ")
+                            println("Codon combination keeping C3 property: $codon_combination_string")
+                        end
+                    end
+                end
+            end
+        end
+    end
+    println(
+        "Codon combination analysis complete. Results written to files/codon_combinations_keeping_c3_property.txt",
+    )
+end
+
+
+codon_set =
+    LongDNA{4}.(["CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC"])
+
+println(all_combinations_per_size(codon_set, 12))
+println(length(all_combinations_per_size(codon_set, 12)))
+
+# generate all combinations of a codon set by a specific size
+function all_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_size::Int)
+    length_codon_set = length(codon_set)
+    combination_size < 0 && throw(ArgumentError("combination_size must be ≥ 0"))
+    combination_size == 0 && return [LongDNA{4}[]]
+    combination_size > length_codon_set && return Vector{Vector{LongDNA{4}}}()
+
+    combos = Vector{Vector{LongDNA{4}}}()
+    combination = collect(1:combination_size)
+
+    push!(combos, codon_set[combination])  # erste Kombination
+
+    while next_combination!(combination, combination_size, length_codon_set)
+        push!(combos, codon_set[combination])
+    end
+
+    return combos
+end
+
+# 
+function next_combination!(combination::Vector{LongDNA{4}}, combination_size::Int, length_codon_set::Int)
+    for i in combination_size:-1:1
+        if combination[i] != i + length_codon_set - combination_size
+            combination[i] += 1
+            for j in (i + 1):combination_size
+                combination[j] = combination[j - 1] + 1
+            end
+            return true
+        end
+    end
+    return false
+end
 
 
 
+# function to get each possible combination of codons from a codon set
+function get_codon_combinations(codon_set::Vector{LongDNA{4}})
+    n = length(codon_set)
+    codon_combinations = Vector{Vector{LongDNA{4}}}()
+    for i in 1:n
+        combs = collect(combinations(codon_set, i))
+        append!(codon_combinations, combs)
+    end
+    return codon_combinations
+end
 
-
-
-# function to ad N₂ and N₃N₁ vertices and connect edges
+# function to ad N₂ and N₃N₁ vertices and connect edges for whole codon set
 function add_n2_n3n1_vertices_and_edges!(data::CodonGraphData; show_debug::Bool = false)
     for codon in data.codon_set
         n2 = string(codon[2])
@@ -299,6 +416,20 @@ function add_n2_n3n1_vertices_and_edges!(data::CodonGraphData; show_debug::Bool 
         add_edge_by_label!(data, n2, n3n1, show_debug = false)
         add_edge_by_label!(data, n3n1, n2, show_debug = false)
     end
+end
+
+# function to ad N₂ and N₃N₁ vertices and connect edges for a single codon
+function add_n2_n3n1_vertices_and_edges_for_codon!(
+    data::CodonGraphData,
+    codon::LongDNA{4};
+    show_debug::Bool = false,
+)
+    n2 = string(codon[2])
+    n3n1 = string(codon[3], codon[1])
+    add_vertex_by_label!(data, n2, show_debug = false)
+    add_vertex_by_label!(data, n3n1, show_debug = false)
+    add_edge_by_label!(data, n2, n3n1, show_debug = false)
+    add_edge_by_label!(data, n3n1, n2, show_debug = false)
 end
 
 function check_properties(data::CodonGraphData)
@@ -320,12 +451,44 @@ end
 
 
 codon_set =
-    LongDNA{4}["CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC"]
+    LongDNA{4}.(["CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC"])
 data = CodonGraphData(codon_set)
 construct_graph_data!(data; show_debug = false)
 show_graph(data; show_debug = false)
 
 
+# compare α₁ and α₂ to original graph
+data_original = CodonGraphData(codon_set)
+construct_graph_data!(data_original; show_debug = false)
+data_alpha1 = CodonGraphData(left_shift_codon_set(codon_set, 1))
+construct_graph_data!(data_alpha1; show_debug = false)
+data_alpha2 = CodonGraphData(left_shift_codon_set(codon_set, 2))
+construct_graph_data!(data_alpha2; show_debug = false)
+show_graph(data_original; show_debug = false)
+show_graph(data_alpha1; show_debug = false)
+show_graph(data_alpha2; show_debug = false)
+
+# check which vertices are common between original and α₁ and α₂ graphs
+common_vertices_alpha1 = intersect(keys(data_original.vertex_index), keys(data_alpha1.vertex_index))
+common_vertices_alpha2 = intersect(keys(data_original.vertex_index), keys(data_alpha2.vertex_index))
+println("Common vertices between original and α₁ graph: $common_vertices_alpha1")
+println("Common vertices between original and α₂ graph: $common_vertices_alpha2")
+println("data_original.vertex_index: $(keys(data_original.vertex_index))")
+println("data_alpha1.vertex_index: $(keys(data_alpha1.vertex_index))")
+println("data_alpha2.vertex_index: $(keys(data_alpha2.vertex_index))")
+
+# function to compare two codon graph datas
+function compare_codon_graph_data(data1::CodonGraphData, data2::CodonGraphData)
+    vertices1 = keys(data1.vertex_index)
+    vertices2 = keys(data2.vertex_index)
+    common_vertices = intersect(vertices1, vertices2)
+    println("Common vertices: $common_vertices")
+
+    edges1 = collect(edges(data1.graph))
+    edges2 = collect(edges(data2.graph))
+    common_edges = intersect(edges1, edges2)
+    println("Common edges: $common_edges")
+end
 
 
 # graph interactivity
@@ -410,6 +573,10 @@ f, ax, p = graphplot(g, node_size = [30 for i in 1:nv(g)], node_color = [coloran
 
 deregister_interaction!(ax, :rectanglezoom)
 register_interaction!(ax, :nodeclick, NodeClickHandler(action))
+
+
+
+
 
 
 # JSON test
