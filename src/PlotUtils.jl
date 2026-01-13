@@ -35,7 +35,7 @@ construct_graph_data!(data)
 show_graph(data)
 ```
 """
-function show_graph(data::CodonGraphData; show_debug::Bool = false)
+function show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
     # check if length of all_vertex_labels is equal to number of vertices
     length(data.all_vertex_labels) != nv(data.graph) && throw(
         ArgumentError(
@@ -68,7 +68,7 @@ function show_graph(data::CodonGraphData; show_debug::Bool = false)
         nlabels_offset = Point2f(0, 0),
         nlabels_align = (:center, :center),
         node_color = :black,
-        node_size = 50,
+        node_size = 30,
         arrow_shift = :end,
         arrow_size = 12,
         edge_width = 2,
@@ -108,7 +108,7 @@ construct_graph_data!(data)
 show_multiple_graphs([data])
 ```
 """
-function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
     # do not allow empty data_list
     isempty(data_list) && throw(ArgumentError("data_list cannot be empty."))
     # check if length of all_vertex_labels is equal to number of vertices for each data
@@ -152,7 +152,7 @@ function show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Boo
             nlabels_offset = Point2f(0, 0),
             nlabels_align = (:center, :center),
             node_color = :black,
-            node_size = 50,
+            node_size = 30,
             arrow_shift = :end,
             arrow_size = 12,
             edge_width = 2,

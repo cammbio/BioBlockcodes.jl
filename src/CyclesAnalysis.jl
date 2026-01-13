@@ -3,21 +3,75 @@
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
-# function to display all cycles in the graph
-function display_all_cycles(data::CodonGraphData; show_debug::Bool = false)
+# function to get count of all cycles in a graph
+function get_cycle_count(graph::SimpleDiGraph; show_debug::Bool = false)
+    cycles = simplecycles(graph)
+    return length(cycles)
+end
+
+
+# function to get count of cycles with length equal to cycle_length
+function get_cycle_count_by_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
+    cycles = simplecycles(data.graph)
+    cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
+    return length(cycles_filtered)
+end
+
+
+# function to get all cycles in a graph
+function get_cycles_all(data::CodonGraphData; show_debug::Bool = false)
+    # get all cycles using simplecycles
     cycles = simplecycles(data.graph)
 
-    # iterate all cycles and print them
-    for cycle in cycles # iterate all cycles
-        # join every vertice label in the cycle with " -> " and print it
-        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
-        println("Cycle length: $(length(cycle))")
+    # create new array to store cycles with vertice labels instead of indices
+    cycles_labeled = Vector{Vector{String}}()
+    # iterate all cycles and convert vertice indices to labels
+    for cycle in cycles
+        cycle_labeled = [data.all_vertex_labels[i] for i in cycle]
+        push!(cycles_labeled, cycle_labeled)
     end
+    return cycles_labeled
+end
+
+
+# function to get all cycles that start from a given vertex label in a graph
+function get_cycles_by_vertex_label(data::CodonGraphData, vertex_label::String; show_debug::Bool = false)
+    !haskey(data.vertex_index, vertex_label) &&
+        throw(ArgumentError("Vertex label $vertex_label not found in graph data."))
+
+    vertex_index = data.vertex_index[vertex_label]
+    cycles = simplecycles(data.graph)
+    cycles_filtered = filter(cycle -> cycle[1] == vertex_index, cycles)
+    return cycles_filtered
+end
+
+
+# function to get all cycles with length equal to cycle_length
+function get_cycles_by_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
+    cycles = simplecycles(data.graph)
+    cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
+    return cycles_filtered
+end
+
+
+# function to get cycles which are in graph1 but not in graph2
+function get_cycles_difference(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false)
+    # get cycles from both graphs
+    cycles_1 = simplecycles(data_1.graph)
+    cycles_2 = simplecycles(data_2.graph)
+
+    # convert cycles to sets of tuples for easy comparison
+    cycles_set_1 = Set(map(Tuple, cycles_1))
+    cycles_set_2 = Set(map(Tuple, cycles_2))
+
+    # get difference of cycles
+    difference_keys = setdiff(cycles_set_1, cycles_set_2)
+    return difference_keys
 end
 
 
 # function to display duplicate cycles
-function display_duplicate_cycles(data::CodonGraphData; show_debug::Bool = false)
+function get_duplicate_cycles(data::CodonGraphData; show_debug::Bool = false)
     println("Checking for duplicate cycles in the graph...")
     cycles = simplecycles(data.graph)
     cycle_keys = map(Tuple, cycles)
@@ -33,91 +87,6 @@ function display_duplicate_cycles(data::CodonGraphData; show_debug::Bool = false
         else
             push!(seen, key)
         end
-    end
-end
-
-
-# function to get all cycles that start from a given vertex
-function get_cycles_from_vertex(data::CodonGraphData, vertex_label::String; show_debug::Bool = false)
-    !haskey(data.vertex_index, vertex_label) &&
-        throw(ArgumentError("Vertex label $vertex_label not found in graph data."))
-
-    vertex_index = data.vertex_index[vertex_label]
-    cycles = simplecycles(data.graph)
-    filtered_cycles = filter(cycle -> cycle[1] == vertex_index, cycles)
-    println("Cycles starting from vertex $vertex_label:")
-    for cycle in filtered_cycles
-        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
-        # println("Cycle length: $(length(cycle))")
-    end
-    return filtered_cycles
-end
-
-
-# function to get count of all cycles
-function get_cycle_count(graph::SimpleDiGraph; show_debug::Bool = false)
-    cycles = simplecycles(graph)
-    return length(cycles)
-end
-
-
-# function to get all cycles with length equal to cycle_length
-function get_cycles_of_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
-    cycles = simplecycles(data.graph)
-    filtered_cycles = filter(cycle -> length(cycle) == cycle_length, cycles)
-    println("Cycles with length $cycle_length:")
-    for cycle in filtered_cycles
-        println(join((data.all_vertex_labels[i] for i in (cycle..., first(cycle))), " -> "))
-    end
-end
-
-
-# function to get count of cycles with length equal to cycle_length
-function get_cycle_count_of_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
-    cycles = simplecycles(data.graph)
-    filtered_cycles = filter(cycle -> length(cycle) == cycle_length, cycles)
-    return length(filtered_cycles)
-end
-
-
-# function to get cycles between two graphs which are only in one of the graphs,
-# e.g. in graph1 but not in graph2 and vice versa
-function get_cycles_difference(data1::CodonGraphData, data2::CodonGraphData; show_debug::Bool = false)
-    cycles1 = simplecycles(data1.graph)
-    cycles2 = simplecycles(data2.graph)
-
-    cycle_keys1 = Set(map(Tuple, cycles1))
-    cycle_keys2 = Set(map(Tuple, cycles2))
-
-    difference_keys1 = setdiff(cycle_keys1, cycle_keys2)
-    difference_keys2 = setdiff(cycle_keys2, cycle_keys1)
-
-    println("Cycles in graph1 which not in graph2:")
-    for key in difference_keys1
-        println(join((data1.all_vertex_labels[i] for i in (key..., first(key))), " -> "))
-    end
-
-    println("Cylces in graph2 which not in graph1:")
-    for key in difference_keys2
-        println(join((data2.all_vertex_labels[i] for i in (key..., first(key))), " -> "))
-    end
-end
-
-
-# function to check cycles of all lengths in the graph
-function check_cycle_count_by_length(
-    data::CodonGraphData;
-    start_index::Int = 1,
-    end_index::Int = 100,
-    step_size::Int = 1,
-    show_debug::Bool = false,
-)
-    println("Cycles count: $(get_cycle_count(data; show_debug = false))")
-    for i in start_index:step_size:end_index
-        if get_cycle_count_of_length(data, i; show_debug = show_debug) == 0
-            continue
-        end
-        println("Count of cycles of length $i: $(get_cycle_count_of_length(data, i; show_debug = true))")
     end
 end
 
