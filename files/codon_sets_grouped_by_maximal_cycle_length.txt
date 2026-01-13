@@ -1,4 +1,4 @@
-Maximal cycle length: 8 -----------------------------------------------------------------------------------------
+Maximal cycle length: 8
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "CCG", "CGG", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "ACG", "CGT", "ACT", "AGT", "AGC", "GCT", "AGG", "CCT", "GCC", "GGC", "TCA", "TGA"
 Codon set: "AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC", "GGT", "AGC", "GCT", "ATC", "GAT", "CTC", "GAG", "GAC", "GTC", "GCC", "GGC", "GTA", "TAC"

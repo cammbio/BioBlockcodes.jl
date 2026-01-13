@@ -1,7 +1,7 @@
-function println_to_file(dst_path::AbstractString, func::Function)
+function print_to_file(dst_path::AbstractString, fnc::Function, args...)
     open(dst_path, "w") do input
         redirect_stdout(input) do
-            func()
+            fnc(args...)
         end
     end
 end
