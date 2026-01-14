@@ -106,19 +106,278 @@ function get_codon_combinations(codon_set::Vector{LongDNA{4}})
 end
 
 
+# check if alpha1 and alpha2 codon graphs contain each vertice and edge from expanded codon graph
+function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bool = false)
+    expanded_data = CodonGraphData(original_data.codon_set; plot_title = "Expanded graph for inclusion check")
+    construct_graph_data!(expanded_data; show_debug = false)
+    _expand_graph(expanded_data; show_debug = false)
+
+    alpha1_data = CodonGraphData(
+        left_shift_codon_set(original_data.codon_set, 1);
+        plot_title = "Alpha 1 graph for inclusion check",
+    )
+    construct_graph_data!(alpha1_data; show_debug = false)
+
+    alpha2_data = CodonGraphData(
+        left_shift_codon_set(original_data.codon_set, 2);
+        plot_title = "Alpha 2 graph for inclusion check",
+    )
+    construct_graph_data!(alpha2_data; show_debug = false)
+
+    data_list = [expanded_data, alpha1_data, alpha2_data]
+    show_multiple_codon_graphs(data_list; show_debug = false)
+
+    # check vertices
+    for vertex in vertices(expanded_data.graph)
+        vertex_label = expanded_data.all_vertex_labels[vertex]
+        println("Current vertex to be checked: $vertex_label")
+        if haskey(alpha1_data.vertex_index, vertex_label)
+            println("Vertex $vertex_label from expanded graph found in alpha1 graph.")
+        end
+
+        if haskey(alpha2_data.vertex_index, vertex_label)
+            println("Vertex $vertex_label from expanded graph found in alpha2 graph.")
+        end
+    end
+    println("-----------------------------------------------------------------------------------------------")
+    println("-----------------------------------------------------------------------------------------------")
+    println("-----------------------------------------------------------------------------------------------")
+
+    # check edges after inverting arrows from expanded graph edges
+    for edge in edges(expanded_data.graph)
+        in_alpha_1::Bool = false
+        in_alpha_2::Bool = false
+
+        # get edges with inverted arrows
+        # src_label = expanded_data.all_vertex_labels[dst(edge)]
+        # dst_label = expanded_data.all_vertex_labels[src(edge)]
+        src_label = expanded_data.all_vertex_labels[src(edge)]
+        dst_label = expanded_data.all_vertex_labels[dst(edge)]
+        println("Current edge to be checked: $src_label -> $dst_label")
+
+        if haskey(alpha1_data.vertex_index, src_label) && haskey(alpha1_data.vertex_index, dst_label)
+            src_index_alpha1 = alpha1_data.vertex_index[src_label]
+            dst_index_alpha1 = alpha1_data.vertex_index[dst_label]
+            if has_edge(alpha1_data.graph, src_index_alpha1, dst_index_alpha1)
+                in_alpha_1 = true
+            end
+        end
+
+        if haskey(alpha2_data.vertex_index, src_label) && haskey(alpha2_data.vertex_index, dst_label)
+            src_index_alpha2 = alpha2_data.vertex_index[src_label]
+            dst_index_alpha2 = alpha2_data.vertex_index[dst_label]
+            if has_edge(alpha2_data.graph, src_index_alpha2, dst_index_alpha2)
+                in_alpha_2 = true
+            end
+        end
+
+        if in_alpha_1 && in_alpha_2
+            # println(
+            #     "Edge $src_label -> $dst_label from expanded graph found in BOTH alpha1 and alpha2 graph.",
+            # )
+            println("BOTH------------------------------------------------------------------------------")
+        end
+
+        if !in_alpha_1 && !in_alpha_2
+            # println("Edge $src_label -> $dst_label from expanded graph NOT found in alpha1 or alpha2 graph.")
+            println("NEITHER---------------------------------------------------------------------------")
+        end
+
+        if in_alpha_1 && !in_alpha_2
+            # println("Edge $src_label -> $dst_label from expanded graph ONLY found in alpha1 graph.")7
+            println("ALPHA 1 ONLY")
+        end
+
+        if in_alpha_2 && !in_alpha_1
+            # println("Edge $src_label -> $dst_label from expanded graph ONLY found in alpha2 graph.")
+            println("ALPHA 2 ONLY")
+        end
+    end
+end
+
 # -------------------------------------------------- TESTING --------------------------------------------------
 codon_set = LongDNA{4}.(["AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC"])
+codon_set =
+    LongDNA{
+        4,
+    }.([
+        "AAC",
+        "GTT",
+        "AAG",
+        "CTT",
+        "AAT",
+        "ATT",
+        "ACC",
+        "GGT",
+        "ACG",
+        "CGT",
+        "ACT",
+        "AGT",
+        "AGC",
+        "GCT",
+        "AGG",
+        "CCT",
+        "CCG",
+        "CGG",
+        "TCA",
+        "TGA",
+    ])
 data_original = CodonGraphData(codon_set; plot_title = "Original")
 construct_graph_data!(data_original; show_debug = false)
+show_codon_graph(data_original; show_debug = false)
+is_strong_c3(data_original; show_debug = true)
+check_alpha_1_and_alpha_2(data_original; show_debug = true)
+
+copy_codon_set = copy(codon_set)
+for codon in codon_set
+    n2 = string(codon[2])
+    n3n1 = string(codon[3], codon[1])
+    # add_vertex_by_label!(data_original, n2, show_debug = false)
+    # add_vertex_by_label!(data_original, n3n1, show_debug = false)
+    # add_edge_by_label!(data_original, n2, n3n1, show_debug = false)
+    # add_edge_by_label!(data_original, n3n1, n2, show_debug = false)
+
+    new_codon = left_shift_codon(codon, 1)
+
+    # check if new_codon already in codon_set
+    if !(new_codon in codon_set)
+        println("Adding codon $new_codon derived from $codon by left shift.")
+        push!(copy_codon_set, new_codon)
+    else
+        println("Codon $new_codon derived from $codon by left shift already in codon set.")
+    end
+
+end
+println(copy_codon_set)
+println(length(copy_codon_set))
 
 data_expanded = CodonGraphData(codon_set; plot_title = "Expanded")
 construct_graph_data!(data_expanded; show_debug = false)
 add_n2_n3n1_vertices_and_edges!(data_expanded; show_debug = false)
 
+data_alpha1 = CodonGraphData(left_shift_codon_set(codon_set, 1); plot_title = "Alpha 1")
+construct_graph_data!(data_alpha1; show_debug = false)
+
+data_alpha2 = CodonGraphData(left_shift_codon_set(codon_set, 2); plot_title = "Alpha 2")
+construct_graph_data!(data_alpha2; show_debug = false)
+
 a = get_cycles_difference(data_expanded, data_original; show_debug = false)
 println(a)
+println(all_combinations_per_size(codon_set, 12))
+println(length(all_combinations_per_size(codon_set, 12)))
 
 
+function testing(codon_set::Vector{LongDNA{4}})
+    data_original = CodonGraphData(codon_set; plot_title = "Original")
+    construct_graph_data!(data_original; show_debug = false)
+    # display_all_cycles(data_original; show_debug = false)
+    # get_cycle_count(data_original.graph; show_debug = false)
+
+    data_expanded = CodonGraphData(codon_set; plot_title = "Expanded")
+    construct_graph_data!(data_expanded; show_debug = false)
+    add_n2_n3n1_vertices_and_edges!(data_expanded; show_debug = false)
+    # display_all_cycles(data_expanded; show_debug = false)
+    # get_cycle_count(data_expanded.graph; show_debug = false)
+
+    data_alpha_1 = CodonGraphData(left_shift_codon_set(codon_set, 1); plot_title = "Alpha 1")
+    construct_graph_data!(data_alpha_1; show_debug = false)
+    # display_all_cycles(alpha1; show_debug = false)
+    # get_cycle_count(alpha1.graph; show_debug = false)
+
+    data_alpha_2 = CodonGraphData(left_shift_codon_set(codon_set, 2); plot_title = "Alpha 2")
+    construct_graph_data!(data_alpha_2; show_debug = false)
+    # display_all_cycles(alpha2; show_debug = false)
+    # get_cycle_count(alpha2.graph; show_debug = false)
+
+    data_list = [data_original, data_expanded, data_alpha_1, data_alpha_2]
+    show_multiple_codon_graphs(data_list; show_debug = false)
+    # show_graph(data_original; show_debug = false)
+    show_codon_graph(data_expanded; show_debug = false)
+    # show_graph_only_cycles(data_expanded; show_debug = false)
+    # show_graph(alpha1; show_debug = false)
+    # show_graph(alpha2; show_debug = false)
+
+    print_to_file("files/test_output_original.txt", get_cycles_all, data_original)
+    print_to_file("files/test_output_expanded.txt", get_cycles_all, data_expanded)
+    print_to_file("files/test_output_alpha1.txt", get_cycles_all, data_alpha_1)
+    print_to_file("files/test_output_alpha2.txt", get_cycles_all, data_alpha_2)
+
+end
+
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
+    codon_set_line = readline(f)
+    # for i in 1:5
+    codon_set_test = line_to_codon_set(codon_set_line)[1:10]
+    println("Testing codon set: $codon_set_test")
+    testing(codon_set_test)
+    # end
+end
+
+function show_graph_only_cycles(data::CodonGraphData; show_debug::Bool = false)
+    cycles = simplecycles(data.graph)
+    cycle_vertices = sort!(unique(vcat(cycles...)))
+    isempty(cycle_vertices) && error("Keine Zyklen gefunden.")
+
+    # alter -> neuer Index
+    vmap = Dict(v => i for (i, v) in enumerate(cycle_vertices))
+    cycle_graph = SimpleDiGraph(length(cycle_vertices))
+    for cycle in cycles
+        for i in eachindex(cycle)
+            src = cycle[i]
+            dst = cycle[mod1(i + 1, length(cycle))]
+            add_edge!(cycle_graph, vmap[src], vmap[dst])
+        end
+    end
+
+    graph_to_plot = cycle_graph
+    labels_to_plot = [data.all_vertex_labels[v] for v in cycle_vertices]
+
+
+    fig = Figure(size = (1800, 900))
+    ax = Axis(
+        fig[1, 1];
+        xgridvisible = false,
+        ygridvisible = false,
+        xticksvisible = false,
+        yticksvisible = false,
+        xticklabelsvisible = false,
+        yticklabelsvisible = false,
+    )
+    hidespines!(ax)
+    ax.title = data.plot_title
+    graphplot!(
+        ax,
+        graph_to_plot;
+        layout = Spring(C = 50.0),
+        nlabels = labels_to_plot,
+        nlabels_color = :white,
+        nlabels_size = 18,
+        nlabels_offset = Point2f(0, 0),
+        nlabels_align = (:center, :center),
+        node_color = :black,
+        node_size = 30,
+        arrow_shift = :end,
+        arrow_size = 12,
+        edge_width = 2,
+        edge_curvature = 0.9,
+    )
+    display(fig)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------------------------- ANALYSIS --------------------------------------------------
 # read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
 in_path = "files/216_maximal_self_complementary_c3_codes.txt"
 maximal_c3_codons_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
@@ -364,167 +623,6 @@ open(maximal_c3_codons_path, "r") do f
 end
 
 
-codon_set =
-    LongDNA{4}.(["CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC"])
-
-println(all_combinations_per_size(codon_set, 12))
-println(length(all_combinations_per_size(codon_set, 12)))
-
-
-codon_set =
-    LongDNA{4}.(["CAA", "TTG", "CAC", "GTG", "CAG", "CTG", "CTC", "GAG", "GAA", "TTC", "GAC", "GTC", "GCC"])
-data = CodonGraphData(codon_set)
-construct_graph_data!(data; show_debug = false)
-show_graph(data; show_debug = false)
-add_n2_n3n1_vertices_and_edges!(data; show_debug = false)
-cycles = get_all_cycles(data; show_debug = false)
-println(typeof(cycles))
-for cycle in cycles
-    println(cycle)
-end
-
-
-# compare α₁ and α₂ to original graph
-data_original = CodonGraphData(codon_set)
-construct_graph_data!(data_original; show_debug = false)
-data_alpha1 = CodonGraphData(left_shift_codon_set(codon_set, 1))
-construct_graph_data!(data_alpha1; show_debug = false)
-data_alpha2 = CodonGraphData(left_shift_codon_set(codon_set, 2))
-construct_graph_data!(data_alpha2; show_debug = false)
-show_graph(data_original; show_debug = false)
-show_graph(data_alpha1; show_debug = false)
-show_graph(data_alpha2; show_debug = false)
-
-# check which vertices are common between original and α₁ and α₂ graphs
-common_vertices_alpha1 = intersect(keys(data_original.vertex_index), keys(data_alpha1.vertex_index))
-common_vertices_alpha2 = intersect(keys(data_original.vertex_index), keys(data_alpha2.vertex_index))
-println("Common vertices between original and α₁ graph: $common_vertices_alpha1")
-println("Common vertices between original and α₂ graph: $common_vertices_alpha2")
-println("data_original.vertex_index: $(keys(data_original.vertex_index))")
-println("data_alpha1.vertex_index: $(keys(data_alpha1.vertex_index))")
-println("data_alpha2.vertex_index: $(keys(data_alpha2.vertex_index))")
-
-# function to compare two codon graph datas
-function compare_codon_graph_data(data1::CodonGraphData, data2::CodonGraphData)
-    vertices1 = keys(data1.vertex_index)
-    vertices2 = keys(data2.vertex_index)
-    common_vertices = intersect(vertices1, vertices2)
-    println("Common vertices: $common_vertices")
-
-    edges1 = collect(edges(data1.graph))
-    edges2 = collect(edges(data2.graph))
-    common_edges = intersect(edges1, edges2)
-    println("Common edges: $common_edges")
-end
-
-function testing(codon_set::Vector{LongDNA{4}})
-
-    data_original = CodonGraphData(codon_set; plot_title = "Original")
-    construct_graph_data!(data_original; show_debug = false)
-    # display_all_cycles(data_original; show_debug = false)
-    # get_cycle_count(data_original.graph; show_debug = false)
-
-    data_expanded = CodonGraphData(codon_set; plot_title = "Expanded")
-    construct_graph_data!(data_expanded; show_debug = false)
-    add_n2_n3n1_vertices_and_edges!(data_expanded; show_debug = false)
-    # display_all_cycles(data_expanded; show_debug = false)
-    # get_cycle_count(data_expanded.graph; show_debug = false)
-
-    data_alpha_1 = CodonGraphData(left_shift_codon_set(codon_set, 1); plot_title = "Alpha 1")
-    construct_graph_data!(data_alpha_1; show_debug = false)
-    # display_all_cycles(alpha1; show_debug = false)
-    # get_cycle_count(alpha1.graph; show_debug = false)
-
-    data_alpha_2 = CodonGraphData(left_shift_codon_set(codon_set, 2); plot_title = "Alpha 2")
-    construct_graph_data!(data_alpha_2; show_debug = false)
-    # display_all_cycles(alpha2; show_debug = false)
-    # get_cycle_count(alpha2.graph; show_debug = false)
-
-    data_list = [data_original, data_expanded, data_alpha_1, data_alpha_2]
-    show_multiple_codon_graphs(data_list; show_debug = false)
-    # show_graph(data_original; show_debug = false)
-    show_codon_graph(data_expanded; show_debug = false)
-    # show_graph_only_cycles(data_expanded; show_debug = false)
-    # show_graph(alpha1; show_debug = false)
-    # show_graph(alpha2; show_debug = false)
-
-    print_to_file("files/test_output_original.txt", get_cycles_all, data_original)
-    print_to_file("files/test_output_expanded.txt", get_cycles_all, data_expanded)
-    print_to_file("files/test_output_alpha1.txt", get_cycles_all, data_alpha_1)
-    print_to_file("files/test_output_alpha2.txt", get_cycles_all, data_alpha_2)
-
-end
-
-open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
-    codon_set_line = readline(f)
-    # for i in 1:5
-    codon_set_test = line_to_codon_set(codon_set_line)[1:10]
-    println("Testing codon set: $codon_set_test")
-    testing(codon_set_test)
-    # end
-end
-
-function show_graph_only_cycles(data::CodonGraphData; show_debug::Bool = false)
-    cycles = simplecycles(data.graph)
-    cycle_vertices = sort!(unique(vcat(cycles...)))
-    isempty(cycle_vertices) && error("Keine Zyklen gefunden.")
-
-    # alter -> neuer Index
-    vmap = Dict(v => i for (i, v) in enumerate(cycle_vertices))
-    cycle_graph = SimpleDiGraph(length(cycle_vertices))
-    for cycle in cycles
-        for i in eachindex(cycle)
-            src = cycle[i]
-            dst = cycle[mod1(i + 1, length(cycle))]
-            add_edge!(cycle_graph, vmap[src], vmap[dst])
-        end
-    end
-
-    graph_to_plot = cycle_graph
-    labels_to_plot = [data.all_vertex_labels[v] for v in cycle_vertices]
-
-
-    fig = Figure(size = (1800, 900))
-    ax = Axis(
-        fig[1, 1];
-        xgridvisible = false,
-        ygridvisible = false,
-        xticksvisible = false,
-        yticksvisible = false,
-        xticklabelsvisible = false,
-        yticklabelsvisible = false,
-    )
-    hidespines!(ax)
-    ax.title = data.plot_title
-    graphplot!(
-        ax,
-        graph_to_plot;
-        layout = Spring(C = 50.0),
-        nlabels = labels_to_plot,
-        nlabels_color = :white,
-        nlabels_size = 18,
-        nlabels_offset = Point2f(0, 0),
-        nlabels_align = (:center, :center),
-        node_color = :black,
-        node_size = 30,
-        arrow_shift = :end,
-        arrow_size = 12,
-        edge_width = 2,
-        edge_curvature = 0.9,
-    )
-    display(fig)
-end
-
-open("files/test123", "r") do f
-    for line in eachline(f)
-        println(line)
-        expr = Meta.parse(line)
-        codon_set = eval(expr)
-        data = CodonGraphData(codon_set; plot_title = "Codon set: $line")
-        construct_graph_data!(data; show_debug = false)
-        show_graph(data; show_debug = false)
-    end
-end
 
 
 
@@ -534,11 +632,7 @@ end
 
 
 
-
-
-
-
-
+# -------------------------------------------------- INTERACTIVITY --------------------------------------------------
 # graph interactivity
 g = SimpleDiGraph(6)
 add_edge!(g, 1, 2)
