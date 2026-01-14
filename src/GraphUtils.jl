@@ -35,6 +35,8 @@ construct_graph_data!(data; show_debug = true)
 ```
 """
 function construct_graph_data!(data::CodonGraphData; show_debug::Bool = false)
+    show_debug &&
+        @debug "Debug logs for construct_graph_data!-------------------------------------------------------------------------------------------------------------------------------------------"
     # do not allow populated data fields (only codon_set is allowed to be populated)
     _check_data_fields_empty(data, show_debug = show_debug)
 
@@ -119,6 +121,8 @@ add_vertex_by_label!(data, "AG")
 ```
 """
 function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
+    show_debug &&
+        @debug "Debug logs for add_vertex_by_label!-------------------------------------------------------------------------------------------------------------------------------------------"
     # do not allow empty labels
     isempty(label) && throw(ArgumentError("label cannot be empty!"))
     # only allow labels of length 1 or 2

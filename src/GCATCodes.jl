@@ -21,9 +21,10 @@ export
     # CodonGraphAnalysis.jl
     is_circular,
     is_c3,
+    is_codon_graphs_identical,
     is_comma_free,
     is_self_complementary,
-    is_codon_graphs_identical,
+    is_strong_c3,
     # CodonUtils.jl
     get_complemented_reversed_codon_set,
     get_complemented_codon_set,
@@ -37,8 +38,8 @@ export
     get_cycle_count,
     get_cycle_count_by_length,
     get_cycles_all,
-    get_cycles_by_vertex_label,
     get_cycles_by_length,
+    get_cycles_by_vertex_label,
     get_cycles_difference,
     get_duplicate_cycles,
     get_max_cycle_length,
@@ -50,5 +51,9 @@ export
     show_codon_graph,
     show_multiple_codon_graphs,
     # WriterUtils.jl
-    print_to_file
+    print_to_file,
+
+
+    # temporary
+    _expand_graph
 end

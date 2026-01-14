@@ -34,6 +34,14 @@ function get_cycles_all(data::CodonGraphData; show_debug::Bool = false)
 end
 
 
+# function to get all cycles with length equal to cycle_length
+function get_cycles_by_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
+    cycles = simplecycles(data.graph)
+    cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
+    return cycles_filtered
+end
+
+
 # function to get all cycles that start from a given vertex label in a graph
 function get_cycles_by_vertex_label(data::CodonGraphData, vertex_label::String; show_debug::Bool = false)
     !haskey(data.vertex_index, vertex_label) &&
@@ -42,14 +50,6 @@ function get_cycles_by_vertex_label(data::CodonGraphData, vertex_label::String; 
     vertex_index = data.vertex_index[vertex_label]
     cycles = simplecycles(data.graph)
     cycles_filtered = filter(cycle -> cycle[1] == vertex_index, cycles)
-    return cycles_filtered
-end
-
-
-# function to get all cycles with length equal to cycle_length
-function get_cycles_by_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
-    cycles = simplecycles(data.graph)
-    cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
     return cycles_filtered
 end
 

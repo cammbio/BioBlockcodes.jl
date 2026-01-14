@@ -52,6 +52,11 @@ mutable struct CodonGraphData
         # do not allow duplicate codons in codon set
         length(codon_set) != length(Set(codon_set)) &&
             throw(ArgumentError("Codon set cannot contain duplicate codons!"))
+        # only allow codons with valid DNA bases
+        valid_bases = Set((DNA_A, DNA_C, DNA_G, DNA_T))
+        any(any(base ∉ valid_bases for base in codon) for codon in codon_set) &&
+            throw(ArgumentError("Codon set contains invalid DNA bases! Only A, C, G, T are allowed."))
+
 
         return new(
             Graphs.SimpleDiGraph(0),
