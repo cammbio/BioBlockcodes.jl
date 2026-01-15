@@ -228,6 +228,33 @@ show_codon_graph(data_original; show_debug = false)
 is_strong_c3(data_original; show_debug = true)
 check_alpha_1_and_alpha_2(data_original; show_debug = true)
 
+codon_set_test = LongDNA{4}.(["ATA", "GTA", "CCA", "CGC", "CGT"])
+data_test = CodonGraphData(codon_set_test; plot_title = "Test")
+construct_graph_data!(data_test; show_debug = false)
+
+alpha1_test = CodonGraphData(left_shift_codon_set(codon_set_test, 1); plot_title = "Alpha 1 Test")
+construct_graph_data!(alpha1_test; show_debug = false)
+
+alpha2_test = CodonGraphData(left_shift_codon_set(codon_set_test, 2); plot_title = "Alpha 2 Test")
+construct_graph_data!(alpha2_test; show_debug = false)
+
+data_list_test = [data_test, alpha1_test, alpha2_test]
+show_multiple_codon_graphs(data_list_test; show_debug = false)
+show_codon_graph(data_test; show_debug = false)
+
+is_c3(data_test; show_debug = false)
+is_strong_c3(data_test; show_debug = true)
+
+_has_cycle_longer_than(data_test.graph, 2; show_debug = false)
+
+add_edge_by_label!(data_test, "CA", "A", show_debug = false)
+add_edge_by_label!(data_test, "A", "CG", show_debug = false)
+
+_expand_graph(data_test; show_debug = false)
+show_codon_graph(data_test; show_debug = false)
+
+println(get_cycles_all(data_test; show_debug = false))
+
 copy_codon_set = copy(codon_set)
 for codon in codon_set
     n2 = string(codon[2])

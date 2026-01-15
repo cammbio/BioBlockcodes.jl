@@ -55,5 +55,6 @@ export
 
 
     # temporary
-    _expand_graph
+    _expand_graph,
+    _has_cycle_longer_than
 end

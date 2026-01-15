@@ -325,25 +325,24 @@ function is_strong_c3(data::CodonGraphData; show_debug::Bool = false)
 
     # check if original graph is C3
     if is_c3(data; show_debug = show_debug)
-        max_depth = 2
-        show_debug && @debug "Codon set is C3 -> checking expanded graph for cycles longer than $max_depth..."
+        max_length = 2
+        show_debug &&
+            @debug "Codon set is C3 -> checking expanded graph for cycles longer than $max_length..."
 
-        # create expanded graph copy
+        # create graph copy and expand it
         data_expanded = CodonGraphData(data.codon_set; plot_title = "Expanded graph for strong C3 check")
         construct_graph_data!(data_expanded; show_debug = show_debug)
         _expand_graph(data_expanded; show_debug = show_debug)
 
         # check if expanded graph has cycles longer than 2
-        for vertex in vertices(data_expanded.graph)
-            if _dfs_depth_limited(data_expanded.graph, vertex, 0, max_depth; show_debug = show_debug)
-                show_debug &&
-                    @debug "Path longer than $max_depth found in expanded graph -> codon set is not strong C3"
-                return false
-            end
+        if _has_cycle_longer_than(data_expanded.graph, max_length; show_debug = show_debug)
+            show_debug &&
+                @debug "Path longer than $max_length found in expanded graph -> codon set is not strong C3"
+            return false
         end
 
         show_debug &&
-            @debug "No paths longer than $max_depth found in expanded graph -> codon set is strong C3"
+            @debug "No paths longer than $max_length found in expanded graph -> codon set is strong C3"
         return true
     else
         show_debug && @debug "Codon set is not C3 -> codon set cannot be strong C3"
@@ -390,6 +389,42 @@ function _dfs_cycle_detection(
 end
 
 
+# recursive DFS to detect cycles longer than min_length
+function _dfs_cycles(
+    graph::SimpleDiGraph,
+    vertex::Int,
+    max_length::Int,
+    state::Vector{Int},
+    stack::Vector{Int};
+    show_debug::Bool = false,
+)
+    # mark the current vertice as visiting
+    state[vertex] = 1
+    # add vertex to current path stack
+    push!(stack, vertex)
+
+    for neighbor in outneighbors(graph, vertex)
+        if state[neighbor] == 0 # if neighbor not visited, visit it
+            _dfs_cycles(graph, neighbor, max_length, state, stack; show_debug = show_debug) && return true
+        elseif state[neighbor] == 1 # if neighbor is visiting, cycle detected
+            index = findlast(==(neighbor), stack)
+            cycle_length = length(stack) - index + 1
+            if cycle_length > max_length
+                show_debug &&
+                    @debug "Cycle len=$cycle_length (starts at stack idx $index): $(stack[index:end]) -> $neighbor"
+                return true
+            end
+        end
+    end
+
+    # remove vertex from current path stack
+    pop!(stack)
+    # mark the current vertice as visited
+    state[vertex] = 2
+    return false
+end
+
+
 # recursive depth-limited DFS to find paths longer than max_depth
 function _dfs_depth_limited(
     graph::SimpleDiGraph,
@@ -398,10 +433,12 @@ function _dfs_depth_limited(
     max_depth::Int;
     show_debug::Bool = false,
 )
-    if depth >= max_depth
+
+    if depth > max_depth
         return true
     end
 
+    # mark the current vertice as visited
     for neighbor in outneighbors(graph, vertex)
         if _dfs_depth_limited(graph, neighbor, depth + 1, max_depth; show_debug = show_debug)
             return true
@@ -419,4 +456,19 @@ function _expand_graph(data::CodonGraphData; show_debug::Bool = false)
     end
 
     return true
+end
+
+
+# return true if any directed cycle is longer than min_length
+function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int; show_debug::Bool = false)
+    vertex_amount = nv(graph)
+    state = fill(0, vertex_amount)
+    stack = Int[]
+
+    for vertex in 1:vertex_amount
+        state[vertex] == 0 &&
+            _dfs_cycles(graph, vertex, max_length, state, stack; show_debug = show_debug) &&
+            return true
+    end
+    return false
 end
