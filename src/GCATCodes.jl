@@ -57,5 +57,6 @@ export
 
     # temporary
     _expand_graph,
+    _add_n2_n3n1_by_codon,
     _has_cycle_longer_than
 end
