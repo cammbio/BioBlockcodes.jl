@@ -157,10 +157,26 @@ for i in 1:1
     println("Not strong C3 codon sets found: $not_strong_c3_counter")
 end
 
-for i in 1:5
-    a = length(generate_codon_set_combinations_by_size(i))
-    println("Number of codon combinations of size $i: $a")
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
+    strong_c3_counter = 0
+    not_strong_c3_counter = 0
+    for line in eachline(f)
+        codon_set = line_to_codon_set(line)
+        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+        construct_graph_data!(data; show_debug = false)
+        if is_strong_c3(data; show_debug = false)
+            # println("Strong C3 codon set found: $c3_codon_set")
+            # show_codon_graph(data; show_debug = false)
+            strong_c3_counter += 1
+        else
+            # println("Not a strong C3 codon set: $c3_codon_set")
+            not_strong_c3_counter += 1
+        end
+    end
+    println("Strong C3 codon sets found: $strong_c3_counter")
+    println("Not strong C3 codon sets found: $not_strong_c3_counter")
 end
+
 
 # get all c3 codon sets of a codon set collection
 function get_all_c3_codon_sets(codon_set_collection::Vector{Vector{LongDNA{4}}})
@@ -477,63 +493,8 @@ end
 
 
 # -------------------------------------------------- ANALYSIS --------------------------------------------------
-# read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
-maximal_c3_codons_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
-open(maximal_c3_codons_path, "w") do out
-    for line in eachline(in_path)
-        codon_array = split(line)
-        formatted = join("\"" .* codon_array .* "\"", ", ")
-        println(out, formatted)
-    end
-end
-
-
-
-open(maximal_c3_codons_path, "r") do f
-    codon_set_size_count = Dict{Int, Int}()
-    for line in eachline(f)
-        codon_set = line_to_codon_set(line)
-        codon_set_growing = LongDNA{4}[]
-        for codon in codon_set
-            push!(codon_set_growing, codon)
-            # create codon graph data
-            data = CodonGraphData(codon_set_growing; plot_title = "Codon set: $codon_set_growing")
-            construct_graph_data!(data; show_debug = false)
-            # manually add N₂ and N₃N₁ vertices and connect edges
-            add_n2_n3n1_vertices_and_edges!(data; show_debug = false)
-            # show_graph(data; show_debug = false)
-
-            # check if codon graph is C3 and comma-free
-            if is_comma_free(data.graph; show_debug = false) && is_c3(data; show_debug = false)
-                # show_graph(data; show_debug = false)
-                codon_set_length = length(codon_set_growing)
-                codon_set_size_count[codon_set_length] = get(codon_set_size_count, codon_set_length, 0) + 1
-                open("files/c3_comma_free_codes.txt", "a") do out
-                    redirect_stdout(out) do
-                        codon_set_growing_string = join("\"" .* string.(codon_set_growing) .* "\"", ", ")
-                        println("""Current codon set $codon_set_growing_string is C3 and comma-free.
-                        codon set length: $(length(codon_set_growing))""")
-                        println()
-                    end
-                end
-            end
-        end
-    end
-    open("files/codon_set_size_count_after_adding_vertices_and_edges.txt", "w") do out
-        redirect_stdout(out) do
-            println("Size count for C3 and comma-free codon sets after adding vertices and edges:")
-            for (size, count) in sort(collect(codon_set_size_count))
-                println("Size $size: $count")
-            end
-        end
-    end
-
-    println("Growing codon set analysis complete. Results written to files/c3_comma_free_codes.txt")
-end
-
-
 # group codon sets by maximal cycle length
-open(maximal_c3_codons_path, "r") do f
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     maximal_cycle_length_dict = Dict{Int, Vector{Vector{LongDNA{4}}}}()
     for line in eachline(f)
         # construct graph data
@@ -570,7 +531,7 @@ end
 
 
 # group codon sets by cycle count
-open(maximal_c3_codons_path, "r") do f
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     cycle_count_dict = Dict{Int, Vector{Vector{LongDNA{4}}}}()
     for line in eachline(f)
         # construct graph data
@@ -603,8 +564,9 @@ open(maximal_c3_codons_path, "r") do f
     println("Codon sets grouped by cycle count written to files/codon_sets_grouped_by_cycle_count.txt")
 end
 
+
 # group codon sets by cycle count for cycles of length x
-open(maximal_c3_codons_path, "r") do f
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     cycle_count_length_dict = Dict{Int, Dict{Int, Vector{Vector{LongDNA{4}}}}}()
     for line in eachline(f)
         # construct graph data
@@ -649,8 +611,8 @@ open(maximal_c3_codons_path, "r") do f
 end
 
 
-# check for each codon in each codon set if adding N₂ and N₃N₁ vertices and edges (per codon) keeps the graph C3 
-open(maximal_c3_codons_path, "r") do f
+# check for each codon in each codon set if expanding vertices and edges (per codon) keeps the graph C3
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     false_count = 0
     true_count = 0
     open("files/is_c3_after_adding_vertices_and_edges_of_only_one_codon.txt", "w") do out
@@ -664,7 +626,7 @@ open(maximal_c3_codons_path, "r") do f
                     data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
                     construct_graph_data!(data; show_debug = false)
 
-                    add_n2_n3n1_vertices_and_edges_for_codon!(data, codon; show_debug = false)
+                    _add_n2_n3n1_by_codon(data, codon; show_debug = false)
                     result = is_c3(data; show_debug = false)
                     if result
                         true_count += 1
@@ -685,43 +647,49 @@ open(maximal_c3_codons_path, "r") do f
 end
 
 
-# check for each codon set which combination of codons keeps the graph C3 after adding N₂ and N₃N₁ vertices and edges
-open(maximal_c3_codons_path, "r") do f
-    open("files/codon_combinations_keeping_c3_property.txt", "w") do out
-        redirect_stdout(out) do
-            for line in eachline(f)
-                # construct graph data
-                codon_set = line_to_codon_set(line)
-                println("Codon set: $line")
-                n = length(codon_set)
+# check for each of the 216 codes all combinations of codons if they are strong C3
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
+    counter = 0
+    for line in eachline(f)
+        counter += 1
+        if counter == 5
+            println("BREAK")
+            break
+        end
+        codon_set = line_to_codon_set(line)
+
+        open("files/strong_c3_codon_combinations.txt", "w") do out
+            redirect_stdout(out) do
                 # check all combinations of codons
-                for i in 1:n
-                    codon_combinations = collect(combinations(codon_set, i))
-                    for codon_combination in codon_combinations
-                        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+                println("For codon set ($counter): $codon_set: -------------------------------")
+                for i in 1:length(codon_set)
+                    codon_set_combinations = codon_combinations_per_size(codon_set, i)
+                    for codon_set_combination in codon_set_combinations
+                        # construct graph data
+                        data = CodonGraphData(codon_set_combination; plot_title = "Codon set: $codon_set")
                         construct_graph_data!(data; show_debug = false)
 
-                        for codon in codon_combination
-                            add_n2_n3n1_vertices_and_edges_for_codon!(data, codon; show_debug = false)
-                        end
-
-                        result = is_c3(data; show_debug = false)
+                        # check if strong_c3
+                        result = is_strong_c3(data; show_debug = false)
                         if result
-                            codon_combination_string = join("\"" .* string.(codon_combination) .* "\"", ", ")
-                            println("Codon combination keeping C3 property: $codon_combination_string")
+                            codon_combination_string =
+                                join("\"" .* string.(codon_set_combination) .* "\"", ", ")
+                            println(
+                                "Codon combination that is strong C3: $codon_combination_string ($(length(codon_set_combination)))",
+                            )
                         end
                     end
                 end
             end
         end
     end
-    println(
-        "Codon combination analysis complete. Results written to files/codon_combinations_keeping_c3_property.txt",
-    )
+
+    println("Codon combination analysis complete. Results written to files/strong_c3_codon_combinations.txt")
 end
 
-# find all "strong C3" codon sets
-open(maximal_c3_codons_path, "r") do f
+
+# find all "strong C3" codon sets TODO
+open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     for line in eachline(f)
         # construct graph data
         codon_set = line_to_codon_set(line)
