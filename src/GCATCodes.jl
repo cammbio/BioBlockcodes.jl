@@ -51,6 +51,7 @@ export
     show_codon_graph,
     show_multiple_codon_graphs,
     # WriterUtils.jl
+    line_to_codon_set,
     print_to_file,
 
 
