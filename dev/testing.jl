@@ -8,69 +8,94 @@ using Graphs
 using BioSequences
 using NetworkLayout
 
+ALL_CODONS =
+    LongDNA{
+        4,
+    }.([
+        "AAC",
+        "AAG",
+        "AAT",
+        "ACA",
+        "ACC",
+        "ACG",
+        "ACT",
+        "AGA",
+        "AGC",
+        "AGG",
+        "AGT",
+        "ATA",
+        "ATC",
+        "ATG",
+        "ATT",
+        "CAA",
+        "CAC",
+        "CAG",
+        "CAT",
+        "CCA",
+        "CCG",
+        "CCT",
+        "CGA",
+        "CGC",
+        "CGG",
+        "CGT",
+        "CTA",
+        "CTC",
+        "CTG",
+        "CTT",
+        "GAA",
+        "GAC",
+        "GAG",
+        "GAT",
+        "GCA",
+        "GCC",
+        "GCG",
+        "GCT",
+        "GGA",
+        "GGC",
+        "GGT",
+        "GTA",
+        "GTC",
+        "GTG",
+        "GTT",
+        "TAA",
+        "TAC",
+        "TAG",
+        "TAT",
+        "TCA",
+        "TCC",
+        "TCG",
+        "TCT",
+        "TGA",
+        "TGC",
+        "TGG",
+        "TGT",
+        "TTA",
+        "TTC",
+        "TTG",
+    ])
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 
 # -------------------------------------------------- FUNCTIONS --------------------------------------------------
-# function to add N₂ and N₃N₁ vertices and connect edges for whole codon set
-function add_n2_n3n1_vertices_and_edges!(data::CodonGraphData; show_debug::Bool = false)
-    for codon in data.codon_set
-        n2 = string(codon[2])
-        n3n1 = string(codon[3], codon[1])
-        add_vertex_by_label!(data, n2, show_debug = false)
-        add_vertex_by_label!(data, n3n1, show_debug = false)
-        add_edge_by_label!(data, n2, n3n1, show_debug = false)
-        add_edge_by_label!(data, n3n1, n2, show_debug = false)
-    end
-end
-
-# function to add N₂ and N₃N₁ vertices and connect edges for a single codon
-function add_n2_n3n1_vertices_and_edges_for_codon!(
-    data::CodonGraphData,
-    codon::LongDNA{4};
-    show_debug::Bool = false,
-)
-    n2 = string(codon[2])
-    n3n1 = string(codon[3], codon[1])
-    add_vertex_by_label!(data, n2, show_debug = false)
-    add_vertex_by_label!(data, n3n1, show_debug = false)
-    add_edge_by_label!(data, n2, n3n1, show_debug = false)
-    add_edge_by_label!(data, n3n1, n2, show_debug = false)
-end
-
-function check_properties(data::CodonGraphData)
-    println("Checking properties of codon graph with codon set: $(data.codon_set)")
-    println("is_c3: $(is_c3(data; show_debug = false))")
-    println("is_circular: $(is_circular(data.graph; show_debug = false))")
-    println("is_comma_free: $(is_comma_free(data.graph; show_debug = false))")
-    println("is_self_complementary: $(is_self_complementary(data; show_debug = false))")
-end
-
-
-# function to turn file line to codon set
-function line_to_codon_set(line::String)
-    codon_array = split(line, ", ")
-    codon_array = replace.(codon_array, "\"" => "")
-    codon_set = LongDNA{4}.(codon_array)
-    return codon_set
-end
-
-
 # generate all combinations of a codon set by a specific size
-function all_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_size::Int)
+function codon_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_size::Int)
     length_codon_set = length(codon_set)
-    combination_size < 0 && throw(ArgumentError("combination_size must be ≥ 0"))
-    combination_size == 0 && return [LongDNA{4}[]]
-    combination_size > length_codon_set && return Vector{Vector{LongDNA{4}}}()
+
+    # do not allow combination_size <= 0
+    combination_size <= 0 && throw(ArgumentError("combination_size cannot be <= 0"))
+    # do not allow combination_size > length(codon_set)
+    combination_size > length_codon_set &&
+        throw(ArgumentError("combination_size is bigger than codon_set length"))
 
     combos = Vector{Vector{LongDNA{4}}}()
+    # get first combination
     combination = collect(1:combination_size)
+    push!(combos, codon_set[combination])
 
-    push!(combos, codon_set[combination])  # erste Kombination
-
-    while _next_combination!(combination, combination_size, length_codon_set)
+    # get next combinations
+    while _get_next_codon_set_combination!(combination, combination_size, length_codon_set)
         push!(combos, codon_set[combination])
     end
 
@@ -78,33 +103,77 @@ function all_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_si
 end
 
 
-# 
-function _next_combination!(combination::Vector{LongDNA{4}}, combination_size::Int, length_codon_set::Int)
+# generate the next combination of a codon set from the current combination
+function _get_next_codon_set_combination!(
+    combination::Vector{Int},
+    combination_size::Int,
+    length_codon_set::Int,
+)
+    # find the rightmost element that can be incremented
     for i in combination_size:-1:1
+        # check if this element can be incremented
         if combination[i] != i + length_codon_set - combination_size
             combination[i] += 1
+            # reset all elements to the right of this element
             for j in (i + 1):combination_size
                 combination[j] = combination[j - 1] + 1
             end
             return true
         end
     end
+
     return false
 end
 
 
-
-# function to get each possible combination of codons from a codon set
-function get_codon_combinations(codon_set::Vector{LongDNA{4}})
-    n = length(codon_set)
-    codon_combinations = Vector{Vector{LongDNA{4}}}()
-    for i in 1:n
-        combs = collect(combinations(codon_set, i))
-        append!(codon_combinations, combs)
-    end
-    return codon_combinations
+# function to generate all combinations of a codon set by a specific set size
+function generate_codon_set_combinations_by_size(combination_size::Int)
+    codon_set_combinations = codon_combinations_per_size(ALL_CODONS, combination_size)
+    return codon_set_combinations
 end
 
+possible_combinations = generate_codon_set_combinations_by_size(3)
+c3_codon_sets = get_all_c3_codon_sets(possible_combinations)
+counter = 0
+
+strong_c3_counter = 0
+not_strong_c3_counter = 0
+
+for i in 1:1
+    for c3_codon_set in c3_codon_sets
+        counter += 1
+        data = CodonGraphData(c3_codon_set; plot_title = "c3_codon_set $counter: $c3_codon_set")
+        construct_graph_data!(data; show_debug = false)
+        if is_strong_c3(data; show_debug = false)
+            # println("Strong C3 codon set found: $c3_codon_set")
+            # show_codon_graph(data; show_debug = false)
+            strong_c3_counter += 1
+        else
+            # println("Not a strong C3 codon set: $c3_codon_set")
+            not_strong_c3_counter += 1
+        end
+    end
+    println("Strong C3 codon sets found: $strong_c3_counter")
+    println("Not strong C3 codon sets found: $not_strong_c3_counter")
+end
+
+for i in 1:5
+    a = length(generate_codon_set_combinations_by_size(i))
+    println("Number of codon combinations of size $i: $a")
+end
+
+# get all c3 codon sets of a codon set collection
+function get_all_c3_codon_sets(codon_set_collection::Vector{Vector{LongDNA{4}}})
+    c3_codon_sets = Vector{Vector{LongDNA{4}}}()
+    for codon_set in codon_set_collection
+        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+        construct_graph_data!(data; show_debug = false)
+        if is_c3(data; show_debug = false)
+            push!(c3_codon_sets, codon_set)
+        end
+    end
+    return c3_codon_sets
+end
 
 # check if alpha1 and alpha2 codon graphs contain each vertice and edge from expanded codon graph
 function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bool = false)
@@ -249,6 +318,9 @@ _has_cycle_longer_than(data_test.graph, 2; show_debug = false)
 
 add_edge_by_label!(data_test, "CA", "A", show_debug = false)
 add_edge_by_label!(data_test, "A", "CG", show_debug = false)
+show_codon_graph(data_test; show_debug = false)
+
+_has_cycle_longer_than(data_test.graph, 2; show_debug = false)
 
 _expand_graph(data_test; show_debug = false)
 show_codon_graph(data_test; show_debug = false)
@@ -290,8 +362,8 @@ construct_graph_data!(data_alpha2; show_debug = false)
 
 a = get_cycles_difference(data_expanded, data_original; show_debug = false)
 println(a)
-println(all_combinations_per_size(codon_set, 12))
-println(length(all_combinations_per_size(codon_set, 12)))
+println(codon_combinations_per_size(codon_set, 12))
+println(length(codon_combinations_per_size(codon_set, 12)))
 
 
 function testing(codon_set::Vector{LongDNA{4}})
@@ -406,7 +478,6 @@ end
 
 # -------------------------------------------------- ANALYSIS --------------------------------------------------
 # read file per line with all 216 maximal self-complementary C3 codon_set and write a new file where each line is written as Array
-in_path = "files/216_maximal_self_complementary_c3_codes.txt"
 maximal_c3_codons_path = "files/216_maximal_self_complementary_c3_codes_array.txt"
 open(maximal_c3_codons_path, "w") do out
     for line in eachline(in_path)
@@ -649,13 +720,17 @@ open(maximal_c3_codons_path, "r") do f
     )
 end
 
+# find all "strong C3" codon sets
+open(maximal_c3_codons_path, "r") do f
+    for line in eachline(f)
+        # construct graph data
+        codon_set = line_to_codon_set(line)
+        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
+        construct_graph_data!(data; show_debug = false)
 
 
-
-
-
-
-
+    end
+end
 
 
 
