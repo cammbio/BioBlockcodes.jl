@@ -12,7 +12,7 @@ function line_to_codon_set(line::String)
 end
 
 
-# redirect output of function to file
+# redirect output of function to file MIGHT BE DEPRECATED
 function print_to_file(dst_path::AbstractString, fnc::Function, args...)
     open(dst_path, "w") do input
         redirect_stdout(input) do

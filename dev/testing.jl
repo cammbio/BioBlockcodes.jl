@@ -8,71 +8,6 @@ using Graphs
 using BioSequences
 using NetworkLayout
 
-ALL_CODONS =
-    LongDNA{
-        4,
-    }.([
-        "AAC",
-        "AAG",
-        "AAT",
-        "ACA",
-        "ACC",
-        "ACG",
-        "ACT",
-        "AGA",
-        "AGC",
-        "AGG",
-        "AGT",
-        "ATA",
-        "ATC",
-        "ATG",
-        "ATT",
-        "CAA",
-        "CAC",
-        "CAG",
-        "CAT",
-        "CCA",
-        "CCG",
-        "CCT",
-        "CGA",
-        "CGC",
-        "CGG",
-        "CGT",
-        "CTA",
-        "CTC",
-        "CTG",
-        "CTT",
-        "GAA",
-        "GAC",
-        "GAG",
-        "GAT",
-        "GCA",
-        "GCC",
-        "GCG",
-        "GCT",
-        "GGA",
-        "GGC",
-        "GGT",
-        "GTA",
-        "GTC",
-        "GTG",
-        "GTT",
-        "TAA",
-        "TAC",
-        "TAG",
-        "TAT",
-        "TCA",
-        "TCC",
-        "TCG",
-        "TCT",
-        "TGA",
-        "TGC",
-        "TGG",
-        "TGT",
-        "TTA",
-        "TTC",
-        "TTG",
-    ])
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
@@ -125,14 +60,7 @@ function _get_next_codon_set_combination!(
     return false
 end
 
-
-# function to generate all combinations of a codon set by a specific set size
-function generate_codon_set_combinations_by_size(combination_size::Int)
-    codon_set_combinations = codon_combinations_per_size(ALL_CODONS, combination_size)
-    return codon_set_combinations
-end
-
-possible_combinations = generate_codon_set_combinations_by_size(3)
+combinations = codon_combinations_per_size(ALL_CODONS, 3)
 c3_codon_sets = get_all_c3_codon_sets(possible_combinations)
 counter = 0
 
@@ -650,19 +578,19 @@ end
 # check for each of the 216 codes all combinations of codons if they are strong C3
 open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     counter = 0
-    for line in eachline(f)
-        counter += 1
-        if counter == 5
-            println("BREAK")
-            break
-        end
-        codon_set = line_to_codon_set(line)
+    open("files/strong_c3_codon_combinations.txt", "w") do out
+        for line in eachline(f)
+            counter += 1
+            if counter == 5
+                println("BREAK")
+                break
+            end
+            codon_set = line_to_codon_set(line)
 
-        open("files/strong_c3_codon_combinations.txt", "w") do out
             redirect_stdout(out) do
                 # check all combinations of codons
                 println("For codon set ($counter): $codon_set: -------------------------------")
-                for i in 1:length(codon_set)
+                for i in 1:5#length(codon_set)
                     codon_set_combinations = codon_combinations_per_size(codon_set, i)
                     for codon_set_combination in codon_set_combinations
                         # construct graph data
@@ -683,7 +611,6 @@ open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
             end
         end
     end
-
     println("Codon combination analysis complete. Results written to files/strong_c3_codon_combinations.txt")
 end
 
