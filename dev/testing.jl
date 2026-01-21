@@ -13,112 +13,41 @@ global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 
-# -------------------------------------------------- FUNCTIONS --------------------------------------------------
-# generate all combinations of a codon set by a specific size
-function codon_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_size::Int)
-    length_codon_set = length(codon_set)
 
-    # do not allow combination_size <= 0
-    combination_size <= 0 && throw(ArgumentError("combination_size cannot be <= 0"))
-    # do not allow combination_size > length(codon_set)
-    combination_size > length_codon_set &&
-        throw(ArgumentError("combination_size is bigger than codon_set length"))
+const MAX_LENGTH::Int = 20
+const STRONG_C3_RESULTS_PATH = "files/results/strong_c3_codon_combinations.txt"
+const STRONG_C3_CHECKPOINT_PATH = "files/checkpoints/strong_c3_checkpoint.txt"
+const TEST_RESULTS_PATH = "files/results/test_strong_c3_codon_combinations.txt"
+const TEST_CHECKPOINT_PATH = "files/checkpoints/test_strong_c3_checkpoint.txt"
 
-    combos = Vector{Vector{LongDNA{4}}}()
-    # get first combination
-    combination = collect(1:combination_size)
-    push!(combos, codon_set[combination])
-
-    # get next combinations
-    while _get_next_codon_set_combination!(combination, combination_size, length_codon_set)
-        push!(combos, codon_set[combination])
-    end
-
-    return combos
-end
-
-
-# generate the next combination of a codon set from the current combination
-function _get_next_codon_set_combination!(
-    combination::Vector{Int},
-    combination_size::Int,
-    length_codon_set::Int,
+# TEST
+# start fresh
+const TEST_LENGTH = 4
+process_strong_c3_combinations(
+    GCATCodes.ALL_CODONS,
+    TEST_LENGTH,
+    TEST_RESULTS_PATH,
+    TEST_CHECKPOINT_PATH,
+    false,
 )
-    # find the rightmost element that can be incremented
-    for i in combination_size:-1:1
-        # check if this element can be incremented
-        if combination[i] != i + length_codon_set - combination_size
-            combination[i] += 1
-            # reset all elements to the right of this element
-            for j in (i + 1):combination_size
-                combination[j] = combination[j - 1] + 1
-            end
-            return true
-        end
-    end
 
-    return false
-end
+# resume
+process_strong_c3_combinations(
+    GCATCodes.ALL_CODONS,
+    TEST_LENGTH,
+    TEST_RESULTS_PATH,
+    TEST_CHECKPOINT_PATH,
+    true,
+)
 
-combinations = codon_combinations_per_size(ALL_CODONS, 3)
-c3_codon_sets = get_all_c3_codon_sets(possible_combinations)
-counter = 0
+# # start fresh
+# process_strong_c3_combinations(ALL_CODONS, 2, STRONG_C3_RESULTS_PATH, STRONG_C3_CHECKPOINT_PATH, false)
 
-strong_c3_counter = 0
-not_strong_c3_counter = 0
-
-for i in 1:1
-    for c3_codon_set in c3_codon_sets
-        counter += 1
-        data = CodonGraphData(c3_codon_set; plot_title = "c3_codon_set $counter: $c3_codon_set")
-        construct_graph_data!(data; show_debug = false)
-        if is_strong_c3(data; show_debug = false)
-            # println("Strong C3 codon set found: $c3_codon_set")
-            # show_codon_graph(data; show_debug = false)
-            strong_c3_counter += 1
-        else
-            # println("Not a strong C3 codon set: $c3_codon_set")
-            not_strong_c3_counter += 1
-        end
-    end
-    println("Strong C3 codon sets found: $strong_c3_counter")
-    println("Not strong C3 codon sets found: $not_strong_c3_counter")
-end
-
-open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
-    strong_c3_counter = 0
-    not_strong_c3_counter = 0
-    for line in eachline(f)
-        codon_set = line_to_codon_set(line)
-        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
-        construct_graph_data!(data; show_debug = false)
-        if is_strong_c3(data; show_debug = false)
-            # println("Strong C3 codon set found: $c3_codon_set")
-            # show_codon_graph(data; show_debug = false)
-            strong_c3_counter += 1
-        else
-            # println("Not a strong C3 codon set: $c3_codon_set")
-            not_strong_c3_counter += 1
-        end
-    end
-    println("Strong C3 codon sets found: $strong_c3_counter")
-    println("Not strong C3 codon sets found: $not_strong_c3_counter")
-end
+# # resume
+# process_strong_c3_combinations(ALL_CODONS, 20, STRONG_C3_RESULTS_PATH, STRONG_C3_CHECKPOINT_PATH, true)
 
 
-# get all c3 codon sets of a codon set collection
-function get_all_c3_codon_sets(codon_set_collection::Vector{Vector{LongDNA{4}}})
-    c3_codon_sets = Vector{Vector{LongDNA{4}}}()
-    for codon_set in codon_set_collection
-        data = CodonGraphData(codon_set; plot_title = "Codon set: $codon_set")
-        construct_graph_data!(data; show_debug = false)
-        if is_c3(data; show_debug = false)
-            push!(c3_codon_sets, codon_set)
-        end
-    end
-    return c3_codon_sets
-end
-
+# ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # check if alpha1 and alpha2 codon graphs contain each vertice and edge from expanded codon graph
 function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bool = false)
     expanded_data = CodonGraphData(original_data.codon_set; plot_title = "Expanded graph for inclusion check")
@@ -208,7 +137,7 @@ function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bo
     end
 end
 
-# -------------------------------------------------- TESTING --------------------------------------------------
+# ---------------------------------------------- TESTING ----------------------------------------------
 codon_set = LongDNA{4}.(["AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC"])
 codon_set =
     LongDNA{
@@ -628,7 +557,6 @@ open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
 end
 
 
-
 # -------------------------------------------------- INTERACTIVITY --------------------------------------------------
 # graph interactivity
 g = SimpleDiGraph(6)
@@ -712,3 +640,98 @@ f, ax, p = graphplot(g, node_size = [30 for i in 1:nv(g)], node_color = [coloran
 
 deregister_interaction!(ax, :rectanglezoom)
 register_interaction!(ax, :nodeclick, NodeClickHandler(action))
+
+
+counter = 0
+for codon in ALL_CODONS
+    if counter == 10000
+        counter = 0
+        break
+    end
+
+    n2n3n1 = left_shift_codon(codon, 1)
+    n3n1n2 = left_shift_codon(codon, 2)
+
+    # println("n1n2n3: $codons")
+    # println("n2n3n1: $n2n3n1")
+    # println("n3n1n2: $n3n1n2")
+
+    codon_set1 = [codon, n2n3n1]
+    codons1 = LongDNA{4}.(codon_set1)
+    data1 = CodonGraphData(codons1; plot_title = "Codon: $codon_set1")
+    construct_graph_data!(data1; show_debug = false)
+
+    codon_set2 = [codon, n3n1n2]
+    codons2 = LongDNA{4}.(codon_set1)
+    data2 = CodonGraphData(codons2; plot_title = "Codon: $codon_set2")
+    construct_graph_data!(data2; show_debug = false)
+
+    codon_set3 = [n2n3n1, n3n1n2]
+    codons3 = LongDNA{4}.(codon_set1)
+    data3 = CodonGraphData(codons3; plot_title = "Codon: $codon_set3")
+    construct_graph_data!(data3; show_debug = false)
+
+    if is_c3(data1; show_debug = false)
+        show_codon_graph(data1; show_debug = false)
+        println("Codon set: $codon_set1 is C3: $(is_c3(data1; show_debug = false))")
+    end
+    if is_c3(data2; show_debug = false)
+        show_codon_graph(data2; show_debug = false)
+        println("Codon set: $codon_set2 is C3: $(is_c3(data2; show_debug = false))")
+    end
+    if is_c3(data3; show_debug = false)
+        show_codon_graph(data3; show_debug = false)
+        println("Codon set: $codon_set3 is C3: $(is_c3(data3; show_debug = false))")
+    end
+
+    counter += 1
+    println("Counter: $counter")
+    if counter == 60
+        counter = 0
+    end
+end
+
+
+using BenchmarkTools
+
+codon_set = ALL_CODONS[1:20]
+
+t1 = @benchmark contains_vec($codon_set)
+t2 = @benchmark contains_inb($codon_set)
+t3 = @benchmark begin
+    data = CodonGraphData($codon_set)
+    construct_graph_data!(data; show_debug = false)
+    is_strong_c3(data; show_debug = false)
+end
+m1 = median(t1).time
+m2 = median(t2).time
+m3 = median(t3).time
+# sort m1, m2, m3
+sorted = sort([(m1, "contains_vec"), (m2, "contains_inb"), (m3, "is_strong_c3")], by = x -> x[1])
+for (time, name) in sorted
+    println("$name: $(time / 1e6) ms")
+end
+
+
+function contains_vec(cs)
+    for c in cs
+        r1 = left_shift_codon(c, 1)
+        r2 = left_shift_codon(c, 2)
+        (r1 in cs || r2 in cs) && return true
+    end
+    return false
+end
+
+function contains_inb(cs)
+    len = length(cs)
+    @inbounds for i in 1:len
+        codon = cs[i]
+        r1 = left_shift_codon(codon, 1)
+        r2 = left_shift_codon(codon, 2)
+        @inbounds for j in 1:len
+            cj = cs[j]
+            (cj == r1 || cj == r2) && return true
+        end
+    end
+    return false
+end
