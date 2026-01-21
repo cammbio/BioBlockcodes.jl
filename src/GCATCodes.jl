@@ -8,6 +8,7 @@ include("CodonUtils.jl") # needs Types.jl
 include("PlotUtils.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
 include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
+include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 
 
 # export types
@@ -26,6 +27,7 @@ export
     is_self_complementary,
     is_strong_c3,
     # CodonUtils.jl
+    get_codon_combinations_per_size,
     get_complemented_reversed_codon_set,
     get_complemented_codon_set,
     get_reversed_codon_set,
@@ -53,10 +55,20 @@ export
     # WriterUtils.jl
     line_to_codon_set,
     print_to_file,
+    # strong C3 analysis
+    process_strong_c3_combinations,
 
 
-    # temporary
+    # temporary helper
     _expand_graph,
     _add_n2_n3n1_by_codon,
-    _has_cycle_longer_than
+    _has_cycle_longer_than,
+    _increment_codon_set_combination!,
+    _save_strong_c3_checkpoint!,
+    _load_strong_c3_checkpoint,
+    _get_last_combination_indices_from_file,
+    _get_next_combination,
+    _get_last_line,
+    _remove_empty_last_lines,
+    _contains_codon_rotation
 end

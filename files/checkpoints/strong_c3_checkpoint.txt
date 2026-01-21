@@ -1,0 +1,6 @@
+"combination_size" = 7
+"current_combination" = [2, 11, 16, 21, 22, 59, 60]
+"starting_point" = 7
+"processed_count" = 82043
+"strong_c3_count" = 23469
+"not_strong_c3_count" = 58574
