@@ -1,3 +1,4 @@
+using Base.Threads: Atomic
 # ---------------------------------------------- VARIABLES ----------------------------------------------
 
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
@@ -67,6 +68,91 @@ const ALL_CODONS =
         "TTG",
     ])
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
+# stream all combinations for a certain combination_size, resumable via checkpoint file
+function process_strong_c3_combinations_by_combination_size(
+    codons::Vector{LongDNA{4}},
+    combination_size::Int,
+    results_path::AbstractString,
+    checkpoint_path::AbstractString,
+    cancel::Atomic{Bool};
+    show_debug::Bool = false,
+)
+    show_debug && @debug "Entered function with combination_size $combination_size"
+    # get length of codon set
+    length_codon_set = length(codons)
+
+    if isfile(results_path)
+        if filesize(results_path) > 0
+            check_point = _load_strong_c3_checkpoint(checkpoint_path)
+            current_combination = check_point.current_combination
+            strong_c3_count = check_point.strong_c3_count
+            not_strong_c3_count = check_point.not_strong_c3_count
+            processed_count = check_point.processed_count
+            write_mode = "a"
+        end
+    else # start from scratch
+        current_combination = collect(1:combination_size)
+        strong_c3_count = 0
+        not_strong_c3_count = 0
+        processed_count = 0
+        write_mode = "w"
+    end
+
+    show_debug &&
+        @debug "Starting processing combinations of size $combination_size from combination $(current_combination)...",
+        try
+            open(results_path, write_mode) do result_out
+                if write_mode == "a"
+                    println(result_out, "") # ensure new line before appending
+                end
+
+                while true
+                    # allow interrupting the process
+                    if cancel[]
+                        show_debug && @debug "Task with combination_size $combination_size cancelled."
+                        break #throw(InterruptException())
+                    end
+
+                    codon_set = codons[current_combination]
+
+                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
+                    if !_contains_codon_rotation(codon_set)
+                        # check strong C3
+                        data = CodonGraphData(codon_set)
+                        construct_graph_data!(data; show_debug = false)
+                        if is_strong_c3(data; show_debug = false)
+                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                            println(
+                                result_out,
+                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                            )
+                        end
+                    end
+
+                    # get next combination or break if none left
+                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                        current_combination = collect(1:(combination_size + 1))
+                        break
+                    end
+                end
+            end
+            show_debug && @debug "Finished processing combinations of size $combination_size."
+        catch err
+            show_debug && @debug "Error in processing combinations of size $combination_size: $err"
+            rethrow(err)
+        finally
+            # save checkpoint
+            _save_strong_c3_checkpoint!(
+                checkpoint_path,
+                current_combination,
+                strong_c3_count,
+                not_strong_c3_count,
+                processed_count,
+            )
+        end
+end
+
+
 # stream all combinations up to max_len, resumable via checkpoint file
 function process_strong_c3_combinations(
     codons::Vector{LongDNA{4}},
@@ -94,61 +180,50 @@ function process_strong_c3_combinations(
         # disable default SIGINT handler to allow custom handling
         Base.exit_on_sigint(false)
         open(results_path, write_mode) do result_out
-            open("files/test_output.txt", "w") do test_out
-                # iterate over all combination sizes
-                for combination_size in starting_point:max_combination_size_length
-                    while true
-                        yield()
+            # iterate over all combination sizes
+            for combination_size in starting_point:max_combination_size_length
+                while true
+                    # allow interrupting the process
+                    yield()
 
-                        println(test_out, "current_combination: $current_combination")
-                        codon_set = codons[current_combination]
+                    codon_set = codons[current_combination]
 
-                        # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
-                        if _contains_codon_rotation(codon_set)
-                            not_strong_c3_count += 1
+                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
+                    if _contains_codon_rotation(codon_set)
+                        not_strong_c3_count += 1
+                    else
+                        # check strong C3
+                        data = CodonGraphData(codon_set)
+                        construct_graph_data!(data; show_debug = false)
+                        if is_strong_c3(data; show_debug = false)
+                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                            println(
+                                result_out,
+                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                            )
+                            strong_c3_count += 1
                         else
-                            # check strong C3
-                            data = CodonGraphData(codon_set)
-                            construct_graph_data!(data; show_debug = false)
-                            if is_strong_c3(data; show_debug = false)
-                                codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-                                println(
-                                    result_out,
-                                    "Strong C3: $codon_combination_string with size $(length(codon_set))",
-                                )
-                                # flush(result_out) # keep output on disk if aborted
-                                strong_c3_count += 1
-                            else
-                                not_strong_c3_count += 1
-                            end
+                            not_strong_c3_count += 1
                         end
+                    end
 
-                        processed_count += 1
+                    processed_count += 1
 
-                        # get next combination
-                        if !_increment_codon_set_combination!(current_combination, length_codon_set)
-                            current_combination = collect(1:(combination_size + 1))
-                            break
-                        end
+                    # get next combination or break if none left
+                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                        current_combination = collect(1:(combination_size + 1))
+                        break
                     end
                 end
             end
         end
-
-        return (; processed_count, strong_c3_count)
     catch err
         rethrow(err)
     finally
-        println("""FINALLY before:
-              current_combination: $current_combination""")
         # get last processed combination from last line in results file
         last_processed_combination = _get_last_combination_indices_from_file(results_path)
         # get next combination to be processed when resumed
         current_combination = _get_next_combination(last_processed_combination, length_codon_set)
-        println("""FINALLY after:
-                last processed combination: $last_processed_combination
-                current_combination: $current_combination""")
-
         _save_strong_c3_checkpoint!(
             checkpoint_path,
             current_combination,
@@ -191,9 +266,9 @@ function _save_strong_c3_checkpoint!(
 )
     open(path, "w") do out
         println(out, "\"current_combination\" = $current_combination")
-        println(out, "\"processed_count\" = $processed_count")
         println(out, "\"strong_c3_count\" = $strong_c3_count")
         println(out, "\"not_strong_c3_count\" = $not_strong_c3_count")
+        println(out, "\"processed_count\" = $processed_count")
     end
 
     return true
@@ -215,25 +290,23 @@ function _load_strong_c3_checkpoint(path::AbstractString)
     # parse current_combination as Vector{Int} after removing brackets and spaces
     current_combination =
         parse.(Int, split(replace(pairs["current_combination"], ['[', ']', ' '] => ""), ","))
-    processed_count = parse(Int, pairs["processed_count"])
     strong_c3_count = parse(Int, pairs["strong_c3_count"])
     not_strong_c3_count = parse(Int, pairs["not_strong_c3_count"])
+    processed_count = parse(Int, pairs["processed_count"])
 
     # return named tuple
-    return (; current_combination, processed_count, strong_c3_count, not_strong_c3_count)
+    return (; current_combination, strong_c3_count, not_strong_c3_count, processed_count)
 end
 
 # get last processed combination from results file
 function _get_last_combination_indices_from_file(path::AbstractString)
-    lines = readlines(path)
-    isempty(lines) && throw(ArgumentError("File empty"))
+    filesize(path) == 0 && throw(ArgumentError("File empty"))
 
     # get last line
-    last_line = lines[end]
+    last_line = readlines(path)[end]
 
     # extract codons from last line
     codons = [m.captures[1] for m in eachmatch(r"\"([ACGT]{3})\"", last_line)]
-    println(codons)
 
     # find indices of codons in ALL_CODONS
     idxs = [findfirst(==(LongDNA{4}(c)), ALL_CODONS) for c in codons]
@@ -313,6 +386,8 @@ function _remove_empty_last_lines(path::AbstractString)
         end
         truncate(io, pos)
     end
+
+    return true
 end
 
 # check if codon_set already contains at least two of the three cyclic rotations of any codon
@@ -327,3 +402,12 @@ function _contains_codon_rotation(codon_set::Vector{LongDNA{4}})
     end
     return false
 end
+
+# function to get filesize in mega bytes
+function _get_filesize_mb(path::AbstractString)
+    isfile(path) || error("File not found: $path")
+
+    return filesize(path) / (1024^2)
+end
+
+# size_mb = _get_filesize_mb("files/test_output.txt")

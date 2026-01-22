@@ -12,7 +12,44 @@ using NetworkLayout
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
+using Base.Threads
 
+lengths = 1:20
+tasks = [
+    @spawn begin
+        k = len
+        res = "files/tests/strong_c3_cs$(k).txt"
+        chk = "files/tests/strong_c3_cs$(k)_cp.txt"
+        process_strong_c3_combinations_by_combination_size(
+            GCATCodes.ALL_CODONS,
+            k,
+            res,
+            chk,
+            false,               # kein Checkpoint laden
+            Atomic{Bool}(false); # eigener Cancel-Schalter
+            show_debug = false,
+        )
+    end for len in lengths
+]
+
+fetch.(tasks)  # wartet, bis alle fertig sind
+
+
+using Base.Threads: Atomic
+using Base.Threads
+stopflag = Atomic{Bool}(false)
+
+process_strong_c3_combinations_by_combination_size(
+    GCATCodes.ALL_CODONS,
+    6,
+    "files/tests/strong_c3_cs5.txt",
+    "files/tests/strong_c3_cs5_cp.txt",
+    false,
+    stopflag;
+    show_debug = false,
+)
+
+stopflag[] = true
 
 const MAX_LENGTH::Int = 20
 const STRONG_C3_RESULTS_PATH = "files/results/strong_c3_codon_combinations.txt"
@@ -23,13 +60,7 @@ const TEST_CHECKPOINT_PATH = "files/checkpoints/test_strong_c3_checkpoint.txt"
 # TEST
 # start fresh
 const TEST_LENGTH = 4
-process_strong_c3_combinations(
-    GCATCodes.ALL_CODONS,
-    TEST_LENGTH,
-    TEST_RESULTS_PATH,
-    TEST_CHECKPOINT_PATH,
-    false,
-)
+process_strong_c3_combinations(GCATCodes.ALL_CODONS, 2, TEST_RESULTS_PATH, TEST_CHECKPOINT_PATH, false)
 
 # resume
 process_strong_c3_combinations(
@@ -40,11 +71,13 @@ process_strong_c3_combinations(
     true,
 )
 
-# # start fresh
-# process_strong_c3_combinations(ALL_CODONS, 2, STRONG_C3_RESULTS_PATH, STRONG_C3_CHECKPOINT_PATH, false)
-
-# # resume
-# process_strong_c3_combinations(ALL_CODONS, 20, STRONG_C3_RESULTS_PATH, STRONG_C3_CHECKPOINT_PATH, true)
+@benchmark process_strong_c3_combinations(
+    GCATCodes.ALL_CODONS,
+    TEST_LENGTH,
+    TEST_RESULTS_PATH,
+    TEST_CHECKPOINT_PATH,
+    false,
+) samples = 5
 
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
@@ -137,154 +170,6 @@ function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bo
     end
 end
 
-# ---------------------------------------------- TESTING ----------------------------------------------
-codon_set = LongDNA{4}.(["AAC", "GTT", "AAG", "CTT", "AAT", "ATT", "ACC"])
-codon_set =
-    LongDNA{
-        4,
-    }.([
-        "AAC",
-        "GTT",
-        "AAG",
-        "CTT",
-        "AAT",
-        "ATT",
-        "ACC",
-        "GGT",
-        "ACG",
-        "CGT",
-        "ACT",
-        "AGT",
-        "AGC",
-        "GCT",
-        "AGG",
-        "CCT",
-        "CCG",
-        "CGG",
-        "TCA",
-        "TGA",
-    ])
-data_original = CodonGraphData(codon_set; plot_title = "Original")
-construct_graph_data!(data_original; show_debug = false)
-show_codon_graph(data_original; show_debug = false)
-is_strong_c3(data_original; show_debug = true)
-check_alpha_1_and_alpha_2(data_original; show_debug = true)
-
-codon_set_test = LongDNA{4}.(["ATA", "GTA", "CCA", "CGC", "CGT"])
-data_test = CodonGraphData(codon_set_test; plot_title = "Test")
-construct_graph_data!(data_test; show_debug = false)
-
-alpha1_test = CodonGraphData(left_shift_codon_set(codon_set_test, 1); plot_title = "Alpha 1 Test")
-construct_graph_data!(alpha1_test; show_debug = false)
-
-alpha2_test = CodonGraphData(left_shift_codon_set(codon_set_test, 2); plot_title = "Alpha 2 Test")
-construct_graph_data!(alpha2_test; show_debug = false)
-
-data_list_test = [data_test, alpha1_test, alpha2_test]
-show_multiple_codon_graphs(data_list_test; show_debug = false)
-show_codon_graph(data_test; show_debug = false)
-
-is_c3(data_test; show_debug = false)
-is_strong_c3(data_test; show_debug = true)
-
-_has_cycle_longer_than(data_test.graph, 2; show_debug = false)
-
-add_edge_by_label!(data_test, "CA", "A", show_debug = false)
-add_edge_by_label!(data_test, "A", "CG", show_debug = false)
-show_codon_graph(data_test; show_debug = false)
-
-_has_cycle_longer_than(data_test.graph, 2; show_debug = false)
-
-_expand_graph(data_test; show_debug = false)
-show_codon_graph(data_test; show_debug = false)
-
-println(get_cycles_all(data_test; show_debug = false))
-
-copy_codon_set = copy(codon_set)
-for codon in codon_set
-    n2 = string(codon[2])
-    n3n1 = string(codon[3], codon[1])
-    # add_vertex_by_label!(data_original, n2, show_debug = false)
-    # add_vertex_by_label!(data_original, n3n1, show_debug = false)
-    # add_edge_by_label!(data_original, n2, n3n1, show_debug = false)
-    # add_edge_by_label!(data_original, n3n1, n2, show_debug = false)
-
-    new_codon = left_shift_codon(codon, 1)
-
-    # check if new_codon already in codon_set
-    if !(new_codon in codon_set)
-        println("Adding codon $new_codon derived from $codon by left shift.")
-        push!(copy_codon_set, new_codon)
-    else
-        println("Codon $new_codon derived from $codon by left shift already in codon set.")
-    end
-
-end
-println(copy_codon_set)
-println(length(copy_codon_set))
-
-data_expanded = CodonGraphData(codon_set; plot_title = "Expanded")
-construct_graph_data!(data_expanded; show_debug = false)
-add_n2_n3n1_vertices_and_edges!(data_expanded; show_debug = false)
-
-data_alpha1 = CodonGraphData(left_shift_codon_set(codon_set, 1); plot_title = "Alpha 1")
-construct_graph_data!(data_alpha1; show_debug = false)
-
-data_alpha2 = CodonGraphData(left_shift_codon_set(codon_set, 2); plot_title = "Alpha 2")
-construct_graph_data!(data_alpha2; show_debug = false)
-
-a = get_cycles_difference(data_expanded, data_original; show_debug = false)
-println(a)
-println(codon_combinations_per_size(codon_set, 12))
-println(length(codon_combinations_per_size(codon_set, 12)))
-
-
-function testing(codon_set::Vector{LongDNA{4}})
-    data_original = CodonGraphData(codon_set; plot_title = "Original")
-    construct_graph_data!(data_original; show_debug = false)
-    # display_all_cycles(data_original; show_debug = false)
-    # get_cycle_count(data_original.graph; show_debug = false)
-
-    data_expanded = CodonGraphData(codon_set; plot_title = "Expanded")
-    construct_graph_data!(data_expanded; show_debug = false)
-    add_n2_n3n1_vertices_and_edges!(data_expanded; show_debug = false)
-    # display_all_cycles(data_expanded; show_debug = false)
-    # get_cycle_count(data_expanded.graph; show_debug = false)
-
-    data_alpha_1 = CodonGraphData(left_shift_codon_set(codon_set, 1); plot_title = "Alpha 1")
-    construct_graph_data!(data_alpha_1; show_debug = false)
-    # display_all_cycles(alpha1; show_debug = false)
-    # get_cycle_count(alpha1.graph; show_debug = false)
-
-    data_alpha_2 = CodonGraphData(left_shift_codon_set(codon_set, 2); plot_title = "Alpha 2")
-    construct_graph_data!(data_alpha_2; show_debug = false)
-    # display_all_cycles(alpha2; show_debug = false)
-    # get_cycle_count(alpha2.graph; show_debug = false)
-
-    data_list = [data_original, data_expanded, data_alpha_1, data_alpha_2]
-    show_multiple_codon_graphs(data_list; show_debug = false)
-    # show_graph(data_original; show_debug = false)
-    show_codon_graph(data_expanded; show_debug = false)
-    # show_graph_only_cycles(data_expanded; show_debug = false)
-    # show_graph(alpha1; show_debug = false)
-    # show_graph(alpha2; show_debug = false)
-
-    print_to_file("files/test_output_original.txt", get_cycles_all, data_original)
-    print_to_file("files/test_output_expanded.txt", get_cycles_all, data_expanded)
-    print_to_file("files/test_output_alpha1.txt", get_cycles_all, data_alpha_1)
-    print_to_file("files/test_output_alpha2.txt", get_cycles_all, data_alpha_2)
-
-end
-
-open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
-    codon_set_line = readline(f)
-    # for i in 1:5
-    codon_set_test = line_to_codon_set(codon_set_line)[1:10]
-    println("Testing codon set: $codon_set_test")
-    testing(codon_set_test)
-    # end
-end
-
 function show_graph_only_cycles(data::CodonGraphData; show_debug::Bool = false)
     cycles = simplecycles(data.graph)
     cycle_vertices = sort!(unique(vcat(cycles...)))
@@ -335,19 +220,6 @@ function show_graph_only_cycles(data::CodonGraphData; show_debug::Bool = false)
     )
     display(fig)
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # -------------------------------------------------- ANALYSIS --------------------------------------------------
 # group codon sets by maximal cycle length
@@ -556,182 +428,414 @@ open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
     end
 end
 
-
-# -------------------------------------------------- INTERACTIVITY --------------------------------------------------
-# graph interactivity
-g = SimpleDiGraph(6)
-add_edge!(g, 1, 2)
-add_edge!(g, 2, 3)
-add_edge!(g, 3, 4)
-add_edge!(g, 4, 5)
-add_edge!(g, 5, 6)
-
-# vertex labels as strings
-labels = string.(1:nv(g))
-
-# hide vertices with even indices
-vis = [isodd(i) for i in 1:nv(g)]
-node_color = [vis[i] ? :black : RGBAf(0, 0, 0, 0) for i in 1:nv(g)]
-node_size = [vis[i] ? 50 : 0 for i in 1:nv(g)]
-label_color = [vis[i] ? :white : RGBAf(0, 0, 0, 0) for i in 1:nv(g)]
-
-fig = Figure(size = (900, 500))
-ax = Axis(
-    fig[1, 1];
-    xgridvisible = false,
-    ygridvisible = false,
-    xticksvisible = false,
-    yticksvisible = false,
-    xticklabelsvisible = false,
-    yticklabelsvisible = false,
-)
-hidespines!(ax)
-
-graphplot!(
-    ax,
-    g;
-    layout = Spring(C = 50.0),
-    nlabels = labels,
-    nlabels_color = label_color,
-    nlabels_size = 18,
-    nlabels_offset = Point2f(0, 0),
-    nlabels_align = (:center, :center),
-    node_color = node_color,
-    node_size = node_size,
-    arrow_shift = :end,
-    arrow_size = 12,
-    edge_width = 2,
-    edge_curvature = 0.9,
-)
-
-display(fig)
-
-using GLMakie
-using GraphMakie
-using Graphs
-g = wheel_graph(10)
-f, ax, p = graphplot(g, edge_width = [3 for i in 1:ne(g)], node_size = [10 for i in 1:nv(g)])
-
-deregister_interaction!(ax, :rectanglezoom)
-register_interaction!(ax, :nhover, NodeHoverHighlight(p))
-register_interaction!(ax, :ehover, EdgeHoverHighlight(p))
-register_interaction!(ax, :ndrag, NodeDrag(p))
-register_interaction!(ax, :edrag, EdgeDrag(p))
-
-deregister_interaction!(ax, :nhover)
-deregister_interaction!(ax, :ehover)
-deregister_interaction!(ax, :ndrag)
-deregister_interaction!(ax, :edrag)
-
-
-using Makie.Colors
-
-function action(idx, event, axis)
-    println("Clicked on node index: $idx")
-    p.node_color[][idx] = rand(RGB)
-    p.node_color[] = p.node_color[]
-    p.node_size[][idx] = p.node_size[][idx] + 5
-    p.node_size[] = p.node_size[]
-    println("New color: $(p.node_color[][idx]), New size: $(p.node_size[][idx])")
-end
-
-g = wheel_digraph(10)
-f, ax, p = graphplot(g, node_size = [30 for i in 1:nv(g)], node_color = [colorant"red" for i in 1:nv(g)])
-
-deregister_interaction!(ax, :rectanglezoom)
-register_interaction!(ax, :nodeclick, NodeClickHandler(action))
-
-
-counter = 0
-for codon in ALL_CODONS
-    if counter == 10000
-        counter = 0
-        break
-    end
-
-    n2n3n1 = left_shift_codon(codon, 1)
-    n3n1n2 = left_shift_codon(codon, 2)
-
-    # println("n1n2n3: $codons")
-    # println("n2n3n1: $n2n3n1")
-    # println("n3n1n2: $n3n1n2")
-
-    codon_set1 = [codon, n2n3n1]
-    codons1 = LongDNA{4}.(codon_set1)
-    data1 = CodonGraphData(codons1; plot_title = "Codon: $codon_set1")
-    construct_graph_data!(data1; show_debug = false)
-
-    codon_set2 = [codon, n3n1n2]
-    codons2 = LongDNA{4}.(codon_set1)
-    data2 = CodonGraphData(codons2; plot_title = "Codon: $codon_set2")
-    construct_graph_data!(data2; show_debug = false)
-
-    codon_set3 = [n2n3n1, n3n1n2]
-    codons3 = LongDNA{4}.(codon_set1)
-    data3 = CodonGraphData(codons3; plot_title = "Codon: $codon_set3")
-    construct_graph_data!(data3; show_debug = false)
-
-    if is_c3(data1; show_debug = false)
-        show_codon_graph(data1; show_debug = false)
-        println("Codon set: $codon_set1 is C3: $(is_c3(data1; show_debug = false))")
-    end
-    if is_c3(data2; show_debug = false)
-        show_codon_graph(data2; show_debug = false)
-        println("Codon set: $codon_set2 is C3: $(is_c3(data2; show_debug = false))")
-    end
-    if is_c3(data3; show_debug = false)
-        show_codon_graph(data3; show_debug = false)
-        println("Codon set: $codon_set3 is C3: $(is_c3(data3; show_debug = false))")
-    end
-
-    counter += 1
-    println("Counter: $counter")
-    if counter == 60
-        counter = 0
-    end
-end
-
-
+# -------------------------------------------------- TESTING PARALLELISM --------------------------------------------------
 using BenchmarkTools
+using Base.Threads: Atomic
+using Base.Threads
 
-codon_set = ALL_CODONS[1:20]
-
-t1 = @benchmark contains_vec($codon_set)
-t2 = @benchmark contains_inb($codon_set)
-t3 = @benchmark begin
-    data = CodonGraphData($codon_set)
-    construct_graph_data!(data; show_debug = false)
-    is_strong_c3(data; show_debug = false)
-end
-m1 = median(t1).time
-m2 = median(t2).time
-m3 = median(t3).time
-# sort m1, m2, m3
-sorted = sort([(m1, "contains_vec"), (m2, "contains_inb"), (m3, "is_strong_c3")], by = x -> x[1])
-for (time, name) in sorted
-    println("$name: $(time / 1e6) ms")
-end
+Threads.nthreads()
 
 
-function contains_vec(cs)
-    for c in cs
-        r1 = left_shift_codon(c, 1)
-        r2 = left_shift_codon(c, 2)
-        (r1 in cs || r2 in cs) && return true
+function test1(
+    codons::Vector{LongDNA{4}},
+    max_combination_size_length::Int,
+    results_path::AbstractString,
+    checkpoint_path::AbstractString,
+    load_checkpoint::Bool;
+    show_debug::Bool = false,
+    cancel::Atomic{Bool} = Atomic{Bool}(false),
+)
+    # load from checkpoint or start from scratch
+    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
+    current_combination = collect(1:max_combination_size_length)
+    processed_count = load_checkpoint ? check_point.processed_count : 0
+    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
+    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
+
+    # adjust variables based on load_checkpoint
+    write_mode = load_checkpoint ? "a" : "w"
+
+    # get length of codon set
+    length_codon_set = length(codons)
+    # disable default SIGINT handler to allow custom handling
+    try
+        open(results_path, write_mode) do result_out
+            # iterate over all combination sizes
+            for combination_size in max_combination_size_length:max_combination_size_length
+                while true
+                    # allow interrupting the process
+                    cancel[] && throw(InterruptException())
+
+                    codon_set = codons[current_combination]
+
+                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
+                    if _contains_codon_rotation(codon_set)
+                        not_strong_c3_count += 1
+                    else
+                        # check strong C3
+                        data = CodonGraphData(codon_set)
+                        construct_graph_data!(data; show_debug = false)
+                        if is_strong_c3(data; show_debug = false)
+                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                            println(
+                                result_out,
+                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                            )
+                            strong_c3_count += 1
+                        else
+                            not_strong_c3_count += 1
+                        end
+                    end
+
+                    processed_count += 1
+
+                    # get next combination or break if none left
+                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                        current_combination = collect(1:(combination_size + 1))
+                        break
+                    end
+                end
+            end
+        end
+    catch err
+        err isa InterruptException || rethrow(err)
+    finally
     end
-    return false
 end
 
-function contains_inb(cs)
-    len = length(cs)
-    @inbounds for i in 1:len
-        codon = cs[i]
-        r1 = left_shift_codon(codon, 1)
-        r2 = left_shift_codon(codon, 2)
-        @inbounds for j in 1:len
-            cj = cs[j]
-            (cj == r1 || cj == r2) && return true
+function test2(
+    codons::Vector{LongDNA{4}},
+    max_combination_size_length::Int,
+    results_path::AbstractString,
+    checkpoint_path::AbstractString,
+    load_checkpoint::Bool;
+    show_debug::Bool = false,
+    cancel::Atomic{Bool} = Atomic{Bool}(false),
+)
+    # load from checkpoint or start from scratch
+    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
+    current_combination = collect(1:max_combination_size_length)
+    processed_count = load_checkpoint ? check_point.processed_count : 0
+    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
+    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
+
+    # adjust variables based on load_checkpoint
+    write_mode = load_checkpoint ? "a" : "w"
+
+    # get length of codon set
+    length_codon_set = length(codons)
+    # disable default SIGINT handler to allow custom handling
+    try
+        open(results_path, write_mode) do result_out
+            # iterate over all combination sizes
+            for combination_size in max_combination_size_length:max_combination_size_length
+                while true
+                    # allow interrupting the process
+                    cancel[] && throw(InterruptException())
+
+                    codon_set = codons[current_combination]
+
+                    # check strong C3
+                    data = CodonGraphData(codon_set)
+                    construct_graph_data!(data; show_debug = false)
+                    if is_strong_c3(data; show_debug = false)
+                        codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                        println(
+                            result_out,
+                            "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                        )
+                        strong_c3_count += 1
+                    else
+                        not_strong_c3_count += 1
+                    end
+
+                    processed_count += 1
+
+                    # get next combination or break if none left
+                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                        current_combination = collect(1:(combination_size + 1))
+                        break
+                    end
+                end
+            end
+        end
+    catch err
+        err isa InterruptException || rethrow(err)
+    finally
+    end
+end
+
+
+stopflag = Atomic{Bool}(false)
+
+test1(
+    GCATCodes.ALL_CODONS,
+    3,
+    "files/tests/test1_results.txt",
+    "files/tests/test1_cp.txt",
+    false;
+    cancel = stopflag,
+)
+
+test2(
+    GCATCodes.ALL_CODONS,
+    3,
+    "files/tests/test2_results.txt",
+    "files/tests/test2_cp.txt",
+    false;
+    cancel = stopflag,
+)
+
+
+TEST_LENGTH2 = 4
+# @benchmark test1(
+#     $GCATCodes.ALL_CODONS,
+#     $TEST_LENGTH2,
+#     "files/tests/test1_results.txt",
+#     "files/tests/test1_cp.txt",
+#     false;
+#     cancel = stopflag,
+# ) samples = 5
+# @benchmark test2(
+#     $GCATCodes.ALL_CODONS,
+#     $TEST_LENGTH2,
+#     "files/tests/test2_results.txt",
+#     "files/tests/test2_cp.txt",
+#     false;
+#     cancel = stopflag,
+# ) samples = 5
+
+
+t1 = Threads.@spawn begin
+    @benchmark test1(
+        $GCATCodes.ALL_CODONS,
+        $TEST_LENGTH2,
+        "files/tests/test1_results.txt",
+        "files/tests/test1_cp.txt",
+        false;
+        cancel = stopflag,
+    ) samples = 5
+end
+
+t2 = Threads.@spawn begin
+    @benchmark test2(
+        $GCATCodes.ALL_CODONS,
+        $TEST_LENGTH2,
+        "files/tests/test2_results.txt",
+        "files/tests/test2_cp.txt",
+        false;
+        cancel = stopflag,
+    ) samples = 5
+end
+
+t3 = Threads.@spawn begin
+    @benchmark test1(
+        $GCATCodes.ALL_CODONS,
+        8,
+        "files/tests/test3_results.txt",
+        "files/tests/test3_cp.txt",
+        false;
+        cancel = stopflag,
+    ) samples = 5
+end
+
+t4 = Threads.@spawn begin
+    @benchmark test2(
+        $GCATCodes.ALL_CODONS,
+        8,
+        "files/tests/test4_results.txt",
+        "files/tests/test4_cp.txt",
+        false;
+        cancel = stopflag,
+    ) samples = 5
+end
+
+fetch.((t1, t2))
+fetch.((t3, t4))
+
+for (i, t) in enumerate(tasks)
+    @info "task" idx = i done = istaskdone(t) failed = istaskfailed(t) state = t.state
+end
+
+# compare if 2 files are identical
+same = read("files/tests/test1_results.txt") == read("files/tests/test2_results.txt")
+same = read("files/tests/test3_results.txt") == read("files/tests/test4_results.txt")
+
+
+
+# abbrechen
+stopflag[] = true
+foreach(t -> istaskdone(t) || istaskfailed(t) || schedule(t, InterruptException()), tasks)
+# warten und Interrupts schlucken
+for t in tasks
+    try
+        fetch(t)
+    catch err
+        err isa InterruptException || rethrow(err)
+    end
+end
+
+
+
+
+function test3(
+    codons::Vector{LongDNA{4}},
+    max_combination_size_length::Int,
+    results_path::AbstractString,
+    checkpoint_path::AbstractString,
+    load_checkpoint::Bool;
+    show_debug::Bool = false,
+    cancel::Atomic{Bool} = Atomic{Bool}(false),
+)
+    # load from checkpoint or start from scratch
+    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
+    current_combination = collect(1:max_combination_size_length)
+    processed_count = load_checkpoint ? check_point.processed_count : 0
+    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
+    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
+
+    # adjust variables based on load_checkpoint
+    write_mode = load_checkpoint ? "a" : "w"
+
+    # get length of codon set
+    length_codon_set = length(codons)
+    # disable default SIGINT handler to allow custom handling
+    try
+        open(results_path, write_mode) do result_out
+            # iterate over all combination sizes
+            for combination_size in max_combination_size_length:max_combination_size_length
+                while true
+                    # allow interrupting the process
+                    cancel[] && throw(InterruptException())
+
+                    codon_set = codons[current_combination]
+
+                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
+                    if _contains_codon_rotation(codon_set)
+                        not_strong_c3_count += 1
+                    else
+                        # check strong C3
+                        data = CodonGraphData(codon_set)
+                        construct_graph_data!(data; show_debug = false)
+                        if is_strong_c3(data; show_debug = false)
+                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                            println(
+                                result_out,
+                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                            )
+                            strong_c3_count += 1
+                        else
+                            not_strong_c3_count += 1
+                        end
+                    end
+
+                    processed_count += 1
+
+                    # get next combination or break if none left
+                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                        current_combination = collect(1:(combination_size + 1))
+                        break
+                    end
+                end
+            end
+        end
+    catch err
+        err isa InterruptException || rethrow(err)
+    finally
+    end
+end
+
+min_length3 = 1
+max_length3 = 10
+
+tasks = [
+    @spawn begin
+        tid = Threads.threadid()
+        println("Thread $tid started job $i")
+        try
+            test3(
+                GCATCodes.ALL_CODONS,
+                i,
+                "files/tests/test_results_task_$i.txt",
+                "files/tests/test_checkpoint_task_$i.txt",
+                false;
+                cancel = stopflag,
+            )
+            println("Thread $tid finished job $i")
+        catch err
+            if err isa InterruptException
+                println("Thread $tid interrupted job $i")
+            else
+                rethrow(err)
+            end
+        end
+    end for i in min_length3:max_length3
+]
+
+
+# abbrechen
+stopflag[] = true
+foreach(t -> istaskdone(t) || istaskfailed(t) || schedule(t, InterruptException()), tasks)
+# warten und Interrupts schlucken
+for t in tasks
+    try
+        fetch(t)
+    catch err
+        err isa InterruptException || rethrow(err)
+    end
+end
+
+Threads.@threads for _ in 1:Threads.nthreads()
+    @info "alive" thread = Threads.threadid()
+end
+
+for (i, t) in enumerate(tasks)
+    @info "task" idx = i state = t.state failed = istaskfailed(t) done = istaskdone(t)
+end
+
+
+codon_set = LongDNA{4}.(GCATCodes.ALL_CODONS[5:15])
+count = 0
+
+
+using Random
+
+num = 2
+for i in num:num
+    idxs = randperm(length(GCATCodes.ALL_CODONS))[1:i]
+    codon_set = LongDNA{4}.(GCATCodes.ALL_CODONS[idxs])
+    println("i: $i")
+    t1 = @benchmark ab1(count, codon_set)
+    t2 = @benchmark ab2(count, codon_set)
+    m1 = median(t1).time
+    m2 = median(t2).time
+
+    if m1 > m2
+        println("ab2 faster: m2: $(m2)ns, m1: $(m1)ns, ratio: $(round(m1 / m2, digits=2))")
+    else
+        println("ab1 faster: m2: $(m2)ns, m1: $(m1)ns, ratio: $(round(m2 / m1, digits=2))")
+    end
+end
+
+function ab1(count, codon_set)
+    open("files/tests/ab1_results.txt", "w") do result_out
+        data = CodonGraphData(codon_set)
+        construct_graph_data!(data)
+        if is_strong_c3(data; show_debug = false)
+            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+            println(result_out, "Strong C3: $codon_combination_string with size $(length(codon_set))")
+            count += 1
+        else
+            count += 1
         end
     end
-    return false
 end
+
+function ab2(count, codon_set)
+    if _contains_codon_rotation(codon_set)
+        count += 1
+    end
+end
+
+ab1(count, codon_set)
+ab2(count, codon_set)
