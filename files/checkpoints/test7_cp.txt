@@ -1,0 +1,4 @@
+"current_combination" = [8, 9, 19, 21, 29, 39, 52]
+"strong_c3_count" = 13427819
+"not_strong_c3_count" = 220148719
+"processed_count" = 233576538
