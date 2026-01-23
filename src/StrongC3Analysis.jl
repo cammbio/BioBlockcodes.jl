@@ -95,9 +95,9 @@ function process_strong_c3_combinations_by_combination_size(
                     @debug "Checkpoint indicates all combinations of size $combination_size processed. Exiting."
                 return
             end
+            processed_count = checkpoint.processed_count
             strong_c3_count = checkpoint.strong_c3_count
             not_strong_c3_count = checkpoint.not_strong_c3_count
-            processed_count = checkpoint.processed_count
             write_mode = "a"
         else
             if !isfile(checkpoint_path)
@@ -108,9 +108,9 @@ function process_strong_c3_combinations_by_combination_size(
         end
     else
         current_combination = collect(1:combination_size)
+        processed_count = 0
         strong_c3_count = 0
         not_strong_c3_count = 0
-        processed_count = 0
         write_mode = "w"
     end
 
@@ -336,17 +336,17 @@ function _load_strong_c3_checkpoint(path::AbstractString)
     # parse current_combination as Vector{Int} after removing brackets and spaces
     current_combination =
         parse.(Int, split(replace(pairs["current_combination"], ['[', ']', ' '] => ""), ","))
-    strong_c3_count = parse(Int, pairs["strong_c3_count"])
-    not_strong_c3_count = parse(Int, pairs["not_strong_c3_count"])
-    processed_count = parse(Int, pairs["processed_count"])
+    processed_count = parse(Int, replace(pairs["processed_count"], "." => ""))
+    strong_c3_count = parse(Int, replace(pairs["strong_c3_count"], "." => ""))
+    not_strong_c3_count = parse(Int, replace(pairs["not_strong_c3_count"], "." => ""))
     strong_c3_percentage = parse(Float64, replace(pairs["strong_c3_percentage"], "%" => ""))
 
     # return named tuple
     return (;
         current_combination,
+        processed_count,
         strong_c3_count,
         not_strong_c3_count,
-        processed_count,
         strong_c3_percentage,
     )
 end

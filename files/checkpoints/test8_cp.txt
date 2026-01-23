@@ -1,4 +1,5 @@
-"current_combination" = [1, 11, 12, 29, 33, 35, 47, 58]
-"strong_c3_count" = 2795256
-"not_strong_c3_count" = 239992253
-"processed_count" = 242787509
+"current_combination" = [1, 2, 5, 11, 29, 36, 51, 53]
+"processed_count" = 9.545.266
+"strong_c3_count" = 104.800
+"not_strong_c3_count" = 9.440.466
+"strong_c3_percentage" = 1.10%

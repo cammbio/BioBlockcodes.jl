@@ -16,10 +16,6 @@ global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-using Formatting
-Formatting.format(1234; commas = true)
-
-
 process_strong_c3_combinations_by_combination_size(
     GCATCodes.ALL_CODONS,
     1,
@@ -41,9 +37,10 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
         end
         prev = ci
     end
-    return rank + 1
+    return rank
 end
 
+_get_processed_count_from_combination([1, 2, 3])
 
 for i in 7:10
     println("--------------------------------- Combination size: $i ---------------------------------")
@@ -55,14 +52,13 @@ for i in 7:10
         println("SET comb to last combination for size $i: $comb")
     end
     res = _get_processed_count_from_combination(comb)
-    println("Combination size: $i -> processed count: $res")
     # get amount of lines in result file
     lines = readlines("files/results/test$(i).txt")
     processed_count = res
     strong_c3_count = length(lines)
     not_strong_c3_count = processed_count - strong_c3_count
     println(
-        "strong_c3_count: $strong_c3_count, not_strong_c3_count: $not_strong_c3_count, processed_count: $processed_count",
+        "processed_count: $processed_count, strong_c3_count: $strong_c3_count, not_strong_c3_count: $not_strong_c3_count",
     )
 end
 
