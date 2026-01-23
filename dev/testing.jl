@@ -7,12 +7,74 @@ using GraphMakie
 using Graphs
 using BioSequences
 using NetworkLayout
+using Base.Threads
+using BenchmarkTools
 
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
-using Base.Threads
+const stop_flag = Base.Threads.Atomic{Bool}(false)
+
+using Formatting
+Formatting.format(1234; commas = true)
+
+
+process_strong_c3_combinations_by_combination_size(
+    GCATCodes.ALL_CODONS,
+    1,
+    "files/results/test1.txt",
+    "files/checkpoints/test1_cp.txt",
+    stop_flag;
+    show_debug = true,
+)
+
+
+# function to get processed count from current combination
+function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
+    k = length(comb)
+    rank = 0
+    prev = 0
+    @inbounds for (i, ci) in enumerate(comb)
+        for x in (prev + 1):(ci - 1)
+            rank += binomial(n - x, k - i)
+        end
+        prev = ci
+    end
+    return rank + 1
+end
+
+
+for i in 7:10
+    println("--------------------------------- Combination size: $i ---------------------------------")
+    checkpoint = _load_strong_c3_checkpoint("files/checkpoints/test$(i)_cp.txt")
+    comb = checkpoint.current_combination
+    if length(comb) > i
+        # set comb as last combination of size i
+        comb = collect((60 - i + 1):60)
+        println("SET comb to last combination for size $i: $comb")
+    end
+    res = _get_processed_count_from_combination(comb)
+    println("Combination size: $i -> processed count: $res")
+    # get amount of lines in result file
+    lines = readlines("files/results/test$(i).txt")
+    processed_count = res
+    strong_c3_count = length(lines)
+    not_strong_c3_count = processed_count - strong_c3_count
+    println(
+        "strong_c3_count: $strong_c3_count, not_strong_c3_count: $not_strong_c3_count, processed_count: $processed_count",
+    )
+end
+
+process_strong_c3_combinations_by_combination_size(
+    GCATCodes.ALL_CODONS,
+    1,
+    "files/test.txt",
+    "files/test_cp.txt",
+    stop_flag;
+    show_debug = true,
+)
+
 
 lengths = 1:20
 tasks = [

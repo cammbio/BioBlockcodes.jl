@@ -1,0 +1,5 @@
+"current_combination" = [1, 2]
+"processed_count" = 60
+"strong_c3_count" = 60
+"not_strong_c3_count" = 0
+"strong_c3_percentage" = 100.000000%

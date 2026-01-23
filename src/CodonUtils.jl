@@ -19,7 +19,7 @@ function get_codon_combinations_per_size(codon_set::Vector{LongDNA{4}}, combinat
     push!(combos, codon_set[combination])
 
     # get next combinations
-    while _increment_codon_set_combination!(combination, combination_size, length_codon_set)
+    while _increment_codon_set_combination!(combination, length_codon_set)
         push!(combos, codon_set[combination])
     end
 
