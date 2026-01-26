@@ -69,6 +69,53 @@ const ALL_CODONS =
         "TTC",
         "TTG",
     ])
+
+# bitmask helpers ------------------------------------------------------------
+# Bit für einen 1-basierten Codon-Index setzen.
+@inline codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
+
+# Baue für jedes Codon die Maske seiner beiden Rotationen. Nutzt Map für O(1)-Lookup.
+function _build_rotation_masks(codons::Vector{LongDNA{4}})
+    index_map = Dict{LongDNA{4}, Int}()
+    @inbounds for (i, c) in enumerate(codons)
+        index_map[c] = i
+    end
+
+    masks = Vector{UInt64}(undef, length(codons))
+    @inbounds for (i, codon) in enumerate(codons)
+        rot1 = left_shift_codon(codon, 1)
+        rot2 = left_shift_codon(codon, 2)
+        idx1 = get(index_map, rot1, nothing)
+        idx2 = get(index_map, rot2, nothing)
+        idx1 === nothing && error("Rotation not found in codons: $rot1 (from $codon)")
+        idx2 === nothing && error("Rotation not found in codons: $rot2 (from $codon)")
+        masks[i] = codon_bit(idx1) | codon_bit(idx2)
+    end
+    return masks
+end
+
+# Wandelt eine Kombi-Liste in eine Bitmaske.
+@inline function _combination_to_mask(combination::Vector{Int})
+    mask = UInt64(0)
+    @inbounds for idx in combination
+        mask |= codon_bit(idx)
+    end
+    return mask
+end
+
+# Prüft Rotation-Konflikt per Maske (entspricht _contains_codon_rotation, aber mit Bits).
+@inline function _mask_contains_codon_rotation(
+    mask::UInt64,
+    combination::Vector{Int},
+    rotation_masks::Vector{UInt64},
+)
+    @inbounds for idx in combination
+        if (mask & rotation_masks[idx]) != 0
+            return true
+        end
+    end
+    return false
+end
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # stream all combinations for a certain combination_size, resumable via checkpoint file
 function process_strong_c3_combinations_by_combination_size(
@@ -164,7 +211,7 @@ function process_strong_c3_combinations_by_combination_size(
         show_debug && @debug "Error in processing combinations of size $combination_size: $err"
         rethrow(err)
     finally
-        println("FINALLY ENTERED for $combination_size.")
+        # println("FINALLY ENTERED for $combination_size.")
         # save checkpoint
         _save_strong_c3_checkpoint!(
             checkpoint_path,
@@ -176,78 +223,103 @@ function process_strong_c3_combinations_by_combination_size(
     end
 end
 
-
-# stream all combinations up to max_len, resumable via checkpoint file
-function process_strong_c3_combinations(
+function process_strong_c3_combinations_by_combination_size_with_mask(
     codons::Vector{LongDNA{4}},
-    max_combination_size_length::Int,
+    combination_size::Int,
     results_path::AbstractString,
     checkpoint_path::AbstractString,
-    load_checkpoint::Bool;
+    cancel::Atomic{Bool};
     show_debug::Bool = false,
 )
-    # load from checkpoint or start from scratch
-    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
-    current_combination = load_checkpoint ? check_point.current_combination : Int[1]
-    processed_count = load_checkpoint ? check_point.processed_count : 0
-    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
-    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
-
-    # adjust variables based on load_checkpoint
-    starting_point = length(current_combination)
-    write_mode = load_checkpoint ? "a" : "w"
-
+    show_debug && @debug "Entered function with combination_size $combination_size"
     # get length of codon set
     length_codon_set = length(codons)
+    rotation_masks = _build_rotation_masks(codons)
 
+    # load from checkpoint or start from scratch
+    if isfile(results_path) && filesize(results_path) > 0
+        if isfile(checkpoint_path) && filesize(checkpoint_path) > 0
+            show_debug &&
+                @debug "Loading checkpoint from $checkpoint_path for combination_size $combination_size"
+            checkpoint = _load_strong_c3_checkpoint(checkpoint_path)
+            current_combination = checkpoint.current_combination
+            if current_combination == collect(1:(combination_size + 1))
+                show_debug &&
+                    @debug "Checkpoint indicates all combinations of size $combination_size processed. Exiting."
+                return
+            end
+            processed_count = checkpoint.processed_count
+            strong_c3_count = checkpoint.strong_c3_count
+            not_strong_c3_count = checkpoint.not_strong_c3_count
+            write_mode = "a"
+        else
+            if !isfile(checkpoint_path)
+                error("Checkpoint file $checkpoint_path MISSING while results file exists and is not empty.")
+            elseif filesize(checkpoint_path) == 0
+                error("Checkpoint file $checkpoint_path EMPTY while results file exists and is not empty.")
+            end
+        end
+    else
+        current_combination = collect(1:combination_size)
+        processed_count = 0
+        strong_c3_count = 0
+        not_strong_c3_count = 0
+        write_mode = "w"
+    end
+
+    show_debug &&
+        @debug "Starting processing combinations of size $combination_size from combination $(current_combination)..."
     try
-        # disable default SIGINT handler to allow custom handling
-        Base.exit_on_sigint(false)
         open(results_path, write_mode) do result_out
-            # iterate over all combination sizes
-            for combination_size in starting_point:max_combination_size_length
-                while true
-                    # allow interrupting the process
-                    yield()
+            if write_mode == "a"
+                println(result_out, "") # ensure new line before appending
+            end
 
-                    codon_set = codons[current_combination]
+            while true
+                # allow interrupting the process
+                if cancel[]
+                    show_debug && @debug "Task with combination_size $combination_size cancelled."
+                    break #throw(InterruptException())
+                end
 
-                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
-                    if _contains_codon_rotation(codon_set)
-                        not_strong_c3_count += 1
+                codon_set = codons[current_combination]
+                comb_mask = _combination_to_mask(current_combination)
+
+                # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
+                if _mask_contains_codon_rotation(comb_mask, current_combination, rotation_masks)
+                    not_strong_c3_count += 1
+                else
+                    # check strong C3
+                    data = CodonGraphData(codon_set)
+                    construct_graph_data!(data; show_debug = false)
+                    if is_strong_c3(data; show_debug = false)
+                        codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
+                        println(
+                            result_out,
+                            "Strong C3: $codon_combination_string with size $(length(codon_set))",
+                        )
+                        strong_c3_count += 1
                     else
-                        # check strong C3
-                        data = CodonGraphData(codon_set)
-                        construct_graph_data!(data; show_debug = false)
-                        if is_strong_c3(data; show_debug = false)
-                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-                            println(
-                                result_out,
-                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
-                            )
-                            strong_c3_count += 1
-                        else
-                            not_strong_c3_count += 1
-                        end
+                        not_strong_c3_count += 1
                     end
+                end
 
-                    processed_count += 1
+                processed_count += 1
 
-                    # get next combination or break if none left
-                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
-                        current_combination = collect(1:(combination_size + 1))
-                        break
-                    end
+                # get next combination or break if none left
+                if !_increment_codon_set_combination!(current_combination, length_codon_set)
+                    current_combination = collect(1:(combination_size + 1))
+                    break
                 end
             end
         end
+        show_debug && @debug "Finished processing combinations of size $combination_size."
     catch err
+        show_debug && @debug "Error in processing combinations of size $combination_size: $err"
         rethrow(err)
     finally
-        # get last processed combination from last line in results file
-        last_processed_combination = _get_last_combination_indices_from_file(results_path)
-        # get next combination to be processed when resumed
-        current_combination = _get_next_combination(last_processed_combination, length_codon_set)
+        # println("FINALLY ENTERED for $combination_size.")
+        # save checkpoint
         _save_strong_c3_checkpoint!(
             checkpoint_path,
             current_combination,
@@ -255,13 +327,9 @@ function process_strong_c3_combinations(
             strong_c3_count,
             not_strong_c3_count,
         )
-        # remove empty last line from results file
-        _remove_empty_last_lines(results_path)
     end
 end
 
-
-# function to get 
 
 
 # generate the next combination of a codon set from the current combination
