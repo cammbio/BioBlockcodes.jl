@@ -58,6 +58,7 @@ export
     # strong C3 analysis
     process_strong_c3_combinations,
     process_strong_c3_combinations_by_combination_size,
+    process_strong_c3_combinations_by_combination_size_with_mask,
 
 
     # temporary helper

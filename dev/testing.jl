@@ -14,16 +14,184 @@ using BenchmarkTools
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
-const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-process_strong_c3_combinations_by_combination_size(
-    GCATCodes.ALL_CODONS,
-    1,
-    "files/results/test1.txt",
-    "files/checkpoints/test1_cp.txt",
-    stop_flag;
-    show_debug = true,
-)
+# Bit für einen 1-basierten Codon-Index setzen.
+@inline codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
+
+# Baue für jedes Codon die Maske seiner beiden Rotationen.
+function build_rotation_masks(codons::Vector{LongDNA{4}})
+    rotation_masks = Vector{UInt64}(undef, length(codons))
+    @inbounds for (i, codon) in enumerate(codons)
+        shift_1 = left_shift_codon(codon, 1)
+        shift_2 = left_shift_codon(codon, 2)
+        index_shift_1 = findfirst(==(shift_1), codons)
+        index_shift_2 = findfirst(==(shift_2), codons)
+        rotation_masks[i] = codon_bit(index_shift_1) | codon_bit(index_shift_2)
+    end
+    return rotation_masks
+end
+
+# Prüft, ob ein neuer Codon-Index in Konflikt mit vorhandenen Bits steht.
+@inline function has_rotation(mask::UInt64, codon_idx::Int, rotation_masks::Vector{UInt64})
+    return (mask & rotation_masks[codon_idx]) != 0
+end
+
+# Wandelt eine Bitmaske in den zugehörigen Codon-Vektor (für is_strong_c3).
+function mask_to_codonset(mask::UInt64, codons::Vector{LongDNA{4}})
+    codon_set_combination = Vector{LongDNA{4}}(undef, count_ones(mask))
+    i = 1
+    mask_copy = mask
+    while mask_copy != 0
+        bit = trailing_zeros(mask_copy)
+        codon_set_combination[i] = codons[bit + 1]
+        mask_copy &= mask_copy - 1
+        i += 1
+    end
+    return codon_set_combination
+end
+
+# Liefert Kandidaten der Größe k+1 aus starken Masken der Größe k (Apriori-Join).
+function join_strong_masks(strong_masks::Vector{UInt64}, target_size::Int)
+    candidates = UInt64[]
+    sorted = sort(strong_masks)
+    n = length(sorted)
+    for i in 1:(n - 1)
+        base = sorted[i]
+        for j in (i + 1):n
+            other = sorted[j]
+            diff = xor(base, other)
+            # Zwei verschiedene Bits → gleiche (k-1)-Basis, ein neues Element
+            if count_ones(diff) == 2
+                new_mask = base | other
+                if count_ones(new_mask) == target_size
+                    push!(candidates, new_mask)
+                end
+            elseif count_ones(diff) > 2
+                break # sortierte Ordnung: weitere j haben noch mehr Unterschiede
+            end
+        end
+    end
+    return unique!(candidates)
+end
+
+# Filtert Kandidaten, die schon bei den Rotationen scheitern; übrig gebliebene kannst du an is_strong_c3 geben.
+function filter_candidates_by_rotation(candidates::Vector{UInt64}, rotation_masks::Vector{UInt64})
+    keep = UInt64[]
+    for mask in candidates
+        m = mask
+        valid = true
+        while m != 0
+            bit = trailing_zeros(m)
+            idx = bit + 1
+            if has_rotation(mask, idx, rotation_masks)
+                valid = false
+                break
+            end
+            m &= m - 1
+        end
+        valid && push!(keep, mask)
+    end
+    return keep
+end
+
+const stop_flag = Base.Threads.Atomic{Bool}(false)
+codons = GCATCodes.ALL_CODONS
+
+function bench_plain(test_max_size)
+    res_path = "files/test$(test_max_size).txt"
+    cp_path = "files/test$(test_max_size)_cp.txt"
+    # remove res_path and cp_path
+    isfile(res_path) && rm(res_path)
+    isfile(cp_path) && rm(cp_path)
+    process_strong_c3_combinations_by_combination_size(
+        codons,
+        test_max_size,
+        res_path,
+        cp_path,
+        stop_flag;
+        show_debug = false,
+    )
+end
+
+function bench_mask(test_max_size)
+    res_path = "files/test$(test_max_size)_mask.txt"
+    cp_path = "files/test$(test_max_size)_cp_mask.txt"
+    # remove res_path and cp_path
+    isfile(res_path) && rm(res_path)
+    isfile(cp_path) && rm(cp_path)
+    process_strong_c3_combinations_by_combination_size_with_mask(
+        codons,
+        test_max_size,
+        res_path,
+        cp_path,
+        stop_flag;
+        show_debug = false,
+    )
+end
+
+test_min_size = 1
+test_max_size = 4
+
+for i in test_min_size:test_max_size
+    println("Running benchmark for combination size $i")
+    @btime bench_plain($i)
+    @btime bench_mask($i)
+end
+
+bench_plain(test_max_size)
+bench_mask(test_max_size)
+@btime bench_plain($test_max_size)
+@btime bench_mask($test_max_size)
+
+
+
+# check if results and checkpoints are identical
+orig_file = "files/results/test$(test_max_size).txt"
+test_file = "files/test$(test_max_size).txt"
+test_file_mask = "files/test$(test_max_size)_masks.txt"
+
+
+cp_orig_file = "files/checkpoints/test$(test_max_size)_cp.txt"
+cp_test_file = "files/test$(test_max_size)_cp.txt"
+cp_test_file_mask = "files/test$(test_max_size)_masks_cp.txt"
+
+read(orig_file) == read(test_file)
+read(orig_file) == read(test_file_mask)
+read(cp_orig_file) == read(cp_test_file)
+read(cp_orig_file) == read(cp_test_file_mask)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # function to get processed count from current combination
@@ -40,7 +208,8 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
     return rank
 end
 
-_get_processed_count_from_combination([1, 2, 3])
+indices = _get_last_combination_indices_from_file("files/results/test8.txt")
+_get_processed_count_from_combination(indices)
 
 for i in 7:10
     println("--------------------------------- Combination size: $i ---------------------------------")
