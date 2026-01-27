@@ -15,152 +15,43 @@ global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
 
-# Bit für einen 1-basierten Codon-Index setzen.
-@inline codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
-
-# Baue für jedes Codon die Maske seiner beiden Rotationen.
-function build_rotation_masks(codons::Vector{LongDNA{4}})
-    rotation_masks = Vector{UInt64}(undef, length(codons))
-    @inbounds for (i, codon) in enumerate(codons)
-        shift_1 = left_shift_codon(codon, 1)
-        shift_2 = left_shift_codon(codon, 2)
-        index_shift_1 = findfirst(==(shift_1), codons)
-        index_shift_2 = findfirst(==(shift_2), codons)
-        rotation_masks[i] = codon_bit(index_shift_1) | codon_bit(index_shift_2)
-    end
-    return rotation_masks
-end
-
-# Prüft, ob ein neuer Codon-Index in Konflikt mit vorhandenen Bits steht.
-@inline function has_rotation(mask::UInt64, codon_idx::Int, rotation_masks::Vector{UInt64})
-    return (mask & rotation_masks[codon_idx]) != 0
-end
-
-# Wandelt eine Bitmaske in den zugehörigen Codon-Vektor (für is_strong_c3).
-function mask_to_codonset(mask::UInt64, codons::Vector{LongDNA{4}})
-    codon_set_combination = Vector{LongDNA{4}}(undef, count_ones(mask))
-    i = 1
-    mask_copy = mask
-    while mask_copy != 0
-        bit = trailing_zeros(mask_copy)
-        codon_set_combination[i] = codons[bit + 1]
-        mask_copy &= mask_copy - 1
-        i += 1
-    end
-    return codon_set_combination
-end
-
-# Liefert Kandidaten der Größe k+1 aus starken Masken der Größe k (Apriori-Join).
-function join_strong_masks(strong_masks::Vector{UInt64}, target_size::Int)
-    candidates = UInt64[]
-    sorted = sort(strong_masks)
-    n = length(sorted)
-    for i in 1:(n - 1)
-        base = sorted[i]
-        for j in (i + 1):n
-            other = sorted[j]
-            diff = xor(base, other)
-            # Zwei verschiedene Bits → gleiche (k-1)-Basis, ein neues Element
-            if count_ones(diff) == 2
-                new_mask = base | other
-                if count_ones(new_mask) == target_size
-                    push!(candidates, new_mask)
-                end
-            elseif count_ones(diff) > 2
-                break # sortierte Ordnung: weitere j haben noch mehr Unterschiede
-            end
-        end
-    end
-    return unique!(candidates)
-end
-
-# Filtert Kandidaten, die schon bei den Rotationen scheitern; übrig gebliebene kannst du an is_strong_c3 geben.
-function filter_candidates_by_rotation(candidates::Vector{UInt64}, rotation_masks::Vector{UInt64})
-    keep = UInt64[]
-    for mask in candidates
-        m = mask
-        valid = true
-        while m != 0
-            bit = trailing_zeros(m)
-            idx = bit + 1
-            if has_rotation(mask, idx, rotation_masks)
-                valid = false
-                break
-            end
-            m &= m - 1
-        end
-        valid && push!(keep, mask)
-    end
-    return keep
-end
-
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 codons = GCATCodes.ALL_CODONS
 
-function bench_plain(test_max_size)
-    res_path = "files/test$(test_max_size).txt"
-    cp_path = "files/test$(test_max_size)_cp.txt"
-    # remove res_path and cp_path
-    isfile(res_path) && rm(res_path)
-    isfile(cp_path) && rm(cp_path)
-    process_strong_c3_combinations_by_combination_size(
-        codons,
-        test_max_size,
-        res_path,
-        cp_path,
-        stop_flag;
-        show_debug = false,
-    )
-end
+isfile("files/test_plain.txt") && rm("files/test_plain.txt")
+isfile("files/test_cp_plain.txt") && rm("files/test_cp_plain.txt")
+isfile("files/test_mask.txt") && rm("files/test_mask.txt")
+isfile("files/test_cp_mask.txt") && rm("files/test_cp_mask.txt")
 
-function bench_mask(test_max_size)
-    res_path = "files/test$(test_max_size)_mask.txt"
-    cp_path = "files/test$(test_max_size)_cp_mask.txt"
-    # remove res_path and cp_path
-    isfile(res_path) && rm(res_path)
-    isfile(cp_path) && rm(cp_path)
-    process_strong_c3_combinations_by_combination_size_with_mask(
-        codons,
-        test_max_size,
-        res_path,
-        cp_path,
-        stop_flag;
-        show_debug = false,
-    )
-end
+process_strong_c3_combinations_by_combination_size(
+    GCATCodes.ALL_CODONS,
+    2,
+    "files/test_plain.txt",
+    "files/test_cp_plain.txt",
+    stop_flag;
+    show_debug = true,
+)
 
-test_min_size = 1
-test_max_size = 4
 
-for i in test_min_size:test_max_size
-    println("Running benchmark for combination size $i")
-    @btime bench_plain($i)
-    @btime bench_mask($i)
-end
-
-bench_plain(test_max_size)
-bench_mask(test_max_size)
-@btime bench_plain($test_max_size)
-@btime bench_mask($test_max_size)
-
+process_strong_c3_combinations_by_combination_size_with_mask(
+    GCATCodes.ALL_CODONS,
+    2,
+    "files/test_mask.txt",
+    "files/test_cp_mask.txt",
+    stop_flag;
+    show_debug = true,
+)
 
 
 # check if results and checkpoints are identical
-orig_file = "files/results/test$(test_max_size).txt"
-test_file = "files/test$(test_max_size).txt"
-test_file_mask = "files/test$(test_max_size)_masks.txt"
+test_file = "files/test_plain.txt"
+test_file_mask = "files/test_mask.txt"
 
+cp_test_file = "files/test_cp_plain.txt"
+cp_test_file_mask = "files/test_cp_mask.txt"
 
-cp_orig_file = "files/checkpoints/test$(test_max_size)_cp.txt"
-cp_test_file = "files/test$(test_max_size)_cp.txt"
-cp_test_file_mask = "files/test$(test_max_size)_masks_cp.txt"
-
-read(orig_file) == read(test_file)
-read(orig_file) == read(test_file_mask)
-read(cp_orig_file) == read(cp_test_file)
-read(cp_orig_file) == read(cp_test_file_mask)
-
-
+read(test_file) == read(test_file_mask)
+read(cp_test_file) == read(cp_test_file_mask)
 
 
 
@@ -1066,3 +957,61 @@ end
 
 ab1(count, codon_set)
 ab2(count, codon_set)
+
+const MICRO_ITERS = 1_000_000
+codons = GCATCodes.ALL_CODONS
+rotation_masks = GCATCodes._build_rotation_masks(codons)
+
+index_map = Dict{LongDNA{4}, Int}()
+@inbounds for (i, c) in enumerate(codons)
+    index_map[c] = i
+end
+
+base_idx = 1
+base = codons[base_idx]
+idx1 = index_map[left_shift_codon(base, 1)]
+idx2 = index_map[left_shift_codon(base, 2)]
+extra_idx = base_idx == 1 ? 2 : 1
+if extra_idx == idx1 || extra_idx == idx2
+    extra_idx = 3
+end
+combination = [base_idx, idx1, idx2, extra_idx]
+
+function _reject_plain_once(codons, combination)
+    codon_set = codons[combination]
+    return _contains_codon_rotation(codon_set)
+end
+
+function _reject_mask_once(rotation_masks, combination)
+    comb_mask = GCATCodes._combination_to_mask(combination)
+    return GCATCodes._mask_contains_codon_rotation(comb_mask, combination, rotation_masks)
+end
+
+function _micro_reject_plain(codons, combination, iters)
+    hits = 0
+    for _ in 1:iters
+        _reject_plain_once(codons, combination) && (hits += 1)
+    end
+    return hits
+end
+
+function _micro_reject_mask(rotation_masks, combination, iters)
+    hits = 0
+    for _ in 1:iters
+        _reject_mask_once(rotation_masks, combination) && (hits += 1)
+    end
+    return hits
+end
+
+trial_plain = @benchmark _micro_reject_plain($codons, $combination, $MICRO_ITERS) samples = 500 evals = 1
+trial_mask =
+    @benchmark _micro_reject_mask($rotation_masks, $combination, $MICRO_ITERS) samples = 500 evals = 1
+m_plain = median(trial_plain).time
+m_mask = median(trial_mask).time
+println("plain: $(m_plain) ns for $MICRO_ITERS iterations")
+println("mask : $(m_mask) ns for $MICRO_ITERS iterations")
+if m_mask < m_plain
+    println("speedup: $(round(m_plain / m_mask, digits = 2))x (mask faster)")
+else
+    println("speedup: $(round(m_mask / m_plain, digits = 2))x (plain faster)")
+end
