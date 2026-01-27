@@ -70,52 +70,6 @@ const ALL_CODONS =
         "TTG",
     ])
 
-# bitmask helpers ------------------------------------------------------------
-# Bit für einen 1-basierten Codon-Index setzen.
-@inline codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
-
-# Baue für jedes Codon die Maske seiner beiden Rotationen. Nutzt Map für O(1)-Lookup.
-function _build_rotation_masks(codons::Vector{LongDNA{4}})
-    index_map = Dict{LongDNA{4}, Int}()
-    @inbounds for (i, c) in enumerate(codons)
-        index_map[c] = i
-    end
-
-    masks = Vector{UInt64}(undef, length(codons))
-    @inbounds for (i, codon) in enumerate(codons)
-        rot1 = left_shift_codon(codon, 1)
-        rot2 = left_shift_codon(codon, 2)
-        idx1 = get(index_map, rot1, nothing)
-        idx2 = get(index_map, rot2, nothing)
-        idx1 === nothing && error("Rotation not found in codons: $rot1 (from $codon)")
-        idx2 === nothing && error("Rotation not found in codons: $rot2 (from $codon)")
-        masks[i] = codon_bit(idx1) | codon_bit(idx2)
-    end
-    return masks
-end
-
-# Wandelt eine Kombi-Liste in eine Bitmaske.
-@inline function _combination_to_mask(combination::Vector{Int})
-    mask = UInt64(0)
-    @inbounds for idx in combination
-        mask |= codon_bit(idx)
-    end
-    return mask
-end
-
-# Prüft Rotation-Konflikt per Maske (entspricht _contains_codon_rotation, aber mit Bits).
-@inline function _mask_contains_codon_rotation(
-    mask::UInt64,
-    combination::Vector{Int},
-    rotation_masks::Vector{UInt64},
-)
-    @inbounds for idx in combination
-        if (mask & rotation_masks[idx]) != 0
-            return true
-        end
-    end
-    return false
-end
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # stream all combinations for a certain combination_size, resumable via checkpoint file
 function process_strong_c3_combinations_by_combination_size(
@@ -283,10 +237,10 @@ function process_strong_c3_combinations_by_combination_size_with_mask(
                 end
 
                 codon_set = codons[current_combination]
-                comb_mask = _combination_to_mask(current_combination)
+                combination_mask = _combination_to_mask(current_combination)
 
                 # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
-                if _mask_contains_codon_rotation(comb_mask, current_combination, rotation_masks)
+                if _mask_contains_codon_rotation(current_combination, combination_mask, rotation_masks)
                     not_strong_c3_count += 1
                 else
                     # check strong C3
@@ -535,4 +489,54 @@ function _get_filesize_mb(path::AbstractString)
     isfile(path) || error("File not found: $path")
 
     return filesize(path) / (1024^2)
+end
+
+
+# set bit for a 1-based codon index
+@inline _set_codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
+
+
+# build rotation masks for all codons
+function _build_rotation_masks(codons::Vector{LongDNA{4}})
+    index_dict = Dict{LongDNA{4}, Int}()
+    @inbounds for (index, codon) in enumerate(codons)
+        index_dict[codon] = index
+    end
+
+    masks = Vector{UInt64}(undef, length(codons))
+    @inbounds for (index, codon) in enumerate(codons)
+        alpha_1 = left_shift_codon(codon, 1)
+        alpha_2 = left_shift_codon(codon, 2)
+        index_alpha_1 = get(index_dict, alpha_1, nothing)
+        index_alpha_2 = get(index_dict, alpha_2, nothing)
+        index_alpha_1 === nothing && error("First rotation not found in codons: $alpha_1 (from $codon)")
+        index_alpha_2 === nothing && error("Second rotation not found in codons: $alpha_2 (from $codon)")
+        masks[index] = _set_codon_bit(index_alpha_1) | _set_codon_bit(index_alpha_2)
+    end
+    return masks
+end
+
+
+# convert combination to mask
+@inline function _combination_to_mask(combination::Vector{Int})
+    mask = UInt64(0)
+    @inbounds for index in combination
+        mask |= _set_codon_bit(index)
+    end
+    return mask
+end
+
+
+# check if mask contains any codon rotation for the given combination
+@inline function _mask_contains_codon_rotation(
+    combination::Vector{Int},
+    mask::UInt64,
+    rotation_masks::Vector{UInt64},
+)
+    @inbounds for index in combination
+        if (mask & rotation_masks[index]) != 0
+            return true
+        end
+    end
+    return false
 end

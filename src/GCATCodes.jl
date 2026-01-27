@@ -56,7 +56,6 @@ export
     line_to_codon_set,
     print_to_file,
     # strong C3 analysis
-    process_strong_c3_combinations,
     process_strong_c3_combinations_by_combination_size,
     process_strong_c3_combinations_by_combination_size_with_mask,
 
@@ -72,5 +71,9 @@ export
     _get_next_combination,
     _get_last_line,
     _remove_empty_last_lines,
-    _contains_codon_rotation
+    _contains_codon_rotation,
+    _build_rotation_masks,
+    _combination_to_mask,
+    _mask_contains_codon_rotation,
+    _set_codon_bit
 end
