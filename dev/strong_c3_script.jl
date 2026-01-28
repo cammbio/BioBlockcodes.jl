@@ -42,7 +42,7 @@ function run_jobs_ordered(;
                 job_states[combination_size] = :running
                 unlock(job_thread_lock)
                 try
-                    process_strong_c3_combinations_by_combination_size(
+                    process_strong_c3_combinations_by_combination_size_with_mask(
                         GCATCodes.ALL_CODONS,
                         combination_size,
                         "files/results/test$(combination_size).txt",

@@ -7,7 +7,7 @@ using NetworkLayout
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    show_graph(data::CodonGraphData; show_debug::Bool = false)
+    show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
 
 Create and display a plot representing `data`.
 
@@ -79,7 +79,7 @@ end
 
 
 """
-    show_multiple_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+    show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
 
 Create and display a grid of plots for `data_list`.
 
@@ -163,33 +163,7 @@ function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debu
 end
 
 
-"""
-    _grid_size(amount_graphs::Int) -> Tuple{Int, Int}
-
-Return the grid size (number_rows, number_columns) for `amount_graphs`.
-
-# Arguments
-
-  - `amount_graphs::Int`: Number of graphs to place.
-
-# Keyword Arguments
-
-  - None.
-
-# Returns
-
-  - `Tuple{Int, Int}`: `(number_rows, number_columns)` grid size.
-
-# Throws
-
-  - None.
-
-# Example
-
-```julia
-_grid_size(5)
-```
-"""
+# determine number of columns for grid layout based on amount of graphs
 function _get_columns_amount(amount_graphs::Int)
     number_columns = max(1, ceil(Int, sqrt(amount_graphs)))
     return number_columns

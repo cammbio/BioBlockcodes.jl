@@ -71,7 +71,7 @@ function func_mask(
     strong_c3_count = 0
     not_strong_c3_count = 0
 
-    rotation_masks = _build_rotation_masks(codons)
+    rotation_masks = _get_rotation_masks(codons)
 
     while true
         # allow interrupting the process

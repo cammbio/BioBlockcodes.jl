@@ -9,6 +9,7 @@ include("PlotUtils.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
 include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
 include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
+include("StrongC3AnalysisPlain.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 
 
 # export types
@@ -56,8 +57,9 @@ export
     line_to_codon_set,
     print_to_file,
     # strong C3 analysis
-    process_strong_c3_combinations_by_combination_size,
     process_strong_c3_combinations_by_combination_size_with_mask,
+    # strong C3 analysis plain
+    process_strong_c3_combinations_by_combination_size,
 
 
     # temporary helper
@@ -71,9 +73,9 @@ export
     _get_next_combination,
     _get_last_line,
     _remove_empty_last_lines,
-    _contains_codon_rotation,
-    _build_rotation_masks,
+    _contains_rotation,
+    _get_rotation_masks,
     _combination_to_mask,
-    _mask_contains_codon_rotation,
+    _mask_contains_rotation,
     _set_codon_bit
 end

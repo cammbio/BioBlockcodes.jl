@@ -2,4 +2,6 @@
 "processed_count" = 487.635
 "strong_c3_count" = 317.677
 "not_strong_c3_count" = 169.958
+"processed_percentage" = 100.00%
 "strong_c3_percentage" = 65.15%
+"not_strong_c3_percentage" = 34.85%

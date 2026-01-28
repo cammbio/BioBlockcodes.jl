@@ -146,8 +146,8 @@ end
 """
     add_edge_by_label!(
         data::CodonGraphData,
-        from_label::String,
-        to_label::String;
+        src_label::String,
+        dst_label::String;
         show_debug::Bool = false,
     ) -> Bool
 

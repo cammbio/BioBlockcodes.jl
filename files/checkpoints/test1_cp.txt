@@ -2,4 +2,6 @@
 "processed_count" = 60
 "strong_c3_count" = 60
 "not_strong_c3_count" = 0
+"processed_percentage" = 100.00%
 "strong_c3_percentage" = 100.00%
+"not_strong_c3_percentage" = 0.00%
