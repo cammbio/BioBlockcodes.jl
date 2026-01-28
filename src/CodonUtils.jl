@@ -3,30 +3,6 @@
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
-# generate all combinations of a codon set by a specific size MAYBE DEPRECATED
-function get_codon_combinations_per_size(codon_set::Vector{LongDNA{4}}, combination_size::Int)
-    length_codon_set = length(codon_set)
-
-    # do not allow combination_size <= 0
-    combination_size <= 0 && throw(ArgumentError("combination_size cannot be <= 0"))
-    # do not allow combination_size > length(codon_set)
-    combination_size > length_codon_set &&
-        throw(ArgumentError("combination_size is bigger than codon_set length"))
-
-    combos = Vector{Vector{LongDNA{4}}}()
-    # get first combination
-    combination = collect(1:combination_size)
-    push!(combos, codon_set[combination])
-
-    # get next combinations
-    while _increment_codon_set_combination!(combination, length_codon_set)
-        push!(combos, codon_set[combination])
-    end
-
-    return combos
-end
-
-
 """
     get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
 

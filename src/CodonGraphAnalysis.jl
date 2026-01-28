@@ -123,7 +123,7 @@ end
 
 
 """
-    is_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false) -> Bool
+    is_codon_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false) -> Bool
 
 Return `true` if both graphs have identical structure and labels.
 

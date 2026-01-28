@@ -32,15 +32,17 @@ process_strong_c3_combinations_by_combination_size(
     show_debug = true,
 )
 
-
 process_strong_c3_combinations_by_combination_size_with_mask(
     GCATCodes.ALL_CODONS,
-    2,
+    4,
     "files/test_mask.txt",
     "files/test_cp_mask.txt",
     stop_flag;
     show_debug = true,
 )
+
+stop_flag[] = true
+stop_flag[] = false
 
 
 # check if results and checkpoints are identical
@@ -53,17 +55,65 @@ cp_test_file_mask = "files/test_cp_mask.txt"
 read(test_file) == read(test_file_mask)
 read(cp_test_file) == read(cp_test_file_mask)
 
+using BenchmarkTools
+using Base.Threads: Atomic
 
+function ab1()
+    s = 0
+    for i in 1:iters
+        if cancel[] && (s += 1)
+        end
+    end
+    s
+end
 
+function ab2(c)
+    s = 0
+    for i in 1:iters
+        c -= 1
+        if c == 0
+            cancel[] && (s += 1)
+            c = 100_000
+        end
+    end
+    s
+end
 
+cancel = Atomic{Bool}(false)
+iters = 1_000_000
+c = 1_000
 
+ab1()
+ab2(c)
 
+@btime ab1() samples = 500 evals = 1
+@btime ab2(c) samples = 500 evals = 1
+t1 = @benchmark ab1() samples = 500 evals = 1
+t2 = @benchmark ab2(c) samples = 500 evals = 1
 
+for i in 2:20
+    maximal_combinations = binomial(60, i)
+    println("Combination size: $i, maximal combinations: $maximal_combinations")
+    checkpoint = _load_strong_c3_checkpoint("files/checkpoints/test$(i)_cp.txt")
+    current_combination = checkpoint.current_combination
+    processed_count = checkpoint.processed_count
+    strong_c3_count = checkpoint.strong_c3_count
+    not_strong_c3_count = processed_count - strong_c3_count
+    processed_precentage = processed_count / maximal_combinations * 100
+    strong_c3_percentage = strong_c3_count / processed_count * 100
+    not_strong_c3_percentage = not_strong_c3_count / processed_count * 100
 
-
-
-
-
+    _save_strong_c3_checkpoint!(
+        "files/checkpoints/test$(i)_cp.txt",
+        current_combination,
+        processed_count,
+        strong_c3_count,
+        not_strong_c3_count,
+        processed_precentage,
+        strong_c3_percentage,
+        not_strong_c3_percentage,
+    )
+end
 
 
 
@@ -121,81 +171,6 @@ for i in 7:10
         "processed_count: $processed_count, strong_c3_count: $strong_c3_count, not_strong_c3_count: $not_strong_c3_count",
     )
 end
-
-process_strong_c3_combinations_by_combination_size(
-    GCATCodes.ALL_CODONS,
-    1,
-    "files/test.txt",
-    "files/test_cp.txt",
-    stop_flag;
-    show_debug = true,
-)
-
-
-lengths = 1:20
-tasks = [
-    @spawn begin
-        k = len
-        res = "files/tests/strong_c3_cs$(k).txt"
-        chk = "files/tests/strong_c3_cs$(k)_cp.txt"
-        process_strong_c3_combinations_by_combination_size(
-            GCATCodes.ALL_CODONS,
-            k,
-            res,
-            chk,
-            false,               # kein Checkpoint laden
-            Atomic{Bool}(false); # eigener Cancel-Schalter
-            show_debug = false,
-        )
-    end for len in lengths
-]
-
-fetch.(tasks)  # wartet, bis alle fertig sind
-
-
-using Base.Threads: Atomic
-using Base.Threads
-stopflag = Atomic{Bool}(false)
-
-process_strong_c3_combinations_by_combination_size(
-    GCATCodes.ALL_CODONS,
-    6,
-    "files/tests/strong_c3_cs5.txt",
-    "files/tests/strong_c3_cs5_cp.txt",
-    false,
-    stopflag;
-    show_debug = false,
-)
-
-stopflag[] = true
-
-const MAX_LENGTH::Int = 20
-const STRONG_C3_RESULTS_PATH = "files/results/strong_c3_codon_combinations.txt"
-const STRONG_C3_CHECKPOINT_PATH = "files/checkpoints/strong_c3_checkpoint.txt"
-const TEST_RESULTS_PATH = "files/results/test_strong_c3_codon_combinations.txt"
-const TEST_CHECKPOINT_PATH = "files/checkpoints/test_strong_c3_checkpoint.txt"
-
-# TEST
-# start fresh
-const TEST_LENGTH = 4
-process_strong_c3_combinations(GCATCodes.ALL_CODONS, 2, TEST_RESULTS_PATH, TEST_CHECKPOINT_PATH, false)
-
-# resume
-process_strong_c3_combinations(
-    GCATCodes.ALL_CODONS,
-    TEST_LENGTH,
-    TEST_RESULTS_PATH,
-    TEST_CHECKPOINT_PATH,
-    true,
-)
-
-@benchmark process_strong_c3_combinations(
-    GCATCodes.ALL_CODONS,
-    TEST_LENGTH,
-    TEST_RESULTS_PATH,
-    TEST_CHECKPOINT_PATH,
-    false,
-) samples = 5
 
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
@@ -545,418 +520,6 @@ open("files/216_maximal_self_complementary_c3_codes_array.txt", "r") do f
 
     end
 end
-
-# -------------------------------------------------- TESTING PARALLELISM --------------------------------------------------
-using BenchmarkTools
-using Base.Threads: Atomic
-using Base.Threads
-
-Threads.nthreads()
-
-
-function test1(
-    codons::Vector{LongDNA{4}},
-    max_combination_size_length::Int,
-    results_path::AbstractString,
-    checkpoint_path::AbstractString,
-    load_checkpoint::Bool;
-    show_debug::Bool = false,
-    cancel::Atomic{Bool} = Atomic{Bool}(false),
-)
-    # load from checkpoint or start from scratch
-    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
-    current_combination = collect(1:max_combination_size_length)
-    processed_count = load_checkpoint ? check_point.processed_count : 0
-    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
-    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
-
-    # adjust variables based on load_checkpoint
-    write_mode = load_checkpoint ? "a" : "w"
-
-    # get length of codon set
-    length_codon_set = length(codons)
-    # disable default SIGINT handler to allow custom handling
-    try
-        open(results_path, write_mode) do result_out
-            # iterate over all combination sizes
-            for combination_size in max_combination_size_length:max_combination_size_length
-                while true
-                    # allow interrupting the process
-                    cancel[] && throw(InterruptException())
-
-                    codon_set = codons[current_combination]
-
-                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
-                    if _contains_codon_rotation(codon_set)
-                        not_strong_c3_count += 1
-                    else
-                        # check strong C3
-                        data = CodonGraphData(codon_set)
-                        construct_graph_data!(data; show_debug = false)
-                        if is_strong_c3(data; show_debug = false)
-                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-                            println(
-                                result_out,
-                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
-                            )
-                            strong_c3_count += 1
-                        else
-                            not_strong_c3_count += 1
-                        end
-                    end
-
-                    processed_count += 1
-
-                    # get next combination or break if none left
-                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
-                        current_combination = collect(1:(combination_size + 1))
-                        break
-                    end
-                end
-            end
-        end
-    catch err
-        err isa InterruptException || rethrow(err)
-    finally
-    end
-end
-
-function test2(
-    codons::Vector{LongDNA{4}},
-    max_combination_size_length::Int,
-    results_path::AbstractString,
-    checkpoint_path::AbstractString,
-    load_checkpoint::Bool;
-    show_debug::Bool = false,
-    cancel::Atomic{Bool} = Atomic{Bool}(false),
-)
-    # load from checkpoint or start from scratch
-    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
-    current_combination = collect(1:max_combination_size_length)
-    processed_count = load_checkpoint ? check_point.processed_count : 0
-    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
-    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
-
-    # adjust variables based on load_checkpoint
-    write_mode = load_checkpoint ? "a" : "w"
-
-    # get length of codon set
-    length_codon_set = length(codons)
-    # disable default SIGINT handler to allow custom handling
-    try
-        open(results_path, write_mode) do result_out
-            # iterate over all combination sizes
-            for combination_size in max_combination_size_length:max_combination_size_length
-                while true
-                    # allow interrupting the process
-                    cancel[] && throw(InterruptException())
-
-                    codon_set = codons[current_combination]
-
-                    # check strong C3
-                    data = CodonGraphData(codon_set)
-                    construct_graph_data!(data; show_debug = false)
-                    if is_strong_c3(data; show_debug = false)
-                        codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-                        println(
-                            result_out,
-                            "Strong C3: $codon_combination_string with size $(length(codon_set))",
-                        )
-                        strong_c3_count += 1
-                    else
-                        not_strong_c3_count += 1
-                    end
-
-                    processed_count += 1
-
-                    # get next combination or break if none left
-                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
-                        current_combination = collect(1:(combination_size + 1))
-                        break
-                    end
-                end
-            end
-        end
-    catch err
-        err isa InterruptException || rethrow(err)
-    finally
-    end
-end
-
-
-stopflag = Atomic{Bool}(false)
-
-test1(
-    GCATCodes.ALL_CODONS,
-    3,
-    "files/tests/test1_results.txt",
-    "files/tests/test1_cp.txt",
-    false;
-    cancel = stopflag,
-)
-
-test2(
-    GCATCodes.ALL_CODONS,
-    3,
-    "files/tests/test2_results.txt",
-    "files/tests/test2_cp.txt",
-    false;
-    cancel = stopflag,
-)
-
-
-TEST_LENGTH2 = 4
-# @benchmark test1(
-#     $GCATCodes.ALL_CODONS,
-#     $TEST_LENGTH2,
-#     "files/tests/test1_results.txt",
-#     "files/tests/test1_cp.txt",
-#     false;
-#     cancel = stopflag,
-# ) samples = 5
-# @benchmark test2(
-#     $GCATCodes.ALL_CODONS,
-#     $TEST_LENGTH2,
-#     "files/tests/test2_results.txt",
-#     "files/tests/test2_cp.txt",
-#     false;
-#     cancel = stopflag,
-# ) samples = 5
-
-
-t1 = Threads.@spawn begin
-    @benchmark test1(
-        $GCATCodes.ALL_CODONS,
-        $TEST_LENGTH2,
-        "files/tests/test1_results.txt",
-        "files/tests/test1_cp.txt",
-        false;
-        cancel = stopflag,
-    ) samples = 5
-end
-
-t2 = Threads.@spawn begin
-    @benchmark test2(
-        $GCATCodes.ALL_CODONS,
-        $TEST_LENGTH2,
-        "files/tests/test2_results.txt",
-        "files/tests/test2_cp.txt",
-        false;
-        cancel = stopflag,
-    ) samples = 5
-end
-
-t3 = Threads.@spawn begin
-    @benchmark test1(
-        $GCATCodes.ALL_CODONS,
-        8,
-        "files/tests/test3_results.txt",
-        "files/tests/test3_cp.txt",
-        false;
-        cancel = stopflag,
-    ) samples = 5
-end
-
-t4 = Threads.@spawn begin
-    @benchmark test2(
-        $GCATCodes.ALL_CODONS,
-        8,
-        "files/tests/test4_results.txt",
-        "files/tests/test4_cp.txt",
-        false;
-        cancel = stopflag,
-    ) samples = 5
-end
-
-fetch.((t1, t2))
-fetch.((t3, t4))
-
-for (i, t) in enumerate(tasks)
-    @info "task" idx = i done = istaskdone(t) failed = istaskfailed(t) state = t.state
-end
-
-# compare if 2 files are identical
-same = read("files/tests/test1_results.txt") == read("files/tests/test2_results.txt")
-same = read("files/tests/test3_results.txt") == read("files/tests/test4_results.txt")
-
-
-
-# abbrechen
-stopflag[] = true
-foreach(t -> istaskdone(t) || istaskfailed(t) || schedule(t, InterruptException()), tasks)
-# warten und Interrupts schlucken
-for t in tasks
-    try
-        fetch(t)
-    catch err
-        err isa InterruptException || rethrow(err)
-    end
-end
-
-
-
-
-function test3(
-    codons::Vector{LongDNA{4}},
-    max_combination_size_length::Int,
-    results_path::AbstractString,
-    checkpoint_path::AbstractString,
-    load_checkpoint::Bool;
-    show_debug::Bool = false,
-    cancel::Atomic{Bool} = Atomic{Bool}(false),
-)
-    # load from checkpoint or start from scratch
-    check_point = load_checkpoint ? _load_strong_c3_checkpoint(checkpoint_path) : nothing
-    current_combination = collect(1:max_combination_size_length)
-    processed_count = load_checkpoint ? check_point.processed_count : 0
-    strong_c3_count = load_checkpoint ? check_point.strong_c3_count : 0
-    not_strong_c3_count = load_checkpoint ? check_point.not_strong_c3_count : 0
-
-    # adjust variables based on load_checkpoint
-    write_mode = load_checkpoint ? "a" : "w"
-
-    # get length of codon set
-    length_codon_set = length(codons)
-    # disable default SIGINT handler to allow custom handling
-    try
-        open(results_path, write_mode) do result_out
-            # iterate over all combination sizes
-            for combination_size in max_combination_size_length:max_combination_size_length
-                while true
-                    # allow interrupting the process
-                    cancel[] && throw(InterruptException())
-
-                    codon_set = codons[current_combination]
-
-                    # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon
-                    if _contains_codon_rotation(codon_set)
-                        not_strong_c3_count += 1
-                    else
-                        # check strong C3
-                        data = CodonGraphData(codon_set)
-                        construct_graph_data!(data; show_debug = false)
-                        if is_strong_c3(data; show_debug = false)
-                            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-                            println(
-                                result_out,
-                                "Strong C3: $codon_combination_string with size $(length(codon_set))",
-                            )
-                            strong_c3_count += 1
-                        else
-                            not_strong_c3_count += 1
-                        end
-                    end
-
-                    processed_count += 1
-
-                    # get next combination or break if none left
-                    if !_increment_codon_set_combination!(current_combination, length_codon_set)
-                        current_combination = collect(1:(combination_size + 1))
-                        break
-                    end
-                end
-            end
-        end
-    catch err
-        err isa InterruptException || rethrow(err)
-    finally
-    end
-end
-
-min_length3 = 1
-max_length3 = 10
-
-tasks = [
-    @spawn begin
-        tid = Threads.threadid()
-        println("Thread $tid started job $i")
-        try
-            test3(
-                GCATCodes.ALL_CODONS,
-                i,
-                "files/tests/test_results_task_$i.txt",
-                "files/tests/test_checkpoint_task_$i.txt",
-                false;
-                cancel = stopflag,
-            )
-            println("Thread $tid finished job $i")
-        catch err
-            if err isa InterruptException
-                println("Thread $tid interrupted job $i")
-            else
-                rethrow(err)
-            end
-        end
-    end for i in min_length3:max_length3
-]
-
-
-# abbrechen
-stopflag[] = true
-foreach(t -> istaskdone(t) || istaskfailed(t) || schedule(t, InterruptException()), tasks)
-# warten und Interrupts schlucken
-for t in tasks
-    try
-        fetch(t)
-    catch err
-        err isa InterruptException || rethrow(err)
-    end
-end
-
-Threads.@threads for _ in 1:Threads.nthreads()
-    @info "alive" thread = Threads.threadid()
-end
-
-for (i, t) in enumerate(tasks)
-    @info "task" idx = i state = t.state failed = istaskfailed(t) done = istaskdone(t)
-end
-
-
-codon_set = LongDNA{4}.(GCATCodes.ALL_CODONS[5:15])
-count = 0
-
-
-using Random
-
-num = 2
-for i in num:num
-    idxs = randperm(length(GCATCodes.ALL_CODONS))[1:i]
-    codon_set = LongDNA{4}.(GCATCodes.ALL_CODONS[idxs])
-    println("i: $i")
-    t1 = @benchmark ab1(count, codon_set)
-    t2 = @benchmark ab2(count, codon_set)
-    m1 = median(t1).time
-    m2 = median(t2).time
-
-    if m1 > m2
-        println("ab2 faster: m2: $(m2)ns, m1: $(m1)ns, ratio: $(round(m1 / m2, digits=2))")
-    else
-        println("ab1 faster: m2: $(m2)ns, m1: $(m1)ns, ratio: $(round(m2 / m1, digits=2))")
-    end
-end
-
-function ab1(count, codon_set)
-    open("files/tests/ab1_results.txt", "w") do result_out
-        data = CodonGraphData(codon_set)
-        construct_graph_data!(data)
-        if is_strong_c3(data; show_debug = false)
-            codon_combination_string = join("\"" .* string.(codon_set) .* "\"", ", ")
-            println(result_out, "Strong C3: $codon_combination_string with size $(length(codon_set))")
-            count += 1
-        else
-            count += 1
-        end
-    end
-end
-
-function ab2(count, codon_set)
-    if _contains_codon_rotation(codon_set)
-        count += 1
-    end
-end
-
-ab1(count, codon_set)
-ab2(count, codon_set)
 
 const MICRO_ITERS = 1_000_000
 codons = GCATCodes.ALL_CODONS

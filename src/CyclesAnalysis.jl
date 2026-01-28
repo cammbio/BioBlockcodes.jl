@@ -38,7 +38,13 @@ end
 function get_cycles_by_length(data::CodonGraphData, cycle_length::Int; show_debug::Bool = false)
     cycles = simplecycles(data.graph)
     cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
-    return cycles_filtered
+    # iterate all filtered cycles and convert vertice indices to labels
+    cycles_labeled = Vector{Vector{String}}()
+    for cycle in cycles_filtered
+        cycle_labeled = [data.all_vertex_labels[i] for i in cycle]
+        push!(cycles_labeled, cycle_labeled)
+    end
+    return cycles_labeled
 end
 
 
