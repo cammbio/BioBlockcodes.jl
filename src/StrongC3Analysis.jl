@@ -209,11 +209,10 @@ function _get_last_combination_indices_from_file(path::AbstractString)
 
     # find indices of codons in ALL_CODONS
     idxs = [findfirst(==(LongDNA{4}(c)), ALL_CODONS) for c in codons]
-    println(idxs)
     any(isnothing, idxs) && error("Codon not found in ALL_CODONS: $(codons[findfirst(isnothing, idxs)])")
 
     # sort indices
-    sort!(idxs)
+    # sort!(idxs)
     return idxs
 end
 
@@ -372,9 +371,9 @@ function _save_strong_c3_checkpoint!(
             "\"not_strong_c3_count\" = $(
        _get_number_with_commas(not_strong_c3_count))",
         )
-        println(out, "\"processed_percentage\" = $(@sprintf("%.2f%%", processed_percentage))")
-        println(out, "\"strong_c3_percentage\" = $(@sprintf("%.2f%%", strong_c3_percentage))")
-        println(out, "\"not_strong_c3_percentage\" = $(@sprintf("%.2f%%", not_strong_c3_percentage))")
+        println(out, "\"processed_percentage\" = $processed_percentage%")
+        println(out, "\"strong_c3_percentage\" = $strong_c3_percentage%")
+        println(out, "\"not_strong_c3_percentage\" = $not_strong_c3_percentage%")
     end
 
     return true
