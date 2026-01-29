@@ -51,9 +51,71 @@ ab2(c)
 @btime ab2(c) samples = 500 evals = 1
 
 
+# check if there is an empty line in a file
+function check_empty_lines_in_file(file_path::String)
+    open(file_path, "r") do f
+        line_number = 0
+        for line in eachline(f)
+            line_number += 1
+            if isempty(strip(line))
+                println("Empty line found at line number: $line_number")
+            end
+        end
+    end
+end
 
+check_empty_lines_in_file("files/results/result_7.txt")
+check_empty_lines_in_file("files/results/result_8.txt")
+check_empty_lines_in_file("files/results/result_9.txt")
+check_empty_lines_in_file("files/results/result_10.txt")
+check_empty_lines_in_file("files/results/result_11.txt")
+check_empty_lines_in_file("files/results/result_12.txt")
+check_empty_lines_in_file("files/results/result_13.txt")
+check_empty_lines_in_file("files/results/result_14.txt")
+check_empty_lines_in_file("files/results/result_15.txt")
+check_empty_lines_in_file("files/results/result_16.txt")
+check_empty_lines_in_file("files/results/result_17.txt")
+check_empty_lines_in_file("files/results/result_18.txt")
+check_empty_lines_in_file("files/results/result_19.txt")
+check_empty_lines_in_file("files/results/result_20.txt")
 
+# function to get combination from codon set
+function _get_combination_from_codon_set(codon_set::Vector{LongDNA{4}}, codons::Vector{LongDNA{4}})
+    combination = Vector{Int}()
+    codon_set_set = Set(codon_set)
+    @inbounds for (i, c) in enumerate(codons)
+        if c in codon_set_set
+            push!(combination, i)
+        end
+    end
+    return combination
+end
 
+codon_set = LongDNA{4}.(["AGC", "ATA", "ATG", "CAC", "CTC", "GTG", "TTG"])
+codon_set2 = LongDNA{4}.(["AGC", "ATA", "ATG", "CAC", "CTC", "TAC", "TAG"])
+println(_get_combination_from_codon_set(codon_set, codons))
+println(_get_combination_from_codon_set(codon_set2, codons))
+
+combination = _get_combination_from_codon_set(codon_set, codons)
+combination2 = _get_combination_from_codon_set(codon_set2, codons)
+
+for _ in 1:1
+    counter = 0
+    _increment_codon_set_combination!(combination, 60)
+    while combination != combination2
+        counter += 1
+        codon_set = codons[combination]
+        println("combination: $combination")
+        println("codon_set: $codon_set")
+        data = CodonGraphData(codon_set)
+        construct_graph_data!(data; show_debug = false)
+        if is_strong_c3(data; show_debug = false)
+            println("strong C3: $codon_set")
+        end
+        _increment_codon_set_combination!(combination, 60)
+    end
+    println(counter)
+end
 
 
 
