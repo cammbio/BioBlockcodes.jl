@@ -115,15 +115,47 @@ for i in 2:20
     )
 end
 
+for i in 5:5
+    res_file = "files/results/test$(i).txt"
+    println("Reading file for i: $i ")
+
+    if filesize(res_file) > 0
+        last_combination = _get_last_combination_indices_from_file(res_file)
+        println("last indices: $last_combination")
+        # if last_combination
+    end
+end
 
 
 
 
 
+read("files/results/test3.txt") == read("C:/Users/Filip/Desktop/results/test3.txt")
 
+# print each line of file
+open("C:/Users/Filip/Desktop/results/test1.txt", "r") do f
+    for line in eachline(f)
+        println(line)
+    end
+end
 
-
-
+# compare each line of two files
+for i in 1:20
+    println("Starting for $i")
+    file1 = "files/results/test$i.txt"
+    file2 = "C:/Users/Filip/Desktop/results/test$i.txt"
+    open(file1, "r") do f1
+        open(file2, "r") do f2
+            for (line1, line2) in zip(eachline(f1), eachline(f2))
+                if line1 != line2
+                    println("Difference found:")
+                    println("File 1: $line1")
+                    println("File 2: $line2")
+                end
+            end
+        end
+    end
+end
 
 
 

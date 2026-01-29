@@ -86,7 +86,7 @@ function process_strong_c3_combinations_by_combination_size_with_mask(
     rotation_masks = _get_rotation_masks(codons)
 
     # load from checkpoint or start from scratch
-    if isfile(results_path) && filesize(results_path) > 0
+    if isfile(results_path) #&& filesize(results_path) > 0
         if isfile(checkpoint_path) && filesize(checkpoint_path) > 0
             show_debug &&
                 @debug "Loading checkpoint from $checkpoint_path for combination_size $combination_size"
