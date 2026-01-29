@@ -18,45 +18,6 @@ global_logger(ConsoleLogger(Logging.Info)) # deactivate
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 codons = GCATCodes.ALL_CODONS
 
-isfile("files/test_plain.txt") && rm("files/test_plain.txt")
-isfile("files/test_cp_plain.txt") && rm("files/test_cp_plain.txt")
-isfile("files/test_mask.txt") && rm("files/test_mask.txt")
-isfile("files/test_cp_mask.txt") && rm("files/test_cp_mask.txt")
-
-process_strong_c3_combinations_by_combination_size(
-    GCATCodes.ALL_CODONS,
-    2,
-    "files/test_plain.txt",
-    "files/test_cp_plain.txt",
-    stop_flag;
-    show_debug = true,
-)
-
-process_strong_c3_combinations_by_combination_size_with_mask(
-    GCATCodes.ALL_CODONS,
-    4,
-    "files/test_mask.txt",
-    "files/test_cp_mask.txt",
-    stop_flag;
-    show_debug = true,
-)
-
-stop_flag[] = true
-stop_flag[] = false
-
-
-# check if results and checkpoints are identical
-test_file = "files/test_plain.txt"
-test_file_mask = "files/test_mask.txt"
-
-cp_test_file = "files/test_cp_plain.txt"
-cp_test_file_mask = "files/test_cp_mask.txt"
-
-read(test_file) == read(test_file_mask)
-read(cp_test_file) == read(cp_test_file_mask)
-
-using BenchmarkTools
-using Base.Threads: Atomic
 
 function ab1()
     s = 0
@@ -79,17 +40,15 @@ function ab2(c)
     s
 end
 
-cancel = Atomic{Bool}(false)
-iters = 1_000_000
-c = 1_000
+cancel = Base.Threads.Atomic{Bool}(false)
+iters = 100_000_000
+c = 100_000
 
 ab1()
 ab2(c)
 
 @btime ab1() samples = 500 evals = 1
 @btime ab2(c) samples = 500 evals = 1
-t1 = @benchmark ab1() samples = 500 evals = 1
-t2 = @benchmark ab2(c) samples = 500 evals = 1
 
 
 
@@ -116,29 +75,6 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
     end
     return rank
 end
-
-
-for i in 7:10
-    println("--------------------------------- Combination size: $i ---------------------------------")
-    checkpoint = _load_strong_c3_checkpoint("files/checkpoints/test$(i)_cp.txt")
-    comb = checkpoint.current_combination
-    if length(comb) > i
-        # set comb as last combination of size i
-        comb = collect((60 - i + 1):60)
-        println("SET comb to last combination for size $i: $comb")
-    end
-    res = _get_processed_count_from_combination(comb)
-    # get amount of lines in result file
-    lines = readlines("files/results/test$(i).txt")
-    processed_count = res
-    strong_c3_count = length(lines)
-    not_strong_c3_count = processed_count - strong_c3_count
-    println(
-        "processed_count: $processed_count, strong_c3_count: $strong_c3_count, not_strong_c3_count: $not_strong_c3_count",
-    )
-end
-
-
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # check if alpha1 and alpha2 codon graphs contain each vertice and edge from expanded codon graph
 function check_alpha_1_and_alpha_2(original_data::CodonGraphData; show_debug::Bool = false)
