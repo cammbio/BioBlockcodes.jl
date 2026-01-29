@@ -91,71 +91,7 @@ ab2(c)
 t1 = @benchmark ab1() samples = 500 evals = 1
 t2 = @benchmark ab2(c) samples = 500 evals = 1
 
-for i in 2:20
-    maximal_combinations = binomial(60, i)
-    println("Combination size: $i, maximal combinations: $maximal_combinations")
-    checkpoint = _load_strong_c3_checkpoint("files/checkpoints/test$(i)_cp.txt")
-    current_combination = checkpoint.current_combination
-    processed_count = checkpoint.processed_count
-    strong_c3_count = checkpoint.strong_c3_count
-    not_strong_c3_count = processed_count - strong_c3_count
-    processed_precentage = processed_count / maximal_combinations * 100
-    strong_c3_percentage = strong_c3_count / processed_count * 100
-    not_strong_c3_percentage = not_strong_c3_count / processed_count * 100
 
-    _save_strong_c3_checkpoint!(
-        "files/checkpoints/test$(i)_cp.txt",
-        current_combination,
-        processed_count,
-        strong_c3_count,
-        not_strong_c3_count,
-        processed_precentage,
-        strong_c3_percentage,
-        not_strong_c3_percentage,
-    )
-end
-
-for i in 5:5
-    res_file = "files/results/test$(i).txt"
-    println("Reading file for i: $i ")
-
-    if filesize(res_file) > 0
-        last_combination = _get_last_combination_indices_from_file(res_file)
-        println("last indices: $last_combination")
-        # if last_combination
-    end
-end
-
-
-
-
-
-read("files/results/test3.txt") == read("C:/Users/Filip/Desktop/results/test3.txt")
-
-# print each line of file
-open("C:/Users/Filip/Desktop/results/test1.txt", "r") do f
-    for line in eachline(f)
-        println(line)
-    end
-end
-
-# compare each line of two files
-for i in 1:20
-    println("Starting for $i")
-    file1 = "files/results/test$i.txt"
-    file2 = "C:/Users/Filip/Desktop/results/test$i.txt"
-    open(file1, "r") do f1
-        open(file2, "r") do f2
-            for (line1, line2) in zip(eachline(f1), eachline(f2))
-                if line1 != line2
-                    println("Difference found:")
-                    println("File 1: $line1")
-                    println("File 2: $line2")
-                end
-            end
-        end
-    end
-end
 
 
 
@@ -181,8 +117,6 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
     return rank
 end
 
-indices = _get_last_combination_indices_from_file("files/results/test8.txt")
-_get_processed_count_from_combination(indices)
 
 for i in 7:10
     println("--------------------------------- Combination size: $i ---------------------------------")
