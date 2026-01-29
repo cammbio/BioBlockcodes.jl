@@ -1,7 +1,7 @@
-"current_combination" = [1, 2, 6, 33, 40, 50, 51, 52, 54, 55]
-"processed_count" = 875.404.275
-"strong_c3_count" = 88.475
-"not_strong_c3_count" = 875.315.800
-"processed_percentage" = 1.1611055984954117%
-"strong_c3_percentage" = 0.010106758960024498%
-"not_strong_c3_percentage" = 99.98989324103998%
+"current_combination" = [1, 2, 9, 19, 25, 26, 29, 32, 49, 54]
+"processed_count" = 1.255.616.102
+"strong_c3_count" = 116.272
+"not_strong_c3_count" = 1.255.499.830
+"processed_percentage" = 1.6654052615783559%
+"strong_c3_percentage" = 0.009260155219003396%
+"not_strong_c3_percentage" = 99.99073984478099%
