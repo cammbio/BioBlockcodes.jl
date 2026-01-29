@@ -121,7 +121,7 @@ function process_strong_c3_combinations_by_combination_size_with_mask(
     try
         open(results_path, write_mode) do result_out
             while true
-                yield()
+                # yield()
                 # allow interrupting the process
                 if cancel[]
                     show_debug && @debug "Task with combination_size $combination_size cancelled."
