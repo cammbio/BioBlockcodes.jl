@@ -14,11 +14,7 @@ const job_thread_ids = Dict{Int, Int}()
 const job_thread_lock = SpinLock()
 
 
-function run_jobs_ordered(;
-    min_combination_size = 1,
-    max_combination_size = 20,
-    nworkers = Threads.nthreads(),
-)
+function run_jobs(; min_combination_size = 1, max_combination_size = 20, nworkers = Threads.nthreads())
     stop_flag[] = false
 
     # reset job states and thread ids
@@ -45,8 +41,8 @@ function run_jobs_ordered(;
                     process_strong_c3_combinations_by_combination_size_with_mask(
                         GCATCodes.ALL_CODONS,
                         combination_size,
-                        "files/results/test$(combination_size).txt",
-                        "files/checkpoints/test$(combination_size)_cp.txt",
+                        "files/results/result_$(combination_size).txt",
+                        "files/checkpoints/checkpoint_$(combination_size).txt",
                         stop_flag;
                         show_debug = true,
                     )
@@ -63,50 +59,9 @@ function run_jobs_ordered(;
         end
     end
 
-    println("Jobs scheduled (ordered channel) from $min_combination_size to $max_combination_size.")
+    println("Jobs scheduled from $min_combination_size to $max_combination_size.")
     return jobs
 end
-
-
-# schedule jobs
-# function run_jobs(; min_combination_size::Int = 1, max_combination_size::Int = 20)
-#     # always start with a cleared cancel flag
-#     stop_flag[] = false
-
-#     empty!(job_states)
-#     empty!(job_thread_ids)
-#     jobs = Dict{Int, Task}()
-#     for combination_size in min_combination_size:max_combination_size
-#         jobs[combination_size] = @spawn begin
-#             thread_id = Threads.threadid()
-#             lock(job_thread_lock)
-#             job_thread_ids[combination_size] = thread_id
-#             job_states[combination_size] = :running
-#             unlock(job_thread_lock)
-#             try
-#                 process_strong_c3_combinations_by_combination_size(
-#                     GCATCodes.ALL_CODONS,
-#                     combination_size,
-#                     "files/results/test$(combination_size).txt",
-#                     "files/checkpoints/test$(combination_size)_cp.txt",
-#                     stop_flag;
-#                     show_debug = true,
-#                 )
-#                 lock(job_thread_lock)
-#                 job_states[combination_size] = :finished
-#                 unlock(job_thread_lock)
-#             catch err
-#                 lock(job_thread_lock)
-#                 job_states[combination_size] = :failed
-#                 unlock(job_thread_lock)
-#                 @warn "Combination $(combination_size) failed: $(sprint(showerror, err))"
-#             end
-#         end
-#     end
-
-#     println("Jobs scheduled from combination_size $min_combination_size to $max_combination_size.")
-#     return jobs
-# end
 
 
 # cancel all tasks
