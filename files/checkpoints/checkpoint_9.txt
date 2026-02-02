@@ -1,7 +1,0 @@
-"current_combination" = [1, 5, 8, 12, 13, 24, 25, 44, 58]
-"processed_count" = 852.249.465
-"strong_c3_count" = 966.503
-"not_strong_c3_count" = 851.282.962
-"processed_percentage" = 5.765008730559054%
-"strong_c3_percentage" = 0.11340611401850513%
-"not_strong_c3_percentage" = 99.88659388598148%

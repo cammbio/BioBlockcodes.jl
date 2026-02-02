@@ -12,6 +12,13 @@ function line_to_codon_set(line::String)
 end
 
 
+# turn result line to codon set
+function result_to_codon_set(line::String)
+    target_codons = r"\"([ACGT]{3})\""
+    codon_set = [LongDNA{4}(m.captures[1]) for m in eachmatch(target_codons, line)]
+    return codon_set
+end
+
 # redirect output of function to file MIGHT BE DEPRECATED
 function print_to_file(dst_path::AbstractString, fnc::Function, args...)
     open(dst_path, "w") do input

@@ -100,6 +100,6 @@ end
 # function to get the maximal cycle length in the graph
 function get_max_cycle_length(graph::SimpleDiGraph; show_debug::Bool = false)
     cycles = simplecycles(graph)
-    max_length = maximum(length.(cycles))
-    return max_length
+    isempty(cycles) && return 0
+    return maximum(length.(cycles))
 end

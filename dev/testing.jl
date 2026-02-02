@@ -14,6 +14,79 @@ using BenchmarkTools
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
+open("files/results/test.txt", "r") do res
+    counter = 0
+    for line in eachline(res)
+        if counter == 100_000
+            break
+        end
+        codon_set = result_to_codon_set(line)
+        # println("Codon set: $codon_set")
+        counter += 1
+    end
+end
+
+open("files/results/test.txt", "w") do in
+    open("files/results/result_8.txt", "r") do out
+        for line in eachline(out)
+            println(in, line)
+        end
+    end
+end
+
+
+open("files/results/result_5.txt", "r") do res
+    counter = 0
+    false_positives = 0
+    for line in eachline(res)
+        # if counter == 10
+        #     break
+        # end
+        counter += 1
+        if counter % 100000 == 0
+            println("counter: $counter")
+        end
+
+        codon_set = result_to_codon_set(line)
+        data = CodonGraphData(codon_set)
+        construct_graph_data!(data)
+        _expand_graph(data)
+
+        if get_max_cycle_length(data.graph; show_debug = false) > 2
+            println("Max cycle length > 2 found!")
+            println("codon set: $codon_set in line $counter is FALSE POSITIVE")
+            false_positives += 1
+        end
+    end
+    println("FINISHED, counter: $counter, false_positives: $false_positives")
+end
+
+function subsets(codon_set::Vector{LongDNA{4}})
+    n = length(codon_set)
+    result = Vector{Vector{LongDNA{4}}}()
+    for i in 1:(2^n - 1)
+        subset = Vector{LongDNA{4}}()
+        for j in 1:n
+            if (i >> (j - 1)) & 1 == 1
+                push!(subset, codon_set[j])
+            end
+        end
+        push!(result, subset)
+    end
+    return result
+end
+
+
+set = LongDNA{4}.(["ACG", "GCC", "GGC"])
+data = CodonGraphData(set)
+construct_graph_data!(data)
+show_codon_graph(data)
+
+
+
+
+
+
 
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 codons = GCATCodes.ALL_CODONS
@@ -541,4 +614,64 @@ if m_mask < m_plain
     println("speedup: $(round(m_plain / m_mask, digits = 2))x (mask faster)")
 else
     println("speedup: $(round(m_mask / m_plain, digits = 2))x (plain faster)")
+end
+
+
+
+# inkrementelle strong‑C3-Suche: wächst nur von bereits gefundenen Treffern weiter
+function run_incremental_strong_c3!(
+    codons::Vector{LongDNA{4}} = GCATCodes.ALL_CODONS;
+    max_size::Int = 20,
+    results_dir::AbstractString = "files/results",
+    show_debug::Bool = false,
+)
+    rot_masks = GCATCodes._get_rotation_masks(codons)
+    frontier = Vector{Vector{Int}}()
+
+    # Größe 1 seeds
+    for i in 1:length(codons)
+        combo = [i]
+        _combo_is_strong_c3!(combo, codons, rot_masks, results_dir, 1; show_debug) && push!(frontier, combo)
+    end
+
+    # Größen 2..max_size
+    for size in 2:max_size
+        isempty(frontier) && break
+        next_frontier = Vector{Vector{Int}}()
+
+        for base in frontier
+            last = base[end]
+            for j in (last + 1):length(codons)           # aufsteigend -> keine Duplikate
+                combo = [base...; j]
+                mask = GCATCodes._combination_to_mask(combo)
+                GCATCodes._mask_contains_rotation(combo, mask, rot_masks) && continue
+                _combo_is_strong_c3!(combo, codons, rot_masks, results_dir, size; show_debug) &&
+                    push!(next_frontier, combo)
+            end
+        end
+
+        frontier = next_frontier
+    end
+end
+
+# Einzel-Kombi prüfen und ggf. in Ergebnisdatei schreiben
+function _combo_is_strong_c3!(
+    combo::Vector{Int},
+    codons::Vector{LongDNA{4}},
+    rot_masks::Vector{UInt64},
+    results_dir::AbstractString,
+    size::Int;
+    show_debug::Bool = false,
+)
+    data = CodonGraphData(codons[combo])
+    construct_graph_data!(data; show_debug = false)
+    if is_strong_c3(data; show_debug = show_debug)
+        path = joinpath(results_dir, "result_inc_$size.txt")
+        open(path, "a") do io
+            codon_str = join("\"" .* string.(codons[combo]) .* "\"", ", ")
+            println(io, "Strong C3: $codon_str with size $size")
+        end
+        return true
+    end
+    return false
 end
