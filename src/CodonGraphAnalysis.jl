@@ -336,12 +336,12 @@ function is_strong_c3(data::CodonGraphData; show_debug::Bool = false)
         # check if expanded graph has cycles longer than 2
         if _has_cycle_longer_than(data_expanded.graph, max_length; show_debug = show_debug)
             show_debug &&
-                @debug "Path longer than $max_length found in expanded graph -> codon set is not strong C3"
+                @debug "Cycle longer than $max_length found in expanded graph -> codon set is not strong C3"
             return false
         end
 
         show_debug &&
-            @debug "No paths longer than $max_length found in expanded graph -> codon set is strong C3"
+            @debug "No cycles longer than $max_length found in expanded graph -> codon set is strong C3"
         return true
     else
         show_debug && @debug "Codon set is not C3 -> codon set cannot be strong C3"
@@ -409,8 +409,7 @@ function _dfs_cycles(
             index = findlast(==(neighbor), stack)
             cycle_length = length(stack) - index + 1
             if cycle_length > max_length
-                show_debug &&
-                    @debug "Cycle len=$cycle_length (starts at stack idx $index): $(stack[index:end]) -> $neighbor"
+                show_debug && @debug "Cycle length = $cycle_length: $(stack[index:end]) -> $neighbor"
                 return true
             end
         end
@@ -458,16 +457,43 @@ function _expand_graph(data::CodonGraphData; show_debug::Bool = false)
 end
 
 
-# return true if any directed cycle is longer than min_length
+# check if graph has cycle longer than max_length
 function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int; show_debug::Bool = false)
-    vertex_amount = nv(graph)
-    state = fill(0, vertex_amount)
+    vertex_count = nv(graph)
+    on_path = falses(vertex_count)
     stack = Int[]
 
-    for vertex in 1:vertex_amount
-        state[vertex] == 0 &&
-            _dfs_cycles(graph, vertex, max_length, state, stack; show_debug = show_debug) &&
-            return true
+    function dfs(v::Int, depth::Int)
+        push!(stack, v)
+        on_path[v] = true
+
+        @inbounds for w in outneighbors(graph, v)
+            if on_path[w]
+                # w liegt bereits auf dem aktuellen Pfad -> Zyklus gefunden
+                idx = findlast(==(w), stack)
+                cyc_len = depth - idx + 1
+                if cyc_len > max_length
+                    show_debug && @debug "Cycle length $cyc_len via $v -> $w (stack=$(stack[idx:end]))"
+                    pop!(stack)
+                    on_path[v] = false
+                    return true
+                end
+                # kürzere Zyklen ignorieren, weiter suchen
+            elseif dfs(w, depth + 1)
+                pop!(stack)
+                on_path[v] = false
+                return true
+            end
+        end
+
+        pop!(stack)
+        on_path[v] = false
+        return false
     end
+
+    @inbounds for root in 1:vertex_count
+        dfs(root, 1) && return true
+    end
+
     return false
 end

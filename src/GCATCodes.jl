@@ -55,6 +55,7 @@ export
     show_multiple_codon_graphs,
     # WriterUtils.jl
     line_to_codon_set,
+    result_to_codon_set,
     print_to_file,
     # strong C3 analysis
     process_strong_c3_combinations_by_combination_size_with_mask,
