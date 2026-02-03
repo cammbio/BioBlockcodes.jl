@@ -205,7 +205,7 @@ function sweep_channel_sizes(
     return results
 end
 
-# sweep_channel_sizes([0, 64, 256, 1024, 4096]; items = 5000, workers = Threads.nthreads())
+# sweep_channel_sizes([0, 64, 256, 1024, 4096]; items = 5000, workers = Threads.nthreads(), work_sleep = 5e-4)
 
 isempty(PROGRAM_FILE) || main(1, 2, 1)
 
