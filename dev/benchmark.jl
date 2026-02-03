@@ -146,17 +146,18 @@ function benchmark_channel_size(;
 )
     ch = Channel{Int}(channel_size)
 
-    producer_task = @spawn begin
-        for i in 1:items
-            put!(ch, i)
-        end
-        close(ch)
-    end
-
-    prod_time = @elapsed wait(producer_task)
-
+    prod_time = 0.0
     total_time = @elapsed begin
         @sync begin
+            prod_task = @async begin
+                t0 = time()
+                for i in 1:items
+                    put!(ch, i)
+                end
+                close(ch)
+                return time() - t0
+            end
+
             for _ in 1:workers
                 @spawn begin
                     for _ in ch
@@ -164,7 +165,8 @@ function benchmark_channel_size(;
                     end
                 end
             end
-            wait(producer_task)  # sicherstellen, dass Producer abgeschlossen ist
+
+            prod_time = fetch(prod_task)
         end
     end
 
