@@ -145,6 +145,7 @@ function benchmark_channel_size(;
     work_sleep = 5e-5,
 )
     ch = Channel{Int}(channel_size)
+    prod_blocks = Threads.Atomic{Int}(0)
 
     prod_time = 0.0
     total_time = @elapsed begin
@@ -152,7 +153,11 @@ function benchmark_channel_size(;
             prod_task = @async begin
                 t0 = time()
                 for i in 1:items
+                    t_put = time()
                     put!(ch, i)
+                    if time() - t_put > 0
+                        prod_blocks[] += 1
+                    end
                 end
                 close(ch)
                 return time() - t0
@@ -174,8 +179,10 @@ function benchmark_channel_size(;
         channel_size = channel_size,
         items = items,
         workers = workers,
+        work_sleep = work_sleep,
         producer_time = prod_time,
         total_time = total_time,
+        prod_block_events = prod_blocks[],
     )
 end
 
