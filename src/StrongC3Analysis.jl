@@ -73,7 +73,7 @@ const ALL_CODONS =
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # process all combinations of codons of a given size with rotation mask optimization
 function process_strong_c3_combinations_by_combination_size_with_mask(
-    codons::Vector{LongDNA{4}},
+    all_codons::Vector{LongDNA{4}},
     combination_size::Int,
     results_path::AbstractString,
     checkpoint_path::AbstractString,
@@ -82,8 +82,8 @@ function process_strong_c3_combinations_by_combination_size_with_mask(
 )
     show_debug && @debug "Entered function with combination_size $combination_size"
     # get length of codon set
-    length_codon_set = length(codons)
-    rotation_masks = _get_rotation_masks(codons)
+    length_codon_set = length(all_codons)
+    rotation_masks = _get_rotation_masks(all_codons)
 
     # load from checkpoint or start from scratch
     if isfile(results_path) #&& filesize(results_path) > 0
@@ -128,7 +128,7 @@ function process_strong_c3_combinations_by_combination_size_with_mask(
                     break
                 end
 
-                codon_set = codons[current_combination]
+                codon_set = all_codons[current_combination]
                 combination_mask = _combination_to_mask(current_combination)
 
                 # skip combinations that contain N1N2N3, N2N3N1 and N3N1N2 for some codon

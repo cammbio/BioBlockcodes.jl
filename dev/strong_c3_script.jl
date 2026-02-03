@@ -16,6 +16,7 @@ const job_thread_lock = SpinLock()
 
 function run_jobs(; min_combination_size = 1, max_combination_size = 20, nworkers = Threads.nthreads())
     stop_flag[] = false
+    start_time = time()
 
     # reset job states and thread ids
     empty!(job_states)
@@ -41,8 +42,10 @@ function run_jobs(; min_combination_size = 1, max_combination_size = 20, nworker
                     process_strong_c3_combinations_by_combination_size_with_mask(
                         GCATCodes.ALL_CODONS,
                         combination_size,
-                        "files/results/result_$(combination_size).txt",
-                        "files/checkpoints/checkpoint_$(combination_size).txt",
+                        # "files/results/result_$(combination_size).txt",
+                        # "files/checkpoints/checkpoint_$(combination_size).txt",
+                        "files/tests/res1/result_$(combination_size).txt",
+                        "files/tests/ckp1/checkpoint_$(combination_size).txt",
                         stop_flag;
                         show_debug = true,
                     )
@@ -59,7 +62,18 @@ function run_jobs(; min_combination_size = 1, max_combination_size = 20, nworker
         end
     end
 
-    println("Jobs scheduled from $min_combination_size to $max_combination_size.")
+    # wait for all tasks to finish to measure full runtime
+    for (combination_size, task) in jobs
+        try
+            fetch(task)
+        catch err
+            err isa InterruptException && @info "Task $combination_size cancelled."
+            @warn "Task $combination_size encountered an error: $(sprint(showerror, err))"
+        end
+    end
+
+    total = time() - start_time
+    @info "run_jobs finished all sizes $min_combination_size:$max_combination_size in $(round(total, digits = 3)) seconds."
     return jobs
 end
 
