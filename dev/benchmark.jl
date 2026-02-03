@@ -1,6 +1,6 @@
 using GCATCodes
 using BioSequences: LongDNA
-using Base.Threads: Atomic, nthreads
+using Base.Threads: Atomic, nthreads, @spawn
 using BenchmarkTools
 
 # convenience aliases
@@ -137,4 +137,67 @@ function main(min_k, max_k, samples)
 end
 
 
+
+function benchmark_channel_size(;
+    channel_size = 1024,
+    items = 2000,
+    workers = Threads.nthreads(),
+    work_sleep = 5e-5,
+)
+    ch = Channel{Int}(channel_size)
+
+    producer_task = @spawn begin
+        for i in 1:items
+            put!(ch, i)
+        end
+        close(ch)
+    end
+
+    prod_time = @elapsed wait(producer_task)
+
+    total_time = @elapsed begin
+        @sync begin
+            for _ in 1:workers
+                @spawn begin
+                    for _ in ch
+                        sleep(work_sleep)
+                    end
+                end
+            end
+            wait(producer_task)  # sicherstellen, dass Producer abgeschlossen ist
+        end
+    end
+
+    return (
+        channel_size = channel_size,
+        items = items,
+        workers = workers,
+        producer_time = prod_time,
+        total_time = total_time,
+    )
+end
+
+
+function sweep_channel_sizes(
+    sizes;
+    items::Int = 2000,
+    workers::Int = Threads.nthreads(),
+    work_sleep::Float64 = 5e-5,
+)
+    results = [
+        benchmark_channel_size(channel_size = s, items = items, workers = workers, work_sleep = work_sleep) for s in sizes
+    ]
+    println("size\tprod_s\ttotal_s")
+    for r in results
+        println(
+            "$(r.channel_size)\t$(round(r.producer_time, digits = 4))\t$(round(r.total_time, digits = 4))",
+        )
+    end
+    return results
+end
+
+# sweep_channel_sizes([0, 64, 256, 1024, 4096]; items = 5000, workers = Threads.nthreads())
+
 isempty(PROGRAM_FILE) || main(1, 2, 1)
+
+println("Done loading script.")
