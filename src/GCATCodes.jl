@@ -86,8 +86,7 @@ include("PlotUtils.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
 include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
 include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
-include("StrongC3AnalysisPlain.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
-include("StrongC3AnalysisSmart.jl") # incremental strong C3 search
+include("StrongC3AnalysisDEP.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 # ---------------------------------------------- EXPORTS ------------------------------------------------
 # Types
 export
@@ -131,7 +130,7 @@ export
     show_multiple_codon_graphs,
     # WriterUtils.jl
     line_to_codon_set,
-    extract_csv_column,
+    extract_codon_set_from_result,
     csv_to_result,
     result_to_codon_set,
     print_to_file,
@@ -142,7 +141,7 @@ export
     # StrongC3AnalysisPlain.jl
     process_strong_c3_combinations_by_combination_size,
     # StrongC3AnalysisSmart.jl
-    process_strong_c3_combinations_increment,
+    process_strong_c3_combinations_by_combination_size,
 
 
 
@@ -162,5 +161,7 @@ export
     _combination_to_mask,
     _mask_contains_rotation,
     _set_codon_bit,
-    _is_combination_strong_c3
+    _is_combination_strong_c3,
+    _load_checkpoint,
+    _save_checkpoint
 end

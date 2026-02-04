@@ -12,7 +12,12 @@ using BenchmarkTools
 
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
-global_logger(ConsoleLogger(Logging.Info)) # deactivate
+# global_logger(ConsoleLogger(Logging.Info)) # deactivate
+
+cp_path = "files/checkpoints/test.csv"
+_save_checkpoint(cp_path, 42)
+a = _load_checkpoint(cp_path)
+print(a)
 
 const ALL_CODONS =
     LongDNA{
@@ -97,16 +102,6 @@ function sort_by_indices(infile::AbstractString, outfile::AbstractString)
     end
 end
 
-for i in 2:2
-    orig_file = "files/results/result_$i.csv"
-    copy_file = "files/results/sorted_result_$i.csv"
-    # sort_by_indices(orig_file, copy_file)
-    for line in eachline(copy_file)
-        combination = extract_csv_column(line, 2)
-        println("Combination indices: ", combination)
-    end
-end
-
 # check if there is an empty line in a file
 function check_empty_lines_in_file(file_path::String)
     open(file_path, "r") do f
@@ -130,52 +125,6 @@ function _get_combination_from_codon_set(codon_set::Vector{LongDNA{4}}, codons::
         end
     end
     return combination
-end
-
-open("files/results/test.txt", "r") do res
-    counter = 0
-    for line in eachline(res)
-        if counter == 100_000
-            break
-        end
-        codon_set = result_to_codon_set(line)
-        # println("Codon set: $codon_set")
-        counter += 1
-    end
-end
-
-open("files/results/test.txt", "w") do in
-    open("files/results/result_8.txt", "r") do out
-        for line in eachline(out)
-            println(in, line)
-        end
-    end
-end
-
-open("files/results/result_5.txt", "r") do res
-    counter = 0
-    false_positives = 0
-    for line in eachline(res)
-        # if counter == 10
-        #     break
-        # end
-        counter += 1
-        if counter % 100000 == 0
-            println("counter: $counter")
-        end
-
-        codon_set = result_to_codon_set(line)
-        data = CodonGraphData(codon_set)
-        construct_graph_data!(data)
-        _expand_graph(data)
-
-        if get_max_cycle_length(data.graph; show_debug = false) > 2
-            println("Max cycle length > 2 found!")
-            println("codon set: $codon_set in line $counter is FALSE POSITIVE")
-            false_positives += 1
-        end
-    end
-    println("FINISHED, counter: $counter, false_positives: $false_positives")
 end
 
 function subsets(codon_set::Vector{LongDNA{4}})
@@ -205,4 +154,64 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
         prev = ci
     end
     return rank
+end
+
+# test reading results file
+open("files/results/test.txt", "r") do res
+    counter = 0
+    for line in eachline(res)
+        if counter == 100_000
+            break
+        end
+        codon_set = result_to_codon_set(line)
+        # println("Codon set: $codon_set")
+        counter += 1
+    end
+end
+
+# test writing results file
+open("files/results/test.txt", "w") do in
+    open("files/results/result_8.txt", "r") do out
+        for line in eachline(out)
+            println(in, line)
+        end
+    end
+end
+
+# test checking for false positives
+open("files/results/result_5.txt", "r") do res
+    counter = 0
+    false_positives = 0
+    for line in eachline(res)
+        # if counter == 10
+        #     break
+        # end
+        counter += 1
+        if counter % 100000 == 0
+            println("counter: $counter")
+        end
+
+        codon_set = result_to_codon_set(line)
+        data = CodonGraphData(codon_set)
+        construct_graph_data!(data)
+        _expand_graph(data)
+
+        if get_max_cycle_length(data.graph; show_debug = false) > 2
+            println("Max cycle length > 2 found!")
+            println("codon set: $codon_set in line $counter is FALSE POSITIVE")
+            false_positives += 1
+        end
+    end
+    println("FINISHED, counter: $counter, false_positives: $false_positives")
+end
+
+# test extracting combination indices from result file
+for i in 2:2
+    orig_file = "files/results/result_$i.csv"
+    copy_file = "files/results/sorted_result_$i.csv"
+    # sort_by_indices(orig_file, copy_file)
+    for line in eachline(copy_file)
+        combination = extract_csv_column(line, 2)
+        println("Combination indices: ", combination)
+    end
 end
