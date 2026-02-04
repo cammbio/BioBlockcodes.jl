@@ -1,78 +1,57 @@
-#!/usr/bin/env julia
-
-# Run incremental strong C3 search in parallel.
-#
-# Usage:
-#   julia --project dev/strong_c3_script_smart.jl <combination_size> <prev_results_csv> <output_csv> [--debug]
-#
-# - combination_size: target size k (integer >= 2)
-# - prev_results_csv: path to CSV-lines file from size k-1 run (format COD1|COD2,...,idx1|idx2)
-# - output_csv      : path to write CSV-lines results of size k
-# - --debug         : optional flag to enable verbose logging
-
+using Revise
 using GCATCodes
 using Base.Threads
-using Base.Threads: Atomic
 
 # shared cancel flag
-const stop_flag = Atomic{Bool}(false)
+const cancel_flag = Base.Threads.Atomic{Bool}(false)
 
-function run_jobs(;
-    min_combination_size::Int = 2,
-    max_combination_size::Int = 20,
-    worker_count::Int = nthreads(),
-)
-    stop_flag[] = false
-    start_time = time()
+
+function start_process(min_combination_size::Int, max_combination_size::Int; worker_count::Int = nthreads())
+    cancel_flag[] = false
 
     task = @spawn begin
-        for k in min_combination_size:max_combination_size
-            stop_flag[] && break
-            prev_results = joinpath("files/tests/res2/result_$(k - 1).csv")
-            out_results = joinpath("files/tests/res2/resultt_$(k).csv")
+        start_time = time()
+        for combination_size in min_combination_size:max_combination_size
+            cancel_flag[] && break
+            prev_results = joinpath("files/results/result_$(combination_size - 1).csv")
+            out_results = joinpath("files/results/result_$(combination_size).csv")
+            checkpoint_path = "files/checkpoints/test.csv"
 
             if !isfile(prev_results)
-                @warn "Skipping size $k: missing input file $prev_results"
+                @warn "Skipping size $combination_size: missing input file $prev_results"
                 continue
             end
 
-            println("Threads: $(nthreads()) | size=$k | input=$prev_results -> output=$out_results")
+            println(
+                "Threads: $(nthreads()) | size=$combination_size | input=$prev_results -> output=$out_results",
+            )
             GCATCodes.process_strong_c3_combinations_increment(
-                k,
+                combination_size,
                 prev_results,
-                out_results;
-                cancel = stop_flag,
+                out_results,
+                checkpoint_path;
+                cancel_flag = cancel_flag,
                 worker_count = worker_count,
             )
         end
         println("All requested sizes processed or cancelled.")
+        total_time = time() - start_time
+        @info "start_process finished sizes $(min_combination_size):$(max_combination_size) in $(round(total_time, digits = 3)) seconds."
     end
 
-    # wait for task to finish to measure total runtime
-    try
-        fetch(task)
-    catch err
-        err isa InterruptException && @info "Task cancelled."
-        @warn "Task encountered an error: $(sprint(showerror, err))"
-    end
-
-    total = time() - start_time
-    @info "run_jobs finished sizes $(min_combination_size):$(max_combination_size) in $(round(total, digits = 3)) seconds."
-    return task
+    # keep REPL responsive
+    return Base.errormonitor(task)
 end
 
 # cancel running job task created by run_jobs
-function cancel_jobs(task::Task)
-    stop_flag[] = true
+function cancel_process(task::Task)
+    cancel_flag[] = true
     try
         fetch(task)
     catch err
         err isa InterruptException && @info "Task cancelled."
         @warn "Task encountered an error: $(sprint(showerror, err))"
     end
-    stop_flag[] = false
 end
 
-println(
-    "Script loaded. Call run_jobs(; min_combination_size=2, max_combination_size=20) and cancel_jobs(task) to stop.",
-)
+println("Script loaded.")

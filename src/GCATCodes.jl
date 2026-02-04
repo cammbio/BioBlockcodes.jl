@@ -1,6 +1,83 @@
 module GCATCodes
+# ---------------------------------------------- VARIABLES ----------------------------------------------
+# using JuliaFormatter
+# using Logging
+# using CairoMakie
+# using GraphMakie
+# using Graphs
+# using BioSequences
+# using NetworkLayout
+# using Base.Threads
+# using BenchmarkTools
+# ---------------------------------------------- CONSTANTS ----------------------------------------------
+# const ALL_CODONS =
+# LongDNA{
+#     4,
+# }.([
+#     "AAC",
+#     "AAG",
+#     "AAT",
+#     "ACA",
+#     "ACC",
+#     "ACG",
+#     "ACT",
+#     "AGA",
+#     "AGC",
+#     "AGG",
+#     "AGT",
+#     "ATA",
+#     "ATC",
+#     "ATG",
+#     "ATT",
+#     "CAA",
+#     "CAC",
+#     "CAG",
+#     "CAT",
+#     "CCA",
+#     "CCG",
+#     "CCT",
+#     "CGA",
+#     "CGC",
+#     "CGG",
+#     "CGT",
+#     "CTA",
+#     "CTC",
+#     "CTG",
+#     "CTT",
+#     "GAA",
+#     "GAC",
+#     "GAG",
+#     "GAT",
+#     "GCA",
+#     "GCC",
+#     "GCG",
+#     "GCT",
+#     "GGA",
+#     "GGC",
+#     "GGT",
+#     "GTA",
+#     "GTC",
+#     "GTG",
+#     "GTT",
+#     "TAA",
+#     "TAC",
+#     "TAG",
+#     "TAT",
+#     "TCA",
+#     "TCC",
+#     "TCG",
+#     "TCT",
+#     "TGA",
+#     "TGC",
+#     "TGG",
+#     "TGT",
+#     "TTA",
+#     "TTC",
+#     "TTG",
+# ])
 
-# load other source files
+const BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
+# ---------------------------------------------- INCLUDES -----------------------------------------------
 include("WriteUtils.jl")
 include("Types.jl")
 include("CyclesAnalysis.jl") # needs Types.jl
@@ -11,15 +88,13 @@ include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
 include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 include("StrongC3AnalysisPlain.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 include("StrongC3AnalysisSmart.jl") # incremental strong C3 search
-
-
-# export types
+# ---------------------------------------------- EXPORTS ------------------------------------------------
+# Types
 export
 # Types.jl
     CodonGraphData
-#
 
-# export functions
+# Functions
 export
     # CodonGraphAnalysis.jl
     is_circular,
@@ -56,19 +131,17 @@ export
     show_multiple_codon_graphs,
     # WriterUtils.jl
     line_to_codon_set,
-    csv_line_to_codon_set,
+    extract_csv_column,
     csv_to_result,
     result_to_codon_set,
     print_to_file,
     result_to_csv!,
     write_structured_result_to_json!,
-    # strong C3 analysis
+    # StrongC3Analysis.jl
     process_strong_c3_combinations_by_combination_size_with_mask,
-    # strong C3 analysis plain
+    # StrongC3AnalysisPlain.jl
     process_strong_c3_combinations_by_combination_size,
-    # strong C3 analysis smart
-    process_strong_c3_combinations_increment,
-    # strong C3 analysis smart
+    # StrongC3AnalysisSmart.jl
     process_strong_c3_combinations_increment,
 
 
@@ -89,5 +162,5 @@ export
     _combination_to_mask,
     _mask_contains_rotation,
     _set_codon_bit,
-    _combo_is_strong_c3!
+    _is_combination_strong_c3
 end
