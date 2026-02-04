@@ -27,33 +27,17 @@ function line_to_codon_set(line::String)
 end
 
 
-# turn result line to codon set
-function result_to_codon_set(line::String)
-    target_codons = r"\"([ACGT]{3})\""
-    codon_set = [LongDNA{4}(m.captures[1]) for m in eachmatch(target_codons, line)]
-    return codon_set
-end
-
 # parse one compact CSV line "COD1|COD2,idx1|idx2" -> Vector{LongDNA{4}}
-function csv_line_to_codon_set(line::AbstractString)
+function extract_csv_column(line::AbstractString, column_index::Int)
     isempty(strip(line)) && return LongDNA{4}[]
-    parts = split(line, ","; limit = 2)
-    codon_part = strip(parts[1])
+    parts = split(line, ",")
+    codon_part = strip(parts[column_index])
     codon_strings = split(codon_part, "|"; keepempty = false)
-    return LongDNA{4}.(codon_strings)
+    return codon_strings
 end
 
 
-# redirect output of function to file MIGHT BE DEPRECATED
-function print_to_file(dst_path::AbstractString, fnc::Function, args...)
-    open(dst_path, "w") do input
-        redirect_stdout(input) do
-            fnc(args...)
-        end
-    end
-end
-
-
+# write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
 function result_to_csv!(io, codon_set, combination_indices)
     # compact CSV-style line: "COD1|COD2,idx1|idx2"
     codon_strings = codon_set isa Vector{LongDNA{4}} ? string.(codon_set) : string.(LongDNA{4}.(codon_set))
