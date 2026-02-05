@@ -4,7 +4,7 @@
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    is_c3(data::CodonGraphData; show_debug::Bool = false) -> Bool
+    is_c3(data::CodonGraphData; debug::Bool = false) -> Bool
 
 Return `true` if the codon set is C3 (original graph and both shifted graphs by 1 and 2 frames are circular).
 
@@ -14,7 +14,7 @@ Return `true` if the codon set is C3 (original graph and both shifted graphs by 
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to show debug information (default: false).
+  - `debug::Bool`: Whether to show debug information (default: false).
 
 # Returns
 
@@ -32,35 +32,35 @@ Return `true` if the codon set is C3 (original graph and both shifted graphs by 
 ```julia
 codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
 data = CodonGraphData(codon_set)
-construct_graph_data!(data; show_debug = true)    # show original graph
-is_c3(data; show_debug = true)
+construct_graph_data!(data; debug = true)    # show original graph
+is_c3(data; debug = true)
 ```
 """
-function is_c3(data::CodonGraphData; show_debug::Bool = false)
+function is_c3(data::CodonGraphData; debug::Bool = false)
     # do not allow graph with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if C3."))
     # do not allow graphs with no edges
     ne(data.graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if C3."))
 
     # check if original graph is circular
-    if is_circular(data.graph; show_debug = show_debug)
-        show_debug && @debug "G(X) is circular -> checking shifted graphs..."
+    if is_circular(data.graph; debug = debug)
+        debug && @debug "G(X) is circular -> checking shifted graphs..."
 
         # check if shifted graphs are circular
         for shift in (1, 2)
             shifted = left_shift_codon_set(data.codon_set, shift)
             shifted_data = CodonGraphData(shifted)
-            construct_graph_data!(shifted_data; show_debug = show_debug)
+            construct_graph_data!(shifted_data; debug = debug)
             shift_lower = shift == 1 ? "₁" : "₂"
-            if !is_circular(shifted_data.graph; show_debug = show_debug)
-                show_debug && @debug "α$shift_lower(X) is not circular -> codon set is not C3"
+            if !is_circular(shifted_data.graph; debug = debug)
+                debug && @debug "α$shift_lower(X) is not circular -> codon set is not C3"
                 return false
             else
-                show_debug && @debug "α$shift_lower(X) is circular"
+                debug && @debug "α$shift_lower(X) is circular"
             end
         end
     else
-        show_debug && @debug "G(X) is not circular -> codon set is not C3"
+        debug && @debug "G(X) is not circular -> codon set is not C3"
         return false
     end
     return true
@@ -68,7 +68,7 @@ end
 
 
 """
-    is_circular(graph::SimpleDiGraph; show_debug::Bool = false) -> Bool
+    is_circular(graph::SimpleDiGraph; debug::Bool = false) -> Bool
 
 Return `true` if the graph is acyclic (circular).
 
@@ -78,7 +78,7 @@ Return `true` if the graph is acyclic (circular).
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -98,7 +98,7 @@ add_edge!(g, 2, 3)
 is_circular(g)
 ```
 """
-function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
+function is_circular(graph::SimpleDiGraph; debug::Bool = false)
     # do not allow graph with no vertices
     nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if circular."))
     # do not allow graphs with no edges
@@ -110,20 +110,20 @@ function is_circular(graph::SimpleDiGraph; show_debug::Bool = false)
     # perform DFS for each vertice
     for vertex in vertices(graph)
         if state_array[vertex] == 0
-            if _dfs_cycle_detection(graph, vertex, state_array; show_debug = show_debug)
-                show_debug && @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
+            if _dfs_cycle_detection(graph, vertex, state_array; debug = debug)
+                debug && @debug "Cycle detected in graph -> Graph is not acyclic aka. not circular"
                 return false # no cycles detected, Graph is acyclic aka. circular
             end
         end
     end
 
-    show_debug && @debug "No cycles detected in graph -> Graph is acyclic aka. circular"
+    debug && @debug "No cycles detected in graph -> Graph is acyclic aka. circular"
     return true # no cycles detected, Graph is not acyclic aka. not circular
 end
 
 
 """
-    is_codon_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false) -> Bool
+    is_codon_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; debug::Bool = false) -> Bool
 
 Return `true` if both graphs have identical structure and labels.
 
@@ -134,7 +134,7 @@ Return `true` if both graphs have identical structure and labels.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -154,43 +154,43 @@ construct_graph_data!(data_2)
 is_graphs_identical(data_1, data_2)
 ```
 """
-function is_codon_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; show_debug::Bool = false)
-    show_debug && @debug """Comparing graphs...
+function is_codon_graphs_identical(data_1::CodonGraphData, data_2::CodonGraphData; debug::Bool = false)
+    debug && @debug """Comparing graphs...
         Graph 1: nv=$(nv(data_1.graph)), ne=$(ne(data_1.graph))
         Graph 2: nv=$(nv(data_2.graph)), ne=$(ne(data_2.graph))"""
     # check if same amount of vertices and edges
     if nv(data_1.graph) != nv(data_2.graph)
-        show_debug && @debug "Not the same amount of vertices"
+        debug && @debug "Not the same amount of vertices"
         return false
     end
     if ne(data_1.graph) != ne(data_2.graph)
-        show_debug && @debug "Not the same amount of edges"
+        debug && @debug "Not the same amount of edges"
         return false
     end
 
     # check if same vertice labels
-    show_debug && @debug "Comparing vertices..."
+    debug && @debug "Comparing vertices..."
     for index in 1:nv(data_1.graph)
-        show_debug && @debug """In Graph 1: vertice $(index): $(data_1.all_vertex_labels[index])
+        debug && @debug """In Graph 1: vertice $(index): $(data_1.all_vertex_labels[index])
         In Graph 2: vertice $(index): $(data_2.all_vertex_labels[index])"""
-        if !_has_vertex_label(data_2.vertex_index, data_1.all_vertex_labels[index], show_debug = show_debug)
-            show_debug && @debug "vertice label $(data_1.all_vertex_labels[index]) NOT found in Graph 2"
+        if !_has_vertex_label(data_2.vertex_index, data_1.all_vertex_labels[index], debug = debug)
+            debug && @debug "vertice label $(data_1.all_vertex_labels[index]) NOT found in Graph 2"
             return false
         end
     end
 
     # check if same edges
-    show_debug && @debug "Comparing edges..."
+    debug && @debug "Comparing edges..."
     for edge in edges(data_1.graph)
         src_label = data_1.all_vertex_labels[src(edge)]
         dst_label = data_1.all_vertex_labels[dst(edge)]
-        show_debug &&
+        debug &&
             @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)])"
-        if _has_edge_label(data_2, src_label, dst_label; show_debug = show_debug)
-            show_debug &&
+        if _has_edge_label(data_2, src_label, dst_label; debug = debug)
+            debug &&
                 @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)]) also in Graph 2"
         else
-            show_debug &&
+            debug &&
                 @debug "Edge: $(data_1.all_vertex_labels[src(edge)]) -> $(data_1.all_vertex_labels[dst(edge)]) NOT in Graph 2"
             return false # edge not found
         end
@@ -200,7 +200,7 @@ end
 
 
 """
-    is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false) -> Bool
+    is_comma_free(graph::SimpleDiGraph; debug::Bool = false) -> Bool
 
 Return `true` if no path longer than 2 exists in the graph.
 
@@ -210,7 +210,7 @@ Return `true` if no path longer than 2 exists in the graph.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -230,7 +230,7 @@ add_edge!(g, 2, 3)
 is_comma_free(g)
 ```
 """
-function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
+function is_comma_free(graph::SimpleDiGraph; debug::Bool = false)
     # do not allow graph with no vertices
     nv(graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if comma-free."))
     # do not allow graphs with no edges
@@ -239,19 +239,19 @@ function is_comma_free(graph::SimpleDiGraph; show_debug::Bool = false)
     max_depth = 2
     # perform depth-limited DFS for each vertice
     for vertex in vertices(graph)
-        if _dfs_depth_limited(graph, vertex, 0, max_depth; show_debug = show_debug)
-            show_debug && @debug "Path longer than $max_depth found in graph -> codon set is not comma-free"
+        if _dfs_depth_limited(graph, vertex, 0, max_depth; debug = debug)
+            debug && @debug "Path longer than $max_depth found in graph -> codon set is not comma-free"
             return false
         end
     end
 
-    show_debug && @debug "No paths longer than $max_depth found in graph -> codon set is comma-free"
+    debug && @debug "No paths longer than $max_depth found in graph -> codon set is comma-free"
     return true
 end
 
 
 """
-    is_self_complementary(data::CodonGraphData; show_debug::Bool = false) -> Bool
+    is_self_complementary(data::CodonGraphData; debug::Bool = false) -> Bool
 
 Return `true` if the graph matches its complemented, reversed graph.
 
@@ -261,7 +261,7 @@ Return `true` if the graph matches its complemented, reversed graph.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -280,7 +280,7 @@ construct_graph_data!(data)    # do not allow graphs with no vertices
 is_self_complementary(data)
 ```
 """
-function is_self_complementary(data::CodonGraphData; show_debug::Bool = false)
+function is_self_complementary(data::CodonGraphData; debug::Bool = false)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 &&
         throw(ArgumentError("Graph has no vertices! Cannot determine if self-complementary."))
@@ -289,24 +289,23 @@ function is_self_complementary(data::CodonGraphData; show_debug::Bool = false)
 
 
     # create complemented, reversed codon set
-    codon_set_complemented_reversed =
-        get_complemented_reversed_codon_set(data.codon_set; show_debug = show_debug)
+    codon_set_complemented_reversed = get_complemented_reversed_codon_set(data.codon_set; debug = debug)
 
     # create CodonGraphData from complemented, reversed codon set 
     data_complemented_reversed =
         CodonGraphData(codon_set_complemented_reversed; plot_title = "Complemented, reversed graph")
-    construct_graph_data!(data_complemented_reversed; show_debug = show_debug)
+    construct_graph_data!(data_complemented_reversed; debug = debug)
 
     # compare original graph with complemented, reversed graph
-    if is_codon_graphs_identical(data, data_complemented_reversed; show_debug = show_debug)
-        show_debug && @debug """Original codon set:
+    if is_codon_graphs_identical(data, data_complemented_reversed; debug = debug)
+        debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
         Graphs are identical -> original codon set is self-complementary"""
         return true
     else
-        show_debug && @debug """Original codon set:
+        debug && @debug """Original codon set:
         $(data.codon_set)
         Complemented, reversed codon set:
         $(data_complemented_reversed.codon_set)
@@ -316,35 +315,33 @@ function is_self_complementary(data::CodonGraphData; show_debug::Bool = false)
 end
 
 # function to check if a codon graph is strong C3 (i.e., C3 and expanded graph only has cycles of length 2)
-function is_strong_c3(data::CodonGraphData; show_debug::Bool = false)
+function is_strong_c3(data::CodonGraphData; debug::Bool = false)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if strong C3."))
     # do not allow graphs with no edges
     ne(data.graph) == 0 && throw(ArgumentError("Graph has no edges! Cannot determine if strong C3."))
 
     # check if original graph is C3
-    if is_c3(data; show_debug = show_debug)
+    if is_c3(data; debug = debug)
         max_length = 2
-        show_debug &&
-            @debug "Codon set is C3 -> checking expanded graph for cycles longer than $max_length..."
+        debug && @debug "Codon set is C3 -> checking expanded graph for cycles longer than $max_length..."
 
         # create graph copy and expand it
         data_expanded = CodonGraphData(data.codon_set; plot_title = "Expanded graph for strong C3 check")
-        construct_graph_data!(data_expanded; show_debug = show_debug)
-        _expand_graph(data_expanded; show_debug = show_debug)
+        construct_graph_data!(data_expanded; debug = debug)
+        _expand_graph(data_expanded; debug = debug)
 
         # check if expanded graph has cycles longer than 2
-        if _has_cycle_longer_than(data_expanded.graph, max_length; show_debug = show_debug)
-            show_debug &&
+        if _has_cycle_longer_than(data_expanded.graph, max_length; debug = debug)
+            debug &&
                 @debug "Cycle longer than $max_length found in expanded graph -> codon set is not strong C3"
             return false
         end
 
-        show_debug &&
-            @debug "No cycles longer than $max_length found in expanded graph -> codon set is strong C3"
+        debug && @debug "No cycles longer than $max_length found in expanded graph -> codon set is strong C3"
         return true
     else
-        show_debug && @debug "Codon set is not C3 -> codon set cannot be strong C3"
+        debug && @debug "Codon set is not C3 -> codon set cannot be strong C3"
         return false
     end
 end
@@ -352,13 +349,13 @@ end
 
 # ---------------------------------------------- HELPERS ----------------------------------------------
 # add N₂ and N₃N₁ for each codon N₁N₂N₃ as vertices and connect them accordingly (if possible)
-function _add_n2_n3n1_by_codon(data::CodonGraphData, codon::LongDNA{4}; show_debug::Bool = false)
+function _add_n2_n3n1_by_codon(data::CodonGraphData, codon::LongDNA{4}; debug::Bool = false)
     n2 = string(codon[2])
     n3n1 = string(codon[3], codon[1])
-    add_vertex_by_label!(data, n2, show_debug = false)
-    add_vertex_by_label!(data, n3n1, show_debug = false)
-    add_edge_by_label!(data, n2, n3n1, show_debug = false)
-    add_edge_by_label!(data, n3n1, n2, show_debug = false)
+    add_vertex_by_label!(data, n2, debug = false)
+    add_vertex_by_label!(data, n3n1, debug = false)
+    add_edge_by_label!(data, n2, n3n1, debug = false)
+    add_edge_by_label!(data, n3n1, n2, debug = false)
     return true
 end
 
@@ -368,7 +365,7 @@ function _dfs_cycle_detection(
     graph::SimpleDiGraph,
     vertex::Int,
     state_array::Vector{Int};
-    show_debug::Bool = false,
+    debug::Bool = false,
 )
     # mark the current vertice as visiting
     state_array[vertex] = 1
@@ -376,7 +373,7 @@ function _dfs_cycle_detection(
         if state_array[neighbor] == 1
             return true # neighbor already visited, cycle detected
         elseif state_array[neighbor] == 0
-            if _dfs_cycle_detection(graph, neighbor, state_array; show_debug = show_debug)
+            if _dfs_cycle_detection(graph, neighbor, state_array; debug = debug)
                 return true # cycle detected in recursion
             end
         end
@@ -395,7 +392,7 @@ function _dfs_cycles(
     max_length::Int,
     state::Vector{Int},
     stack::Vector{Int};
-    show_debug::Bool = false,
+    debug::Bool = false,
 )
     # mark the current vertice as visiting
     state[vertex] = 1
@@ -404,12 +401,12 @@ function _dfs_cycles(
 
     for neighbor in outneighbors(graph, vertex)
         if state[neighbor] == 0 # if neighbor not visited, visit it
-            _dfs_cycles(graph, neighbor, max_length, state, stack; show_debug = show_debug) && return true
+            _dfs_cycles(graph, neighbor, max_length, state, stack; debug = debug) && return true
         elseif state[neighbor] == 1 # if neighbor is visiting, cycle detected
             index = findlast(==(neighbor), stack)
             cycle_length = length(stack) - index + 1
             if cycle_length > max_length
-                show_debug && @debug "Cycle length = $cycle_length: $(stack[index:end]) -> $neighbor"
+                debug && @debug "Cycle length = $cycle_length: $(stack[index:end]) -> $neighbor"
                 return true
             end
         end
@@ -429,7 +426,7 @@ function _dfs_depth_limited(
     vertex::Int,
     depth::Int,
     max_depth::Int;
-    show_debug::Bool = false,
+    debug::Bool = false,
 )
 
     if depth > max_depth
@@ -438,7 +435,7 @@ function _dfs_depth_limited(
 
     # mark the current vertice as visited
     for neighbor in outneighbors(graph, vertex)
-        if _dfs_depth_limited(graph, neighbor, depth + 1, max_depth; show_debug = show_debug)
+        if _dfs_depth_limited(graph, neighbor, depth + 1, max_depth; debug = debug)
             return true
         end
     end
@@ -448,7 +445,7 @@ end
 
 
 # expand graph by adding N₂ and N₃N₁ for each codon N₁N₂N₃ as vertices and connect them accordingly (if possible)
-function _expand_graph(data::CodonGraphData; show_debug::Bool = false)
+function _expand_graph(data::CodonGraphData; debug::Bool = false)
     for codon in data.codon_set
         _add_n2_n3n1_by_codon(data, codon)
     end
@@ -458,7 +455,7 @@ end
 
 
 # check if graph has cycle longer than max_length
-function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int; show_debug::Bool = false)
+function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int; debug::Bool = false)
     vertex_count = nv(graph)
     on_path = falses(vertex_count)
     stack = Int[]
@@ -473,7 +470,7 @@ function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int; show_debu
                 idx = findlast(==(w), stack)
                 cyc_len = depth - idx + 1
                 if cyc_len > max_length
-                    show_debug && @debug "Cycle length $cyc_len via $v -> $w (stack=$(stack[idx:end]))"
+                    debug && @debug "Cycle length $cyc_len via $v -> $w (stack=$(stack[idx:end]))"
                     pop!(stack)
                     on_path[v] = false
                     return true

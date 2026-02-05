@@ -7,7 +7,7 @@ using NetworkLayout
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
+    show_codon_graph(data::CodonGraphData; debug::Bool = false)
 
 Create and display a plot representing `data`.
 
@@ -17,7 +17,7 @@ Create and display a plot representing `data`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -35,7 +35,7 @@ construct_graph_data!(data)
 show_graph(data)
 ```
 """
-function show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
+function show_codon_graph(data::CodonGraphData; debug::Bool = false)
     # check if length of all_vertex_labels is equal to number of vertices
     length(data.all_vertex_labels) != nv(data.graph) && throw(
         ArgumentError(
@@ -43,7 +43,7 @@ function show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
         ),
     )
 
-    show_debug && @debug "Showing graph..."
+    debug && @debug "Showing graph..."
     # create plot figure
     fig = Figure(size = (1800, 900))
     ax = Axis(
@@ -57,7 +57,7 @@ function show_codon_graph(data::CodonGraphData; show_debug::Bool = false)
     )
     hidespines!(ax) # remove axis spines
     ax.title = data.plot_title
-    show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
+    debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
     graphplot!(
         ax,
         data.graph;
@@ -79,7 +79,7 @@ end
 
 
 """
-    show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+    show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; debug::Bool = false)
 
 Create and display a grid of plots for `data_list`.
 
@@ -89,7 +89,7 @@ Create and display a grid of plots for `data_list`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -108,7 +108,7 @@ construct_graph_data!(data)
 show_multiple_graphs([data])
 ```
 """
-function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debug::Bool = false)
+function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; debug::Bool = false)
     # do not allow empty data_list
     isempty(data_list) && throw(ArgumentError("data_list cannot be empty."))
     # check if length of all_vertex_labels is equal to number of vertices for each data
@@ -120,7 +120,7 @@ function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debu
         )
     end
 
-    show_debug && @debug "Showing multiple graphs..."
+    debug && @debug "Showing multiple graphs..."
     # get grid size
     number_columns = _get_columns_amount(length(data_list))
     # create plot figure
@@ -130,7 +130,7 @@ function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debu
         quotient, remainder = divrem(index - 1, number_columns)
         row = quotient + 1
         column = remainder + 1
-        show_debug && @debug "index: $index, row: $row, column: $column"
+        debug && @debug "index: $index, row: $row, column: $column"
         ax = Axis(
             fig[row, column];
             xgridvisible = false,
@@ -141,7 +141,7 @@ function show_multiple_codon_graphs(data_list::Vector{CodonGraphData}; show_debu
             yticklabelsvisible = false,
         )
         ax.title = data.plot_title
-        show_debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
+        debug && @debug "all_vertex_labels in graph: $(data.all_vertex_labels)"
         graphplot!(
             ax,
             data.graph;

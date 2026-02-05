@@ -7,7 +7,7 @@ using Graphs
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    construct_graph_data!(data::CodonGraphData; show_debug::Bool = false) -> Bool
+    construct_graph_data!(data::CodonGraphData; debug::Bool = false) -> Bool
 
 Construct the graph for `data` from its codon set.
 
@@ -17,7 +17,7 @@ Construct the graph for `data` from its codon set.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -31,16 +31,16 @@ Construct the graph for `data` from its codon set.
 
 ```julia
 data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
-construct_graph_data!(data; show_debug = true)
+construct_graph_data!(data; debug = true)
 ```
 """
-function construct_graph_data!(data::CodonGraphData; show_debug::Bool = false)
-    show_debug &&
+function construct_graph_data!(data::CodonGraphData; debug::Bool = false)
+    debug &&
         @debug "Debug logs for construct_graph_data!-------------------------------------------------------------------------------------------------------------------------------------------"
     # do not allow populated data fields (only codon_set is allowed to be populated)
-    _check_data_fields_empty(data, show_debug = show_debug)
+    _check_data_fields_empty(data, debug = debug)
 
-    show_debug && @debug """Before adding vertices and edges:
+    debug && @debug """Before adding vertices and edges:
     graph: $(data.graph)
     codon_set: $(data.codon_set)
     all_vertex_labels: $(data.all_vertex_labels)
@@ -57,7 +57,7 @@ function construct_graph_data!(data::CodonGraphData; show_debug::Bool = false)
         data.codon_set,
         data.all_vertex_labels,
         data.base_vertex_labels;
-        show_debug = show_debug,
+        debug = debug,
     )
 
     # create mapping from vertice label to vertice index in graph
@@ -71,10 +71,10 @@ function construct_graph_data!(data::CodonGraphData; show_debug::Bool = false)
         data.all_edge_labels,
         data.base_edge_labels,
         data.vertex_index;
-        show_debug = show_debug,
+        debug = debug,
     )
 
-    show_debug && @debug """After adding vertices and edges:
+    debug && @debug """After adding vertices and edges:
     graph: $(data.graph)
     codon_set: $(data.codon_set)
     all_vertex_labels: $(data.all_vertex_labels)
@@ -90,7 +90,7 @@ end
 
 
 """
-    add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false) -> Bool
+    add_vertex_by_label!(data::CodonGraphData, label::String; debug::Bool = false) -> Bool
 
 Add a vertex with `label` to the graph if it does not already exist.
 
@@ -101,7 +101,7 @@ Add a vertex with `label` to the graph if it does not already exist.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -120,8 +120,8 @@ construct_graph_data!(data)
 add_vertex_by_label!(data, "AG")
 ```
 """
-function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::Bool = false)
-    show_debug &&
+function add_vertex_by_label!(data::CodonGraphData, label::String; debug::Bool = false)
+    debug &&
         @debug "Debug logs for add_vertex_by_label!-------------------------------------------------------------------------------------------------------------------------------------------"
     # do not allow empty labels
     isempty(label) && throw(ArgumentError("label cannot be empty!"))
@@ -129,7 +129,7 @@ function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::B
     !(length(label) in (1, 2)) &&
         throw(ArgumentError("label must be of length 1 or 2, got length $(length(label))!"))
     if label in data.all_vertex_labels # vertex already exists
-        show_debug && @debug "Vertice $label already exists in graph -> not added."
+        debug && @debug "Vertice $label already exists in graph -> not added."
         return false
     else # vertex does not already exist
         # update affected data fields
@@ -137,7 +137,7 @@ function add_vertex_by_label!(data::CodonGraphData, label::String; show_debug::B
         push!(data.added_vertex_labels, label) # add to manually added vertex labels
         push!(data.all_vertex_labels, label) # add to all vertex labels
         data.vertex_index[label] = nv(data.graph) # map label to vertex index
-        show_debug && @debug "Added vertex: $label"
+        debug && @debug "Added vertex: $label"
         return true
     end
 end
@@ -148,7 +148,7 @@ end
         data::CodonGraphData,
         src_label::String,
         dst_label::String;
-        show_debug::Bool = false,
+        debug::Bool = false,
     ) -> Bool
 
 Add a labeled edge if it does not already exist.
@@ -161,7 +161,7 @@ Add a labeled edge if it does not already exist.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -180,12 +180,7 @@ construct_graph_data!(data)
 add_edge_by_label!(data, "C", "GT")
 ```
 """
-function add_edge_by_label!(
-    data::CodonGraphData,
-    src_label::String,
-    dst_label::String;
-    show_debug::Bool = false,
-)
+function add_edge_by_label!(data::CodonGraphData, src_label::String, dst_label::String; debug::Bool = false)
     # do not allow empty labels or not existing labels in vertex_index
     isempty(src_label) && throw(ArgumentError("from_label cannot be empty!"))
     isempty(dst_label) && throw(ArgumentError("to_label cannot be empty!"))
@@ -194,8 +189,8 @@ function add_edge_by_label!(
     !haskey(data.vertex_index, dst_label) &&
         throw(ArgumentError("Vertex with label $dst_label does not exist in graph!"))
 
-    if _has_edge_label(data, src_label, dst_label; show_debug = show_debug) # edge already exists
-        show_debug && @debug "Edge $src_label -> $dst_label already exists in graph -> not added."
+    if _has_edge_label(data, src_label, dst_label; debug = debug) # edge already exists
+        debug && @debug "Edge $src_label -> $dst_label already exists in graph -> not added."
         return false
     else # edge does not already exist
         # get vertex indices from labels
@@ -206,7 +201,7 @@ function add_edge_by_label!(
         push!(data.added_edge_labels, (src_label, dst_label))
         push!(data.all_edge_labels, (src_label, dst_label))
         add_edge!(data.graph, from_index, to_index)
-        show_debug && @debug "Added edge: $src_label -> $dst_label"
+        debug && @debug "Added edge: $src_label -> $dst_label"
         return true
     end
 end
@@ -219,7 +214,7 @@ function _add_vertices_by_codon_set!(
     codon_set::Vector{LongDNA{4}},
     all_vertex_labels::Vector{String},
     base_vertex_labels::Vector{String};
-    show_debug::Bool = false,
+    debug::Bool = false,
 )
     # use a temporary set to avoid duplicates and increase lookup speed
     temp_labels = Set{String}()
@@ -255,11 +250,11 @@ function _add_edges_by_codon_set!(
     all_edge_labels::Vector{Tuple{String, String}},
     base_edge_labels::Vector{Tuple{String, String}},
     vertex_index::Dict{String, Int};
-    show_debug::Bool = false,
+    debug::Bool = false,
 )
     # iterate through codon set and add edges to graph
     for codon in codon_set
-        # add_edge_by_codon(graph, codon; show_debug = show_debug)
+        # add_edge_by_codon(graph, codon; debug = debug)
         # get needed vertex IDs
         first_base_id = vertex_index[string(codon[1])]
         third_base_id = vertex_index[string(codon[3])]
@@ -280,14 +275,14 @@ end
 
 
 # checks if a vertex with given label exists in the graph
-function _has_vertex_label(vertex_index::Dict{String, Int}, label::String; show_debug::Bool = false)
-    show_debug && @debug "Checking if vertice label $label exists in graph..."
+function _has_vertex_label(vertex_index::Dict{String, Int}, label::String; debug::Bool = false)
+    debug && @debug "Checking if vertice label $label exists in graph..."
     return haskey(vertex_index, label)
 end
 
 
 # checks if an edge with given labels exists in the graph
-function _has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; show_debug::Bool = false)
+function _has_edge_label(data::CodonGraphData, src_label::String, dst_label::String; debug::Bool = false)
     # check if labels exist
     haskey(data.vertex_index, src_label) || return false
     haskey(data.vertex_index, dst_label) || return false
@@ -300,7 +295,7 @@ end
 
 
 # checks if all data fields (except codon_set) are empty
-function _check_data_fields_empty(data::CodonGraphData; show_debug::Bool = false)
+function _check_data_fields_empty(data::CodonGraphData; debug::Bool = false)
     nv(data.graph) != 0 && throw(ArgumentError("Graph contains vertices."))
     ne(data.graph) != 0 && throw(ArgumentError("Graph contains edges."))
     !isempty(data.all_vertex_labels) && throw(ArgumentError("all_vertex_labels is not empty."))
