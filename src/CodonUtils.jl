@@ -4,7 +4,7 @@
 # BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+    get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
 
 Return the complemented and reversed codons for every codon in `codon_set`.
 
@@ -14,7 +14,7 @@ Return the complemented and reversed codons for every codon in `codon_set`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -32,7 +32,7 @@ codon_set = LongDNA{4}.(["AAA", "AAC"])
 get_complemented_reversed_codon_set(codon_set)
 ```
 """
-function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
     # do not allow empty codon sets
     isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
     # do not allow codons of length different than 3
@@ -44,11 +44,9 @@ function get_complemented_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show
         )
     end
     # get complemented, reversed codon set
-    complemented_reversed_codon_set = get_complemented_codon_set(
-        get_reversed_codon_set(codon_set; show_debug = show_debug),
-        show_debug = show_debug,
-    )
-    show_debug && @debug "Original codon set: $(codon_set)
+    complemented_reversed_codon_set =
+        get_complemented_codon_set(get_reversed_codon_set(codon_set; debug = debug), debug = debug)
+    debug && @debug "Original codon set: $(codon_set)
     -> Complemented, reversed codon set: $complemented_reversed_codon_set"
 
     return complemented_reversed_codon_set
@@ -56,7 +54,7 @@ end
 
 
 """
-    get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+    get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
 
 Return the complemented codons for every codon in `codon_set`.
 
@@ -66,7 +64,7 @@ Return the complemented codons for every codon in `codon_set`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -84,7 +82,7 @@ codon_set = LongDNA{4}.(["AAA", "AAC"])
 get_complemented_codon_set(codon_set)
 ```
 """
-function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
     # do not allow empty codon sets
     isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
     # do not allow codons of length different than 3
@@ -100,16 +98,16 @@ function get_complemented_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::B
     complemented_codons = Vector{LongDNA{4}}()
     for codon in codon_set
         # add the complemented codon to the complemented_codons set
-        push!(complemented_codons, get_complemented_codon(codon; show_debug = show_debug))
+        push!(complemented_codons, get_complemented_codon(codon; debug = debug))
     end
-    show_debug && @debug "Original codon set: $codon_set -> complemented codon set: $complemented_codons"
+    debug && @debug "Original codon set: $codon_set -> complemented codon set: $complemented_codons"
 
     return complemented_codons
 end
 
 
 """
-    get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+    get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
 
 Return the reversed codons for every codon in `codon_set`.
 
@@ -119,7 +117,7 @@ Return the reversed codons for every codon in `codon_set`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -137,7 +135,7 @@ codon_set = LongDNA{4}.(["AGT", "AAC"])
 get_reversed_codon_set(codon_set)
 ```
 """
-function get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool = false)
+function get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; debug::Bool = false)
     # do not allow empty codon sets
     isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
     # do not allow codons of length different than 3
@@ -153,16 +151,16 @@ function get_reversed_codon_set(codon_set::Vector{LongDNA{4}}; show_debug::Bool 
     reversed_codons = Vector{LongDNA{4}}()
     for codon in codon_set
         # add the reversed complemented codon to the reversed_codons set
-        push!(reversed_codons, get_reversed_codon(codon; show_debug = show_debug))
+        push!(reversed_codons, get_reversed_codon(codon; debug = debug))
     end
-    show_debug && @debug "Original codon set: $codon_set -> reversed codon set: $reversed_codons"
+    debug && @debug "Original codon set: $codon_set -> reversed codon set: $reversed_codons"
 
     return reversed_codons
 end
 
 
 """
-    get_complemented_codon(codon::LongDNA{4}; show_debug::Bool = false)
+    get_complemented_codon(codon::LongDNA{4}; debug::Bool = false)
 
 Return the complemented codon. Assumes a codon length of 3.
 
@@ -172,7 +170,7 @@ Return the complemented codon. Assumes a codon length of 3.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -188,20 +186,20 @@ Return the complemented codon. Assumes a codon length of 3.
 get_complemented_codon(LongDNA{4}("ATC"))
 ```
 """
-function get_complemented_codon(codon::LongDNA{4}; show_debug::Bool = false)
+function get_complemented_codon(codon::LongDNA{4}; debug::Bool = false)
     # do not allow codons of length different than 3
     length(codon) != 3 &&
         throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
 
     # get complemented codon
     complemented_codon = BioSequences.complement(codon)
-    show_debug && @debug "Original codon: $codon, -> complemented codon: $complemented_codon"
+    debug && @debug "Original codon: $codon, -> complemented codon: $complemented_codon"
     return complemented_codon
 end
 
 
 """
-    get_reversed_codon(codon::LongDNA{4}; show_debug::Bool = false)
+    get_reversed_codon(codon::LongDNA{4}; debug::Bool = false)
 
 Return the reversed codon. Assumes a codon length of 3.
 
@@ -211,7 +209,7 @@ Return the reversed codon. Assumes a codon length of 3.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -227,20 +225,20 @@ Return the reversed codon. Assumes a codon length of 3.
 get_reversed_codon(LongDNA{4}("ACA"))
 ```
 """
-function get_reversed_codon(codon::LongDNA{4}; show_debug::Bool = false)
+function get_reversed_codon(codon::LongDNA{4}; debug::Bool = false)
     # do not allow codons of length different than 3
     length(codon) != 3 &&
         throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
 
     # get reversed codon
     reversed_codon = BioSequences.reverse(codon)
-    show_debug && @debug "Original codon: $codon, -> reversed codon: $reversed_codon"
+    debug && @debug "Original codon: $codon, -> reversed codon: $reversed_codon"
     return reversed_codon
 end
 
 
 """
-    get_complemented_base(base::Char; show_debug::Bool = false)
+    get_complemented_base(base::Char; debug::Bool = false)
 
 Return the complemented base using `BASE_COMPLEMENT`.
 
@@ -250,7 +248,7 @@ Return the complemented base using `BASE_COMPLEMENT`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -266,19 +264,19 @@ Return the complemented base using `BASE_COMPLEMENT`.
 get_complemented_base('A')
 ```
 """
-function get_complemented_base(base::Char; show_debug::Bool = false)
+function get_complemented_base(base::Char; debug::Bool = false)
     # do not allow bases not in BASE_COMPLEMENT
     !haskey(BASE_COMPLEMENT, base) &&
         throw(ArgumentError("Base must be one of $(keys(BASE_COMPLEMENT)), got base '$base'."))
 
-    show_debug && @debug "Original base: $base, -> complemented base: $(BASE_COMPLEMENT[base])"
+    debug && @debug "Original base: $base, -> complemented base: $(BASE_COMPLEMENT[base])"
 
     return BASE_COMPLEMENT[base]
 end
 
 
 """
-    left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
+    left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; debug::Bool = false)
 
 Return a new codon set where each codon is left-shifted by `shift_by`.
 
@@ -289,7 +287,7 @@ Return a new codon set where each codon is left-shifted by `shift_by`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -307,7 +305,7 @@ codon_set = LongDNA{4}.(["CGA", "AAC"])
 left_shift_codon_set(codon_set, 1)
 ```
 """
-function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show_debug::Bool = false)
+function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; debug::Bool = false)
     # do not allow empty codon sets
     isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
     # do not allow codons of length different than 3
@@ -325,17 +323,17 @@ function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int; show
     shifted_codon_set = Vector{LongDNA{4}}()
     for codon in codon_set
         # cut of first shift_by characters and append them to the end
-        shifted_codon = left_shift_codon(codon, shift_by; show_debug = show_debug)
+        shifted_codon = left_shift_codon(codon, shift_by; debug = debug)
         push!(shifted_codon_set, shifted_codon)
     end
-    show_debug && @debug """Original codon set: $codon_set
+    debug && @debug """Original codon set: $codon_set
     -> shifted codon set by $shift_by: $shifted_codon_set"""
     return shifted_codon_set
 end
 
 
 """
-    left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
+    left_shift_codon(codon::LongDNA{4}, shift_by::Int; debug::Bool = false)
 
 Return `codon` left-shifted by `shift_by`.
 
@@ -346,7 +344,7 @@ Return `codon` left-shifted by `shift_by`.
 
 # Keyword Arguments
 
-  - `show_debug::Bool`: Whether to emit debug logs.
+  - `debug::Bool`: Whether to emit debug logs.
 
 # Returns
 
@@ -362,7 +360,7 @@ Return `codon` left-shifted by `shift_by`.
 left_shift_codon(LongDNA{4}("ATC"), 1)
 ```
 """
-function left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = false)
+function left_shift_codon(codon::LongDNA{4}, shift_by::Int; debug::Bool = false)
     # do not allow codons of length different than 3
     length(codon) != 3 &&
         throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
@@ -371,7 +369,7 @@ function left_shift_codon(codon::LongDNA{4}, shift_by::Int; show_debug::Bool = f
     shift_by = mod(shift_by, length(codon))
     # cut of first shift_by characters and append them to the end
     shifted_codon = codon[(shift_by + 1):end] * codon[1:shift_by]
-    show_debug && @debug """Original codon: $codon
+    debug && @debug """Original codon: $codon
     -> shifted codon by $shift_by: $shifted_codon"""
     return shifted_codon
 end

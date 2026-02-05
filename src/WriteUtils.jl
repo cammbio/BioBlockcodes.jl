@@ -31,18 +31,16 @@ function extract_codon_set_from_result(line::AbstractString)
     isempty(strip(line)) && throw(ArgumentError("Line is empty."))
 
     parts = split(line, ",")
-    codon_part = strip(parts[1])
-    codon_strings = split(codon_part, "|"; keepempty = false)
-    return codon_strings
+    codon_set = strip(parts[1])
+    codon_set_str = split(codon_set, "|"; keepempty = false)
+    return LongDNA{4}.(codon_set_str)
 end
 
 # write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
-function result_to_csv!(io, codon_set, combination_indices)
+function result_to_csv!(io::IOStream, codon_set::Vector{LongDNA{4}}, comb_idxs::Vector{Int})
     # compact CSV-style line: "COD1|COD2,idx1|idx2"
-    codon_strings = codon_set isa Vector{LongDNA{4}} ? string.(codon_set) : string.(LongDNA{4}.(codon_set))
-    idx_strings = string.(combination_indices)
-    write(io, join(codon_strings, "|"))
-    write(io, ',')
-    write(io, join(idx_strings, "|"))
-    write(io, '\n')
+    codon_str = string.(codon_set)
+    idx_str = string.(comb_idxs)
+    println(io, join(codon_str, "|"), ",", join(idx_str, "|"))
+    return true
 end

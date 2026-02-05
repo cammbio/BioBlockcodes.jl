@@ -157,11 +157,11 @@ export
     _get_last_line,
     _remove_empty_last_lines,
     _contains_rotation,
-    _get_rotation_masks,
-    _combination_to_mask,
-    _mask_contains_rotation,
+    _get_rot_masks,
+    _comb_to_mask,
+    _mask_has_rot,
     _set_codon_bit,
-    _is_combination_strong_c3,
-    _load_checkpoint,
-    _save_checkpoint
+    _is_comb_strong_c3,
+    _load_ckp,
+    _save_ckp
 end

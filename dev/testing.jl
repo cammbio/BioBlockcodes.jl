@@ -86,7 +86,22 @@ const ALL_CODONS =
     ])
 
 const stop_flag = Base.Threads.Atomic{Bool}(false)
-codons = GCATCodes.ALL_CODONS
+
+process_strong_c3_combinations_by_combination_size("files/results", "files/checkpoint.csv", stop_flag)
+
+sort_by_indices("files/results/result_2.csv", "files/test.csv")
+
+open("files/results/result_1.csv", "r") do res
+    counter = 0
+    for line in eachline(res)
+        counter += 1
+        codon = extract_codon_set_from_result(line)[1]
+        println("Codon: $codon, type: ", typeof(codon))
+        if LongDNA{4}(codon) != ALL_CODONS[counter]
+            println("ERROR at line $counter: expected codon $(ALL_CODONS[counter]), got $codon")
+        end
+    end
+end
 
 function sort_by_indices(infile::AbstractString, outfile::AbstractString)
     lines = readlines(infile)
