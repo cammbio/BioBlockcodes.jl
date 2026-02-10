@@ -79,9 +79,109 @@ const ALL_CODONS =
         "TTC",
         "TTG",
     ])
-
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
+open("files/results/res_12.csv", "r") do io
+    line_count = 0
+    for line in eachline(io)
+        if line_count == 10
+            break
+        end
+        line_count += 1
+        codon_set = get_codon_set_from_res(line)
+        grow_codon_results_all(codon_set; line_count = line_count)
+    end
+end
+
+line = read_line("files/results/res_12.csv", 2)
+codon_set = get_codon_set_from_res(line)
+grow_codon_results(codon_set)
+grow_codon_results_all(codon_set, line_count = 2)
+
+
+function grow_codon_results_all(src_codon_set::Vector{LongDNA{4}}; line_count::Int = 0, debug::Bool = false)
+    data_list = Vector{CodonGraphData}()
+    for i in 1:length(src_codon_set)
+        codon_set = src_codon_set[1:i]
+        codon_set_str = get_codon_set_str(codon_set)
+        data = CodonGraphData(codon_set; plot_title = codon_set_str)
+        # data_expanded = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) after expanding")
+        construct_graph_data!(data; debug = debug)
+        # construct_graph_data!(data_expanded; debug = debug)
+        push!(data_list, data)
+    end
+    show_multiple_codon_graphs(data_list; fig_title = "Line $line_count", debug = debug)
+    return true
+end
+
+function grow_codon_results(src_codon_set::Vector{LongDNA{4}}; debug::Bool = false)
+    for i in 1:length(src_codon_set)
+        codon_set = src_codon_set[1:i]
+        data = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) before expanding")
+        data_expanded = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) after expanding")
+        construct_graph_data!(data; debug = debug)
+        construct_graph_data!(data_expanded; debug = debug)
+
+        if is_strong_c3(data; debug = debug)
+            data_list = [data, data_expanded]
+            show_multiple_codon_graphs(data_list; debug = debug)
+        else
+            return false
+        end
+    end
+    return true
+end
+
+function read_line(path, n::Int)
+    open(path) do io
+        for _ in 1:(n - 1)
+            eof(io) && return nothing
+            readline(io)
+        end
+        return eof(io) ? nothing : readline(io)
+    end
+end
+
+function get_count_tier(codon::LongDNA{4}, size::Int)
+    codon_count = get_codon_count_in_res("files/results/res_$(size).csv")
+    count = codon_count[codon]
+    count_of_count = get_count_of_count(codon_count)
+    counts = sort(collect(keys(count_of_count)))
+
+    min_count = counts[1]
+    mid_count = counts[2]
+    max_count = counts[3]
+
+    if count == min_count
+        return "min"
+    elseif count == mid_count
+        return "mid"
+    elseif count == max_count
+        return "max"
+    else
+        throw(
+            ArgumentError(
+                "Count $count does not match any tier (min: $min_count, mid: $mid_count, max: $max_count)",
+            ),
+        )
+    end
+end
+
+function compare_analysis_files_linewise(orig_file_path::String, comp_file_path::String)
+    open(orig_file_path, "r") do orig_file
+        open(comp_file_path, "r") do comp_file
+            line_number = 0
+            for (orig_line, comp_line) in zip(eachline(orig_file), eachline(comp_file))
+                line_number += 1
+                if orig_line != comp_line
+                    println("Difference found at line $line_number:")
+                    println("Original: $orig_line")
+                    println("Comparison: $comp_line")
+                end
+            end
+        end
+    end
+end
 
 # count which codons appear how many times in a results file
 function get_codon_count_in_res(res_path::String)
@@ -172,15 +272,6 @@ function plot_codon_counts_sorted(res_path; order = ALL_CODONS, save_path = noth
     return fig
 end
 
-for i in 1:5
-    fig = plot_codon_counts("files/results/res_$i.csv"; save_path = "files/diagrams/codon_count_$i.png")
-    fig = plot_codon_counts_sorted(
-        "files/results/res_$i.csv";
-        save_path = "files/diagrams/codon_count_sorted_$i.png",
-    )
-end
-
-
 # function to get the amount of different values in codon_count dict
 function get_count_of_count(codon_count::Dict{LongDNA{4}, Int})
     count_of_count = Dict{Int, Int}()
@@ -192,24 +283,6 @@ function get_count_of_count(codon_count::Dict{LongDNA{4}, Int})
         end
     end
     return count_of_count
-end
-
-for i in 1:5
-    codon_count = get_codon_count_in_res("files/results/res_$i.csv")
-    count_of_count = get_count_of_count(codon_count)
-    println("Codon count for res_$i.csv: $count_of_count")
-end
-
-open("files/results/result_1.csv", "r") do res
-    counter = 0
-    for line in eachline(res)
-        counter += 1
-        codon = extract_codon_set_from_result(line)[1]
-        println("Codon: $codon, type: ", typeof(codon))
-        if LongDNA{4}(codon) != ALL_CODONS[counter]
-            println("ERROR at line $counter: expected codon $(ALL_CODONS[counter]), got $codon")
-        end
-    end
 end
 
 function sort_by_indices(infile::AbstractString, outfile::AbstractString)
@@ -278,64 +351,4 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
         prev = ci
     end
     return rank
-end
-
-# test reading results file
-open("files/results/test.txt", "r") do res
-    counter = 0
-    for line in eachline(res)
-        if counter == 100_000
-            break
-        end
-        codon_set = result_to_codon_set(line)
-        # println("Codon set: $codon_set")
-        counter += 1
-    end
-end
-
-# test writing results file
-open("files/results/test.txt", "w") do in
-    open("files/results/result_8.txt", "r") do out
-        for line in eachline(out)
-            println(in, line)
-        end
-    end
-end
-
-# test checking for false positives
-open("files/results/result_5.txt", "r") do res
-    counter = 0
-    false_positives = 0
-    for line in eachline(res)
-        # if counter == 10
-        #     break
-        # end
-        counter += 1
-        if counter % 100000 == 0
-            println("counter: $counter")
-        end
-
-        codon_set = result_to_codon_set(line)
-        data = CodonGraphData(codon_set)
-        construct_graph_data!(data)
-        _expand_graph(data)
-
-        if get_max_cycle_length(data.graph; show_debug = false) > 2
-            println("Max cycle length > 2 found!")
-            println("codon set: $codon_set in line $counter is FALSE POSITIVE")
-            false_positives += 1
-        end
-    end
-    println("FINISHED, counter: $counter, false_positives: $false_positives")
-end
-
-# test extracting combination indices from result file
-for i in 2:2
-    orig_file = "files/results/result_$i.csv"
-    copy_file = "files/results/sorted_result_$i.csv"
-    # sort_by_indices(orig_file, copy_file)
-    for line in eachline(copy_file)
-        combination = extract_csv_column(line, 2)
-        println("Combination indices: ", combination)
-    end
 end

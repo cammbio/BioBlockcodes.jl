@@ -17,15 +17,6 @@ function csv_to_result(path)
 end
 
 
-# turn file line (format: "YXX", "XXY", "YXZ") to codon set
-function line_to_codon_set(line::String)
-    codon_array = split(line, ", ")
-    codon_array = replace.(codon_array, "\"" => "")
-    codon_set = LongDNA{4}.(codon_array)
-    return codon_set
-end
-
-
 # parse one compact CSV line "COD1|COD2,idx1|idx2" -> Vector{LongDNA{4}}
 function get_codon_set_from_res(line::AbstractString)
     isempty(strip(line)) && throw(ArgumentError("Line is empty."))
@@ -35,6 +26,14 @@ function get_codon_set_from_res(line::AbstractString)
     codon_set_str = split(codon_set, "|"; keepempty = false)
     return LongDNA{4}.(codon_set_str)
 end
+
+# turn Vector{LongDNA{4}} into compact CSV-style string "COD1", "COD2",...
+function get_codon_set_str(codon_set::Vector{LongDNA{4}})
+    codon_strs = String.(codon_set)
+    formatted = "\"" * join(codon_strs, "\", \"") * "\""
+    return formatted
+end
+
 
 # write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
 function result_to_csv!(io::IOStream, codon_set::Vector{LongDNA{4}}, comb_idxs::Vector{Int})
