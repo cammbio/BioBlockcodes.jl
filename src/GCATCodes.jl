@@ -1,14 +1,14 @@
 module GCATCodes
 # ---------------------------------------------- VARIABLES ----------------------------------------------
-# using JuliaFormatter
-# using Logging
-# using CairoMakie
-# using GraphMakie
-# using Graphs
-# using BioSequences
-# using NetworkLayout
-# using Base.Threads
-# using BenchmarkTools
+using JuliaFormatter
+using Logging
+using CairoMakie
+using GraphMakie
+using Graphs
+using BioSequences
+using NetworkLayout
+using Base.Threads
+using BenchmarkTools
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
 # const ALL_CODONS =
 # LongDNA{
@@ -84,7 +84,7 @@ include("CyclesAnalysis.jl") # needs Types.jl
 include("CodonUtils.jl") # needs Types.jl
 include("PlotUtils.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
-include("GraphUtils.jl") # needs Types.jl and PlotUtils.jl
+include("CodonGraphUtils.jl") # needs Types.jl and PlotUtils.jl
 include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 include("StrongC3AnalysisDEP.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
 # ---------------------------------------------- EXPORTS ------------------------------------------------
@@ -130,7 +130,7 @@ export
     show_multiple_codon_graphs,
     # WriterUtils.jl
     line_to_codon_set,
-    extract_codon_set_from_result,
+    get_codon_set_from_res,
     csv_to_result,
     result_to_codon_set,
     print_to_file,
@@ -139,9 +139,9 @@ export
     # StrongC3Analysis.jl
     process_strong_c3_combinations_by_combination_size_with_mask,
     # StrongC3AnalysisPlain.jl
-    process_strong_c3_combinations_by_combination_size,
+    calc_strong_c3_comb_by_size,
     # StrongC3AnalysisSmart.jl
-    process_strong_c3_combinations_by_combination_size,
+    calc_strong_c3_comb_by_size,
 
 
 

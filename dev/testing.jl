@@ -14,11 +14,6 @@ using BenchmarkTools
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 # global_logger(ConsoleLogger(Logging.Info)) # deactivate
 
-cp_path = "files/checkpoints/test.csv"
-_save_checkpoint(cp_path, 42)
-a = _load_checkpoint(cp_path)
-print(a)
-
 const ALL_CODONS =
     LongDNA{
         4,
@@ -87,9 +82,123 @@ const ALL_CODONS =
 
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-process_strong_c3_combinations_by_combination_size("files/results", "files/checkpoint.csv", stop_flag)
 
-sort_by_indices("files/results/result_2.csv", "files/test.csv")
+# count which codons appear how many times in a results file
+function get_codon_count_in_res(res_path::String)
+    codon_counts = Dict{LongDNA{4}, Int}()
+
+    # initialize counts to 0
+    for codon in ALL_CODONS
+        codon_counts[codon] = 0
+    end
+
+    open(res_path, "r") do f
+        for line in eachline(f)
+            codon_set = get_codon_set_from_res(line)
+            for codon in codon_set
+                codon_counts[codon] += 1
+            end
+        end
+    end
+
+    return codon_counts
+end
+
+function plot_codon_counts(res_path; order = ALL_CODONS, save_path = nothing)
+    counts = get_codon_count_in_res(res_path)
+
+    codons = order
+    values = [counts[c] for c in codons]
+
+    fig = Figure(size = (1800, 900))
+    ax = Axis(fig[1, 1]; xlabel = "Codon", ylabel = "Anzahl", xticklabelrotation = pi / 3)
+
+    barplot!(ax, 1:length(codons), values; color = :dodgerblue)
+    ax.xticks = (1:length(codons), String.(codons))
+
+    # counts als Labels oberhalb der Balken
+    label_offset = maximum(values) == 0 ? 0.5 : maximum(values) * 0.01
+    for (i, v) in enumerate(values)
+        text!(
+            ax,
+            string(v);
+            position = (i, v + label_offset),
+            align = (:center, :bottom),
+            fontsize = 10,
+            color = :black,
+        )
+    end
+
+    if save_path !== nothing
+        save(save_path, fig)
+    end
+
+    return fig
+end
+
+function plot_codon_counts_sorted(res_path; order = ALL_CODONS, save_path = nothing)
+    counts = get_codon_count_in_res(res_path)
+
+    codons = order
+    values = [counts[c] for c in codons]
+
+    # nach Häufigkeit absteigend sortieren
+    sorted_pairs = sort(collect(zip(codons, values)); by = last, rev = true)
+    codons, values = first.(sorted_pairs), last.(sorted_pairs)
+
+    fig = Figure(size = (1800, 900))
+    ax = Axis(fig[1, 1]; xlabel = "Codon", ylabel = "Anzahl", xticklabelrotation = pi / 3)
+
+    barplot!(ax, 1:length(codons), values; color = :dodgerblue)
+    ax.xticks = (1:length(codons), String.(codons))
+
+    # counts als Labels oberhalb der Balken
+    label_offset = maximum(values) == 0 ? 0.5 : maximum(values) * 0.01
+    for (i, v) in enumerate(values)
+        text!(
+            ax,
+            string(v);
+            position = (i, v + label_offset),
+            align = (:center, :bottom),
+            fontsize = 10,
+            color = :black,
+        )
+    end
+
+    if save_path !== nothing
+        save(save_path, fig)
+    end
+
+    return fig
+end
+
+for i in 1:5
+    fig = plot_codon_counts("files/results/res_$i.csv"; save_path = "files/diagrams/codon_count_$i.png")
+    fig = plot_codon_counts_sorted(
+        "files/results/res_$i.csv";
+        save_path = "files/diagrams/codon_count_sorted_$i.png",
+    )
+end
+
+
+# function to get the amount of different values in codon_count dict
+function get_count_of_count(codon_count::Dict{LongDNA{4}, Int})
+    count_of_count = Dict{Int, Int}()
+    for count in values(codon_count)
+        if haskey(count_of_count, count)
+            count_of_count[count] += 1
+        else
+            count_of_count[count] = 1
+        end
+    end
+    return count_of_count
+end
+
+for i in 1:5
+    codon_count = get_codon_count_in_res("files/results/res_$i.csv")
+    count_of_count = get_count_of_count(codon_count)
+    println("Codon count for res_$i.csv: $count_of_count")
+end
 
 open("files/results/result_1.csv", "r") do res
     counter = 0
