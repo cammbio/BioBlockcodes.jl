@@ -27,7 +27,7 @@ end
 
 
 # parse one compact CSV line "COD1|COD2,idx1|idx2" -> Vector{LongDNA{4}}
-function extract_codon_set_from_result(line::AbstractString)
+function get_codon_set_from_res(line::AbstractString)
     isempty(strip(line)) && throw(ArgumentError("Line is empty."))
 
     parts = split(line, ",")
