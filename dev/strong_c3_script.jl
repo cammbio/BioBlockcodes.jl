@@ -2,7 +2,7 @@ using Revise
 using GCATCodes
 using Base.Threads
 
-# shared stop_flag
+# stop_flag
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
 

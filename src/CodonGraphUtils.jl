@@ -7,89 +7,6 @@ using Graphs
 
 # ---------------------------------------------- FUNCTIONS ----------------------------------------------
 """
-    construct_graph_data!(data::CodonGraphData; debug::Bool = false) -> Bool
-
-Construct the graph for `data` from its codon set.
-
-# Arguments
-
-  - `data::CodonGraphData`: Graph data to populate.
-
-# Keyword Arguments
-
-  - `debug::Bool`: Whether to emit debug logs.
-
-# Returns
-
-  - `True`: If graph construction was successful.
-
-# Throws
-
-  - `ArgumentError`: If a `data` field is not empty before construction (except codon_set) or if the graph is not empty.
-
-# Example
-
-```julia
-data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
-construct_graph_data!(data; debug = true)
-```
-"""
-function construct_graph_data!(data::CodonGraphData; debug::Bool = false)
-    debug &&
-        @debug "Debug logs for construct_graph_data!-------------------------------------------------------------------------------------------------------------------------------------------"
-    # do not allow populated data fields (only codon_set is allowed to be populated)
-    _check_data_fields_empty(data, debug = debug)
-
-    debug && @debug """Before adding vertices and edges:
-    graph: $(data.graph)
-    codon_set: $(data.codon_set)
-    all_vertex_labels: $(data.all_vertex_labels)
-    base_vertex_labels: $(data.base_vertex_labels)
-    added_vertex_labels: $(data.added_vertex_labels)
-    all_edge_labels: $(data.all_edge_labels)
-    base_edge_labels: $(data.base_edge_labels)
-    added_edge_labels: $(data.added_edge_labels)
-    vertex_index: $(data.vertex_index)"""
-
-    # add vertices to graph based on codon set
-    _add_vertices_by_codon_set!(
-        data.graph,
-        data.codon_set,
-        data.all_vertex_labels,
-        data.base_vertex_labels;
-        debug = debug,
-    )
-
-    # create mapping from vertice label to vertice index in graph
-    data.vertex_index = Dict(label => index for (index, label) in enumerate(data.base_vertex_labels))
-
-    # add edges to graph based on codon set
-    _add_edges_by_codon_set!(
-        data.graph,
-        data.codon_set,
-        data.base_vertex_labels,
-        data.all_edge_labels,
-        data.base_edge_labels,
-        data.vertex_index;
-        debug = debug,
-    )
-
-    debug && @debug """After adding vertices and edges:
-    graph: $(data.graph)
-    codon_set: $(data.codon_set)
-    all_vertex_labels: $(data.all_vertex_labels)
-    base_vertex_labels: $(data.base_vertex_labels)
-    added_vertex_labels: $(data.added_vertex_labels)
-    all_edge_labels: $(data.all_edge_labels)
-    base_edge_labels: $(data.base_edge_labels)
-    added_edge_labels: $(data.added_edge_labels)
-    vertex_index: $(data.vertex_index)
-    Graph construction from codon set successfully finished: $(data.codon_set)"""
-    return true
-end
-
-
-"""
     add_vertex_by_label!(data::CodonGraphData, label::String; debug::Bool = false) -> Bool
 
 Add a vertex with `label` to the graph if it does not already exist.
@@ -207,6 +124,87 @@ function add_edge_by_label!(data::CodonGraphData, src_label::String, dst_label::
 end
 
 
+"""
+    construct_graph_data!(data::CodonGraphData; debug::Bool = false) -> Bool
+
+Construct the graph for `data` from its codon set.
+
+# Arguments
+
+  - `data::CodonGraphData`: Graph data to populate.
+
+# Keyword Arguments
+
+  - `debug::Bool`: Whether to emit debug logs.
+
+# Returns
+
+  - `True`: If graph construction was successful.
+
+# Throws
+
+  - `ArgumentError`: If a `data` field is not empty before construction (except codon_set) or if the graph is not empty.
+
+# Example
+
+```julia
+data = CodonGraphData(LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"]))
+construct_graph_data!(data; debug = true)
+```
+"""
+function construct_graph_data!(data::CodonGraphData; debug::Bool = false)
+    debug &&
+        @debug "Debug logs for construct_graph_data!-------------------------------------------------------------------------------------------------------------------------------------------"
+    # do not allow populated data fields (only codon_set is allowed to be populated)
+    _check_data_fields_empty(data, debug = debug)
+
+    debug && @debug """Before adding vertices and edges:
+    graph: $(data.graph)
+    codon_set: $(data.codon_set)
+    all_vertex_labels: $(data.all_vertex_labels)
+    base_vertex_labels: $(data.base_vertex_labels)
+    added_vertex_labels: $(data.added_vertex_labels)
+    all_edge_labels: $(data.all_edge_labels)
+    base_edge_labels: $(data.base_edge_labels)
+    added_edge_labels: $(data.added_edge_labels)
+    vertex_index: $(data.vertex_index)"""
+
+    # add vertices to graph based on codon set
+    _add_vertices_by_codon_set!(
+        data.graph,
+        data.codon_set,
+        data.all_vertex_labels,
+        data.base_vertex_labels;
+        debug = debug,
+    )
+
+    # create mapping from vertice label to vertice index in graph
+    data.vertex_index = Dict(label => index for (index, label) in enumerate(data.base_vertex_labels))
+
+    # add edges to graph based on codon set
+    _add_edges_by_codon_set!(
+        data.graph,
+        data.codon_set,
+        data.base_vertex_labels,
+        data.all_edge_labels,
+        data.base_edge_labels,
+        data.vertex_index;
+        debug = debug,
+    )
+
+    debug && @debug """After adding vertices and edges:
+    graph: $(data.graph)
+    codon_set: $(data.codon_set)
+    all_vertex_labels: $(data.all_vertex_labels)
+    base_vertex_labels: $(data.base_vertex_labels)
+    added_vertex_labels: $(data.added_vertex_labels)
+    all_edge_labels: $(data.all_edge_labels)
+    base_edge_labels: $(data.base_edge_labels)
+    added_edge_labels: $(data.added_edge_labels)
+    vertex_index: $(data.vertex_index)
+    Graph construction from codon set successfully finished: $(data.codon_set)"""
+    return true
+end
 # ---------------------------------------------- HELPERS ----------------------------------------------
 # adds vertices to graph after extracting needed labels from codon set
 function _add_vertices_by_codon_set!(

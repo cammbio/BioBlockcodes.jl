@@ -81,29 +81,11 @@ const ALL_CODONS =
     ])
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-open("files/results/res_12.csv", "r") do io
-    line_count = 0
-    for line in eachline(io)
-        if line_count == 10
-            break
-        end
-        line_count += 1
-        codon_set = get_codon_set_from_res(line)
-        grow_codon_results_all(codon_set; line_count = line_count)
-    end
-end
-
-line = read_line("files/results/res_12.csv", 2)
-codon_set = get_codon_set_from_res(line)
-grow_codon_results(codon_set)
-grow_codon_results_all(codon_set, line_count = 2)
-
-
 function grow_codon_results_all(src_codon_set::Vector{LongDNA{4}}; line_count::Int = 0, debug::Bool = false)
     data_list = Vector{CodonGraphData}()
     for i in 1:length(src_codon_set)
         codon_set = src_codon_set[1:i]
-        codon_set_str = get_codon_set_str(codon_set)
+        codon_set_str = codon_set_to_str(codon_set)
         data = CodonGraphData(codon_set; plot_title = codon_set_str)
         # data_expanded = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) after expanding")
         construct_graph_data!(data; debug = debug)
