@@ -28,7 +28,7 @@ function get_codon_set_from_res(line::AbstractString)
 end
 
 # turn Vector{LongDNA{4}} into compact CSV-style string "COD1", "COD2",...
-function get_codon_set_str(codon_set::Vector{LongDNA{4}})
+function codon_set_to_str(codon_set::Vector{LongDNA{4}})
     codon_strs = String.(codon_set)
     formatted = "\"" * join(codon_strs, "\", \"") * "\""
     return formatted

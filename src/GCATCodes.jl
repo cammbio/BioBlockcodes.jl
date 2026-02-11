@@ -136,7 +136,7 @@ export
     print_to_file,
     result_to_csv!,
     write_structured_result_to_json!,
-    get_codon_set_str,
+    codon_set_to_str,
     # StrongC3Analysis.jl
     process_strong_c3_combinations_by_combination_size_with_mask,
     # StrongC3AnalysisPlain.jl

@@ -133,18 +133,13 @@ function show_multiple_codon_graphs(
     fontsize_est = title_width_px / max(max_title_len, 1) / 0.6
     uniform_titlesize = clamp(fontsize_est, 8, 26)
 
-    # create plot figure
-    fig = Figure(size = (1800, 900))
+    # create plot figure with minimal padding
+    fig = Figure(size = (1800, 900), figure_padding = 2)
+    # set plot_title as label above all graphs if provided
     if !isempty(fig_title) && fig_title !== nothing
-        Label(
-            fig[0, 1:col_count],
-            fig_title;
-            fontsize = 24,
-            halign = :center,
-            tellheight = false,
-            tellwidth = false,
-        )
+        Label(fig[0, 1:col_count], fig_title; fontsize = 24)
     end
+
     # add each graph to figure
     for (index, data) in enumerate(data_list)
         quotient, remainder = divrem(index - 1, col_count)
@@ -180,7 +175,9 @@ function show_multiple_codon_graphs(
             edge_curvature = 0.9,
         )
     end
-    display(fig)
+    # display(fig)
+
+    return fig
 end
 
 
