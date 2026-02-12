@@ -87,7 +87,6 @@ println("Running AnalysisUtils tests...")
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
 @testset "is_comma_free" begin
     # test graph with exactly one path, path shorter than 2, returns true
     @testset "one path shorter than 2" begin
@@ -366,7 +365,7 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+
 @testset "is_self_complementary" begin
     # test self-complementary codon set, returns true
     @testset "self-complementary codon set" begin
@@ -386,7 +385,7 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+
 @testset "is_graphs_identical" begin
     # test identical graphs from CodonGraphData objects, returns true
     @testset "identical graphs" begin
@@ -426,7 +425,7 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+
 @testset "is_c3" begin
     # test codon set that is C3, returns true
     @testset "C3 codon set" begin
@@ -454,4 +453,4 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+

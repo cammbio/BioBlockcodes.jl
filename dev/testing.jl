@@ -13,7 +13,6 @@ using BenchmarkTools
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 # global_logger(ConsoleLogger(Logging.Info)) # deactivate
-
 const ALL_CODONS =
     LongDNA{
         4,
@@ -81,37 +80,47 @@ const ALL_CODONS =
     ])
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-function grow_codon_results_all(src_codon_set::Vector{LongDNA{4}}; line_count::Int = 0, debug::Bool = false)
-    data_list = Vector{CodonGraphData}()
-    for i in 1:length(src_codon_set)
-        codon_set = src_codon_set[1:i]
-        codon_set_str = codon_set_to_str(codon_set)
-        data = CodonGraphData(codon_set; plot_title = codon_set_str)
-        # data_expanded = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) after expanding")
-        construct_graph_data!(data; debug = debug)
-        # construct_graph_data!(data_expanded; debug = debug)
-        push!(data_list, data)
-    end
-    show_multiple_codon_graphs(data_list; fig_title = "Line $line_count", debug = debug)
-    return true
-end
 
-function grow_codon_results(src_codon_set::Vector{LongDNA{4}}; debug::Bool = false)
-    for i in 1:length(src_codon_set)
-        codon_set = src_codon_set[1:i]
-        data = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) before expanding")
-        data_expanded = CodonGraphData(codon_set; plot_title = "$(string(codon_set)) after expanding")
-        construct_graph_data!(data; debug = debug)
-        construct_graph_data!(data_expanded; debug = debug)
+cod_set = LongDNA{4}.(["CGT", "GCA"])
+data = CodonGraphData(cod_set)
+plot_codon_graph(data)
+is_c3(data)
+is_circular(data)
+is_self_complementary(data)
+is_strong_c3(data)
+is_comma_free(data)
+get_cycles_all(data)
+get_all_paths(data)
 
-        if is_strong_c3(data; debug = debug)
-            data_list = [data, data_expanded]
-            show_multiple_codon_graphs(data_list; debug = debug)
-        else
-            return false
+
+# function to get all paths from a graph
+function get_all_paths(data::CodonGraphData)
+    g = data.graph
+    labels = data.vert_labels
+    verts = collect(vertices(g))
+    paths = Vector{Vector{String}}()
+    for s in verts, t in verts
+        s == t && continue
+        for p in all_simple_paths(g, s, t)
+            push!(paths, labels[p])
         end
     end
-    return true
+    return paths
+end
+
+# function to get all paths from a graph that are longer than a given length
+function get_paths_longer_than(data::CodonGraphData, min_len::Int)
+    g = data.graph
+    labels = data.all_vertex_labels
+    verts = collect(vertices(g))
+    paths = Vector{Vector{String}}()
+    for s in verts, t in verts
+        s == t && continue
+        for p in all_simple_paths(g, s, t)
+            length(p) > min_len && push!(paths, labels[p])
+        end
+    end
+    return paths
 end
 
 function read_line(path, n::Int)
@@ -176,7 +185,7 @@ function get_codon_count_in_res(res_path::String)
 
     open(res_path, "r") do f
         for line in eachline(f)
-            codon_set = get_codon_set_from_res(line)
+            codon_set = _get_codon_set_from_line(line)
             for codon in codon_set
                 codon_counts[codon] += 1
             end
@@ -334,3 +343,17 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
     end
     return rank
 end
+
+# Startzustand: gültig
+codons = LongDNA{4}.(["CGT", "GTA", "ACT"])
+g = CodonGraphData(codons)
+println(GCATCodes.g.codon_set)
+push!(GCATCodes.g.codon_set, LongDNA{4}("CGT"))
+
+# nachträgliche Mutation am selben Vektor
+push!(codons, LongDNA{4}("CGT"))       # Duplikat hinzugefügt
+codons[1] = LongDNA{4}("NNN")          # ungültige Basen
+deleteat!(codons, 2)
+
+g.codon_set
+g.graph

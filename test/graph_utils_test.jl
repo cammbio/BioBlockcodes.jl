@@ -89,7 +89,6 @@ println("Running GraphUtils tests...")
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
 @testset "add_vertices_by_codon_set!" begin
     # case 1
     @testset "case 1" begin
@@ -141,7 +140,7 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
+
 @testset "add_edges_by_codon_set!" begin
     codon_set = LongDNA{4}.(["ATG", "TTC"])
     data = CodonGraphData(codon_set)
@@ -168,4 +167,3 @@ end
 end
 
 
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------
