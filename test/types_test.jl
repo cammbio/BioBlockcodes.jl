@@ -44,6 +44,3 @@ println("Running Types tests...")
         @test_throws ArgumentError CodonGraphData(codon_set)
     end
 end
-
-
-# ------------------------------------ NEXT FUNCTION -------------------------------------------------------

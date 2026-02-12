@@ -1,10 +1,4 @@
 using Base.Threads: @threads, @spawn, ReentrantLock, nthreads, Atomic
-
-# ---------------------------------------------- VARIABLES ----------------------------------------------
-
-# ---------------------------------------------- CONSTANTS ----------------------------------------------
-
-# ---------------------------------------------- FUNCTIONS ----------------------------------------------
 # process strong c3 combinations incrementally from previous results file
 function calc_strong_c3_comb_by_size(
     comb_size::Int,
@@ -13,7 +7,6 @@ function calc_strong_c3_comb_by_size(
     res_path::AbstractString,
     stop_flag::Atomic{Bool};
     worker_count::Int = nthreads(),
-    debug::Bool = false,
 )
     # only allow combination sizes from 1 to 20
     (comb_size < 1 || comb_size > 20) &&
@@ -25,7 +18,6 @@ function calc_strong_c3_comb_by_size(
     # load from checkpoint or start from scratch
     if isfile(res_path)
         if isfile(ckp_path) && filesize(ckp_path) > 0
-            debug && @debug "Loading checkpoint from $ckp_path for comb_size $comb_size"
             # load checkpoint
             ckp = _load_ckp(ckp_path)
             # check if checkpoint combination size matches the actual combination size
@@ -44,10 +36,7 @@ function calc_strong_c3_comb_by_size(
                 throw(ArgumentError("Checkpoint file $ckp_path EMPTY while results file exists."))
             end
         end
-    else # start from scratch
-        debug &&
-            @debug "No existing results file found at $res_path. Starting from scratch for comb_size $comb_size."
-        curr_line = 1
+    else # start from scratchcurr_line = 1
         status = "unfinished"
         w_mode = "w"
     end
@@ -67,7 +56,7 @@ function calc_strong_c3_comb_by_size(
                         break
                     end
                     codon = ALL_CODONS[line_count]
-                    result_to_csv!(io, [codon], [line_count])
+                    _write_res(io, [codon], [line_count])
                     curr_line = line_count
                 end
             end
@@ -91,7 +80,7 @@ function calc_strong_c3_comb_by_size(
                             println("Processing interrupted at line $line_count for combination size $comb_size.")
                             break
                         end
-                        prev_codon_set = get_codon_set_from_res(line)
+                        prev_codon_set = _get_codon_set_from_line(line)
                         isempty(prev_codon_set) && continue
                         length(prev_codon_set) == comb_size - 1 || throw(
                             ArgumentError(
@@ -123,9 +112,9 @@ function calc_strong_c3_comb_by_size(
                                     # skip if combination contains any codon rotation
                                     _mask_has_rot(new_comb_idxs, comb_mask, codon_rot_masks) && continue
 
-                                    if _is_comb_strong_c3(new_comb_idxs, debug = debug)
+                                    if _is_comb_strong_c3(new_comb_idxs)
                                         lock(w_lock) do
-                                            result_to_csv!(output, ALL_CODONS[new_comb_idxs], new_comb_idxs)
+                                            _write_res(output, ALL_CODONS[new_comb_idxs], new_comb_idxs)
                                         end
                                     end
                                 end
@@ -153,42 +142,43 @@ function calc_strong_c3_comb_by_size(
     return true
 end
 
+
 # convert combination to mask
-@inline function _comb_to_mask(combination::Vector{Int})
+@inline function _comb_to_mask(comb::Vector{Int})
     mask = UInt64(0)
-    @inbounds for index in combination
+    @inbounds for index in comb
         mask |= _set_codon_bit(index)
     end
     return mask
 end
 
-# build rotation masks for all codons
-function _get_rot_masks(codons::Vector{LongDNA{4}})
-    index_dict = Dict{LongDNA{4}, Int}()
-    @inbounds for (index, codon) in enumerate(codons)
-        index_dict[codon] = index
+
+# build rotation masks for all codons in codon_set
+function _get_rot_masks(codon_set::Vector{LongDNA{4}})
+    idx_dict = Dict{LongDNA{4}, Int}()
+    @inbounds for (idx, codon) in enumerate(codon_set)
+        idx_dict[codon] = idx
     end
 
-    masks = Vector{UInt64}(undef, length(codons))
-    @inbounds for (index, codon) in enumerate(codons)
+    masks = Vector{UInt64}(undef, length(codon_set))
+    @inbounds for (index, codon) in enumerate(codon_set)
         alpha_1 = left_shift_codon(codon, 1)
         alpha_2 = left_shift_codon(codon, 2)
-        index_alpha_1 = get(index_dict, alpha_1, nothing)
-        index_alpha_2 = get(index_dict, alpha_2, nothing)
-        index_alpha_1 === nothing && error("First rotation not found in codons: $alpha_1 (from $codon)")
-        index_alpha_2 === nothing && error("Second rotation not found in codons: $alpha_2 (from $codon)")
-        masks[index] = _set_codon_bit(index_alpha_1) | _set_codon_bit(index_alpha_2)
+        idx_alpha_1 = get(idx_dict, alpha_1, nothing)
+        idx_alpha_2 = get(idx_dict, alpha_2, nothing)
+        idx_alpha_1 === nothing && error("First rotation not found in codons: $alpha_1 (from $codon)")
+        idx_alpha_2 === nothing && error("Second rotation not found in codons: $alpha_2 (from $codon)")
+        masks[index] = _set_codon_bit(idx_alpha_1) | _set_codon_bit(idx_alpha_2)
     end
     return masks
 end
 
 
 # check if combination is strong C3
-@inline function _is_comb_strong_c3(combination::Vector{Int}; debug::Bool = false)
-    codon_set = ALL_CODONS[combination]
+@inline function _is_comb_strong_c3(comb::Vector{Int})
+    codon_set = ALL_CODONS[comb]
     data = CodonGraphData(codon_set)
-    construct_graph_data!(data; debug = debug)
-    return is_strong_c3(data; debug = debug)
+    return is_strong_c3(data)
 end
 
 
@@ -222,9 +212,9 @@ end
 
 
 # check if mask contains any codon rotation for the given combination
-@inline function _mask_has_rot(combination::Vector{Int}, mask::UInt64, rotation_masks::Vector{UInt64})
-    @inbounds for index in combination
-        if (mask & rotation_masks[index]) != 0
+@inline function _mask_has_rot(comb::Vector{Int}, mask::UInt64, rot_masks::Vector{UInt64})
+    @inbounds for index in comb
+        if (mask & rot_masks[index]) != 0
             return true
         end
     end
@@ -247,3 +237,13 @@ end
 
 # set bit for a 1-based codon index
 @inline _set_codon_bit(idx::Integer) = UInt64(1) << (idx - 1)
+
+
+# write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
+function _write_res(io::IOStream, codon_set::Vector{LongDNA{4}}, comb_idxs::Vector{Int})
+    # compact CSV-style line: "COD1|COD2,idx1|idx2"
+    codon_str = string.(codon_set)
+    idx_str = string.(comb_idxs)
+    println(io, join(codon_str, "|"), ",", join(idx_str, "|"))
+    return true
+end

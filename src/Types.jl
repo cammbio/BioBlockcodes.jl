@@ -1,74 +1,90 @@
 using BioSequences
 using Graphs
 
-# ---------------------------------------------- STRUCTS ----------------------------------------------
-
 
 # struct to hold all data related to a codon graph
 mutable struct CodonGraphData
-    graph::Graphs.SimpleDiGraph # directed graph
-    codon_set::Vector{LongDNA{4}} # codon set represented in the graph
-    all_vertex_labels::Vector{String} # all vertice labels
-    base_vertex_labels::Vector{String} # base vertex labels
-    added_vertex_labels::Vector{String} # added vertex labels
-    all_edge_labels::Vector{Tuple{String, String}} # all edge labels
-    base_edge_labels::Vector{Tuple{String, String}} # base edge labels
-    added_edge_labels::Vector{Tuple{String, String}} # added edge labels
-    vertex_index::Dict{String, Int} # from vertice label to vertice index ("AA" => 3)
-    plot_title::String # title of the plot
-
-    """
-        CodonGraphData(codon_set::Vector{LongDNA{4}}; plot_title::String = "")
-
-    Create a `CodonGraphData` instance with an empty graph and initialized fields.
-
-    # Arguments
-    - `codon_set::Vector{LongDNA{4}}`: Codon set for the graph.
-
-    # Keyword Arguments
-    - `plot_title::String`: Title for plotting (default: empty).
-
-    # Returns
-    - `CodonGraphData`: New graph data instance.
-
-    # Throws
-    - `ArgumentError`: If `codon_set` is empty.
-    - `ArgumentError`: If any codon in `codon_set` does not have length 3.
-    - `ArgumentError`: If `codon_set` contains duplicate codons.
-
-    # Example
-    ```julia
-    codon_set = LongDNA{4}.(["CGT", "GTA", "ACT", "AAT"])
-    CodonGraphData(codon_set; plot_title = "Example")
-    ```
-    """
-    # inner constructor to initialize empty graph, vectors and dicts
-    function CodonGraphData(codon_set::Vector{LongDNA{4}}; plot_title::String = "")
-        # do not allow empty codon sets
-        isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty!"))
-        # each codon must have length 3
-        any(length(codon) != 3 for codon in codon_set) &&
-            throw(ArgumentError("All codons in codon set must have length 3!"))
-        # do not allow duplicate codons in codon set
-        length(codon_set) != length(Set(codon_set)) &&
-            throw(ArgumentError("Codon set cannot contain duplicate codons!"))
-        # only allow codons with valid DNA bases
-        valid_bases = Set((DNA_A, DNA_C, DNA_G, DNA_T))
-        any(any(base ∉ valid_bases for base in codon) for codon in codon_set) &&
-            throw(ArgumentError("Codon set contains invalid DNA bases! Only A, C, G, T are allowed."))
+    graph::Graphs.SimpleDiGraph
+    codon_set::Vector{LongDNA{4}}
+    vert_labels::Vector{String}
+    edge_labels::Vector{Tuple{String, String}}
+    vert_idxs::Dict{String, Int}
+    graph_title::String
+end
 
 
-        return new(
-            Graphs.SimpleDiGraph(0),
-            codon_set,
-            String[],
-            String[],
-            String[],
-            Tuple{String, String}[],
-            Tuple{String, String}[],
-            Tuple{String, String}[],
-            Dict{String, Int}(),
-            plot_title,
-        )
+# constructor for CodonGraphData that takes a codon set and builds the other fields
+function CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "")
+    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty!"))
+    any(length(codon) != 3 for codon in codon_set) &&
+        throw(ArgumentError("All codons in codon set must have length 3!"))
+    length(codon_set) != length(Set(codon_set)) &&
+        throw(ArgumentError("Codon set cannot contain duplicate codons!"))
+    valid_bases = Set((DNA_A, DNA_C, DNA_G, DNA_T))
+    any(any(!(base in valid_bases) for base in codon) for codon in codon_set) &&
+        throw(ArgumentError("Codon set contains invalid DNA bases! Only A, C, G, T are allowed."))
+
+    obj = CodonGraphData(
+        Graphs.SimpleDiGraph(0),
+        copy(codon_set),
+        String[],
+        Tuple{String, String}[],
+        Dict{String, Int}(),
+        graph_title,
+    )
+
+    # build graph by adding vertices and edges based on codon set
+    _add_vertices!(obj)
+    obj.vert_idxs = Dict(label => index for (index, label) in enumerate(obj.vert_labels))
+    _add_edges!(obj)
+
+    return obj
+end
+
+
+# adds edges to graph after extracting needed labels from codon set
+function _add_edges!(obj::CodonGraphData)
+    # iterate through codon set and add edges to graph
+    for codon in obj.codon_set
+        # get needed vertex IDs
+        first_base_idx = obj.vert_idxs[string(codon[1])]
+        third_base_idx = obj.vert_idxs[string(codon[3])]
+        first_tuple_idx = obj.vert_idxs[string(codon[1:2])]
+        second_tuple_idx = obj.vert_idxs[string(codon[2:3])]
+
+        # add edge_labels to edge_labels fields
+        push!(obj.edge_labels, (obj.vert_labels[first_base_idx], obj.vert_labels[second_tuple_idx]))
+        push!(obj.edge_labels, (obj.vert_labels[first_tuple_idx], obj.vert_labels[third_base_idx]))
+
+        # add edges to graph
+        add_edge!(obj.graph, first_base_idx, second_tuple_idx)
+        add_edge!(obj.graph, first_tuple_idx, third_base_idx)
+    end
+end
+
+
+# adds vertices to graph after extracting needed labels from codon set
+function _add_vertices!(obj::CodonGraphData)
+    # use a temporary set to avoid duplicates and increase lookup speed
+    temp_labels = Set{String}()
+
+    # iterate through codon set and extract needed vertice labels
+    for codon in obj.codon_set
+        # get first and last character of codon
+        push!(temp_labels, string(codon[1]))
+        push!(temp_labels, string(codon[3]))
+        # get first and second tuple of codon
+        push!(temp_labels, string(codon[1:2]))
+        push!(temp_labels, string(codon[2:3]))
+    end
+
+    # sort and copy temp_labels to vert_labels
+    labels::Vector{String} = collect(temp_labels)
+    sort!(labels, by = x -> (length(x), x))
+    append!(obj.vert_labels, labels)
+
+    # add a vertex for each label to graph
+    for _ in 1:length(obj.vert_labels)
+        add_vertex!(obj.graph)
     end
 end

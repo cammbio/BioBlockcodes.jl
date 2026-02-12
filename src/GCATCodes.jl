@@ -1,92 +1,92 @@
 module GCATCodes
-# ---------------------------------------------- VARIABLES ----------------------------------------------
-using JuliaFormatter
-using Logging
+# ------------------------------------------------ USING ------------------------------------------------
+using Base.Threads
+using BioSequences
 using CairoMakie
 using GraphMakie
 using Graphs
-using BioSequences
+using JuliaFormatter
+using Logging
 using NetworkLayout
-using Base.Threads
-using BenchmarkTools
+# ---------------------------------------------- VARIABLES ----------------------------------------------
+
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
-# const ALL_CODONS =
-# LongDNA{
-#     4,
-# }.([
-#     "AAC",
-#     "AAG",
-#     "AAT",
-#     "ACA",
-#     "ACC",
-#     "ACG",
-#     "ACT",
-#     "AGA",
-#     "AGC",
-#     "AGG",
-#     "AGT",
-#     "ATA",
-#     "ATC",
-#     "ATG",
-#     "ATT",
-#     "CAA",
-#     "CAC",
-#     "CAG",
-#     "CAT",
-#     "CCA",
-#     "CCG",
-#     "CCT",
-#     "CGA",
-#     "CGC",
-#     "CGG",
-#     "CGT",
-#     "CTA",
-#     "CTC",
-#     "CTG",
-#     "CTT",
-#     "GAA",
-#     "GAC",
-#     "GAG",
-#     "GAT",
-#     "GCA",
-#     "GCC",
-#     "GCG",
-#     "GCT",
-#     "GGA",
-#     "GGC",
-#     "GGT",
-#     "GTA",
-#     "GTC",
-#     "GTG",
-#     "GTT",
-#     "TAA",
-#     "TAC",
-#     "TAG",
-#     "TAT",
-#     "TCA",
-#     "TCC",
-#     "TCG",
-#     "TCT",
-#     "TGA",
-#     "TGC",
-#     "TGG",
-#     "TGT",
-#     "TTA",
-#     "TTC",
-#     "TTG",
-# ])
+const ALL_CODONS =
+    LongDNA{
+        4,
+    }.([
+        "AAC",
+        "AAG",
+        "AAT",
+        "ACA",
+        "ACC",
+        "ACG",
+        "ACT",
+        "AGA",
+        "AGC",
+        "AGG",
+        "AGT",
+        "ATA",
+        "ATC",
+        "ATG",
+        "ATT",
+        "CAA",
+        "CAC",
+        "CAG",
+        "CAT",
+        "CCA",
+        "CCG",
+        "CCT",
+        "CGA",
+        "CGC",
+        "CGG",
+        "CGT",
+        "CTA",
+        "CTC",
+        "CTG",
+        "CTT",
+        "GAA",
+        "GAC",
+        "GAG",
+        "GAT",
+        "GCA",
+        "GCC",
+        "GCG",
+        "GCT",
+        "GGA",
+        "GGC",
+        "GGT",
+        "GTA",
+        "GTC",
+        "GTG",
+        "GTT",
+        "TAA",
+        "TAC",
+        "TAG",
+        "TAT",
+        "TCA",
+        "TCC",
+        "TCG",
+        "TCT",
+        "TGA",
+        "TGC",
+        "TGG",
+        "TGT",
+        "TTA",
+        "TTC",
+        "TTG",
+    ])
 
 const BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
 # ---------------------------------------------- INCLUDES -----------------------------------------------
-include("WriteUtils.jl")
 include("Types.jl")
-include("CyclesAnalysis.jl") # needs Types.jl
-include("CodonUtils.jl") # needs Types.jl
-include("PlotUtils.jl") # needs Types.jl
-include("CodonGraphAnalysis.jl") # needs Types.jl and CodonUtils.jl
-include("CodonGraphUtils.jl") # needs Types.jl and PlotUtils.jl
-include("StrongC3Analysis.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
-include("StrongC3AnalysisDEP.jl") # needs Types.jl, CodonUtils.jl and CodonGraphAnalysis.jl
+include("InputOutputUtilities.jl")
+include("CodonUtilities.jl") # needs Types.jl
+include("CodonGraphBuilder.jl") # needs Types.jl
+include("CodonGraphAnalysis.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphBuilder.jl
+include("CycleAnalysis.jl") # needs Types.jl
+include("CodonGraphPlotting.jl") # needs Types.jl
+include("StrongC3.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphAnalysis.jl
 # ---------------------------------------------- EXPORTS ------------------------------------------------
 # Types
 export
@@ -96,20 +96,19 @@ export
 # Functions
 export
     # CodonGraphAnalysis.jl
-    is_circular,
     is_c3,
-    is_codon_graphs_identical,
+    is_circular,
     is_comma_free,
     is_self_complementary,
     is_strong_c3,
-    # CodonUtils.jl
-    get_codon_combinations_per_size,
-    get_complemented_reversed_codon_set,
-    get_complemented_codon_set,
-    get_reversed_codon_set,
-    get_complemented_codon,
-    get_reversed_codon,
-    get_complemented_base,
+    # CodonGraphBuilder.jl
+    _add_vert_by_label!,
+    _add_edge_by_label!,
+    # CodonGraphPlotting.jl
+    plot_codon_graph,
+    plot_multiple_codon_graphs,
+    # CodonUtilites.jl
+    get_comp_rev_codon_set,
     left_shift_codon_set,
     left_shift_codon,
     # CyclesAnalysis.jl
@@ -121,48 +120,9 @@ export
     get_cycles_difference,
     get_duplicate_cycles,
     get_max_cycle_length,
-    # GraphUtils.jl
-    construct_graph_data!,
-    add_vertex_by_label!,
-    add_edge_by_label!,
-    # PlotUtils.jl
-    show_codon_graph,
-    show_multiple_codon_graphs,
-    # WriteUtils.jl
-    line_to_codon_set,
-    get_codon_set_from_res,
-    csv_to_result,
-    result_to_codon_set,
-    print_to_file,
-    result_to_csv!,
-    write_structured_result_to_json!,
+    # InputOutputUtils.jl
+    get_codon_set_from_line,
     codon_set_to_str,
-    # StrongC3Analysis.jl
-    process_strong_c3_combinations_by_combination_size_with_mask,
-    # StrongC3AnalysisPlain.jl
-    calc_strong_c3_comb_by_size,
-    # StrongC3AnalysisSmart.jl
-    calc_strong_c3_comb_by_size,
-
-
-
-    # temporary helper
-    _expand_graph,
-    _add_n2_n3n1_by_codon,
-    _has_cycle_longer_than,
-    _increment_codon_set_combination!,
-    _save_strong_c3_checkpoint!,
-    _load_strong_c3_checkpoint,
-    _get_last_combination_indices_from_file,
-    _get_next_combination,
-    _get_last_line,
-    _remove_empty_last_lines,
-    _contains_rotation,
-    _get_rot_masks,
-    _comb_to_mask,
-    _mask_has_rot,
-    _set_codon_bit,
-    _is_comb_strong_c3,
-    _load_ckp,
-    _save_ckp
+    # StrongC3.jl
+    calc_strong_c3_comb_by_size
 end
