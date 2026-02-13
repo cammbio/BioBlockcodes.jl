@@ -77,12 +77,13 @@ const ALL_CODONS =
         "TTG",
     ])
 
+const ALLOWED_BASES_DNA = Set((DNA_A, DNA_C, DNA_G, DNA_T))
+const ALLOWED_BASES_STR = Set(('A', 'C', 'G', 'T'))
 const BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
 # ---------------------------------------------- INCLUDES -----------------------------------------------
 include("Types.jl")
 include("InputOutputUtilities.jl")
 include("CodonUtilities.jl") # needs Types.jl
-include("CodonGraphBuilder.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphBuilder.jl
 include("CycleAnalysis.jl") # needs Types.jl
 include("CodonGraphPlotting.jl") # needs Types.jl
@@ -101,9 +102,6 @@ export
     is_comma_free,
     is_self_complementary,
     is_strong_c3,
-    # CodonGraphBuilder.jl
-    _add_vert_by_label!,
-    _add_edge_by_label!,
     # CodonGraphPlotting.jl
     plot_codon_graph,
     plot_multiple_codon_graphs,
