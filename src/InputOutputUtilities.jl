@@ -1,17 +1,54 @@
 # turn a codon set into a string representation for printing
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
+    # do not allow empty codon set
+    isempty(codon_set) && throw(ArgumentError("Codon set is empty."))
+    # codons must have length 3 and contain only allowed bases
+    for codon in codon_set
+        length(codon) == 3 || throw(ArgumentError("Codon \"$codon\" must have length 3."))
+        all(base -> base in ALLOWED_BASES_STR, codon) ||
+            throw(ArgumentError("Codon \"$codon\" contains invalid base. Allowed: A, C, G, T."))
+    end
+
     codon_str = String.(codon_set)
     formatted_str = "\"" * join(codon_str, "\", \"") * "\""
     return formatted_str
 end
 
 
-# parse one compact CSV line "COD1|COD2,idx1|idx2" -> Vector{LongDNA{4}}
+# parse one compact CSV line "COD1|COD2,idx1|idx2" to Vector{LongDNA{4}}
 function get_codon_set_from_line(line::AbstractString)
-    isempty(strip(line)) && throw(ArgumentError("Line is empty."))
+    # do not allow empty line
+    isempty(line) && throw(ArgumentError("Line is empty."))
 
+    # do not allow more than one comma
     parts = split(line, ",")
-    codon_set = strip(parts[1])
-    codon_set_str = split(codon_set, "|"; keepempty = false)
-    return LongDNA{4}.(codon_set_str)
+    length(parts) == 2 || throw(
+        ArgumentError("Line has wrong format. Expected format: \"COD1|COD2|...|CODn,idx1|idx2|...|idxn\"."),
+    )
+
+    # check codon list format
+    codon_tokens = split(strip(parts[1]), "|"; keepempty = false)
+    # do not allow empty codon list
+    isempty(codon_tokens) && throw(ArgumentError("Codon list is empty."))
+    # codons must have length 3 and contain only allowed bases
+    for codon in codon_tokens
+        length(codon) == 3 || throw(ArgumentError("Codon \"$codon\" must have length 3."))
+        all(base -> base in ALLOWED_BASES_STR, codon) ||
+            throw(ArgumentError("Codon \"$codon\" contains invalid base. Allowed: A, C, G, T."))
+    end
+
+    # check index list format
+    idx_tokens = split(strip(parts[2]), "|"; keepempty = false)
+    # do not allow empty index list
+    isempty(idx_tokens) && throw(ArgumentError("Index list is missing."))
+    # indices must be positive integers
+    all(t -> occursin(r"^\d+$", t), idx_tokens) ||
+        throw(ArgumentError("Index list must contain only positive integers."))
+
+    # check that codon and index counts match
+    length(idx_tokens) == length(codon_tokens) || throw(
+        ArgumentError("Codon and index counts differ ($(length(codon_tokens)) vs $(length(idx_tokens)))."),
+    )
+
+    return LongDNA{4}.(codon_tokens)
 end

@@ -80,19 +80,6 @@ const ALL_CODONS =
     ])
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
-
-cod_set = LongDNA{4}.(["CGT", "GCA"])
-data = CodonGraphData(cod_set)
-plot_codon_graph(data)
-is_c3(data)
-is_circular(data)
-is_self_complementary(data)
-is_strong_c3(data)
-is_comma_free(data)
-get_cycles_all(data)
-get_all_paths(data)
-
-
 # function to get all paths from a graph
 function get_all_paths(data::CodonGraphData)
     g = data.graph
@@ -344,16 +331,20 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
     return rank
 end
 
-# Startzustand: gültig
-codons = LongDNA{4}.(["CGT", "GTA", "ACT"])
-g = CodonGraphData(codons)
-println(GCATCodes.g.codon_set)
-push!(GCATCodes.g.codon_set, LongDNA{4}("CGT"))
 
-# nachträgliche Mutation am selben Vektor
-push!(codons, LongDNA{4}("CGT"))       # Duplikat hinzugefügt
-codons[1] = LongDNA{4}("NNN")          # ungültige Basen
-deleteat!(codons, 2)
+cod_set = LongDNA{4}.(["CGT", "GCA"])
+data = CodonGraphData(cod_set)
+all_c = LongDNA{4}.(ALL_CODONS)
+data_max = CodonGraphData(all_c)
+fig = plot_codon_graph(data_max)
 
-g.codon_set
-g.graph
+plot_codon_graph(data)
+is_c3(data)
+nv(data.graph)
+add_vertex!(data.graph)
+is_circular(data)
+is_self_complementary(data)
+is_strong_c3(data)
+is_comma_free(data)
+get_cycles_all(data)
+get_all_paths(data)

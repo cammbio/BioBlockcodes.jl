@@ -121,7 +121,7 @@ function calc_strong_c3_comb_by_size(
                             end
                         end
                     end
-                    # can't finish before producer is done reading file
+                    # cannot finish before producer is done reading file
                     wait(producer)
                 end
             end

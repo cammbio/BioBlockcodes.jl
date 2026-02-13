@@ -1,6 +1,8 @@
 using CairoMakie
 using GraphMakie
 using NetworkLayout
+
+
 function plot_codon_graph(data::CodonGraphData)
     # check if length of vert_labels is equal to number of vertices
     length(data.vert_labels) != nv(data.graph) && throw(

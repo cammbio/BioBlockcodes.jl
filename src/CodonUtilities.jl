@@ -58,7 +58,7 @@ end
 function _comp_base(base::Char)
     # do not allow bases not in BASE_COMPLEMENT
     !haskey(BASE_COMPLEMENT, base) &&
-        throw(ArgumentError("Base must be one of $(keys(BASE_COMPLEMENT)), got base '$base'."))
+        throw(ArgumentError("Base must be one of $(keys(BASE_COMPLEMENT)), got base \"$base\"."))
 
     return BASE_COMPLEMENT[base]
 end

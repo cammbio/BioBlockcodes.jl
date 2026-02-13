@@ -1,4 +1,4 @@
-# DEPRECATED
+﻿# DEPRECATED
 # function to get count of all cycles in a graph
 function get_cycle_count(graph::SimpleDiGraph)
     cycles = simplecycles(graph)
