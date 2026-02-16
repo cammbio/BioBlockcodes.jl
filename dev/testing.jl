@@ -332,19 +332,22 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
 end
 
 
-cod_set = LongDNA{4}.(["CGT", "GCA"])
+cod_set = LongDNA{4}.(["CCA", "CCT", "GGA", "CGA", "AGA", "TCT", "CAC"])
 data = CodonGraphData(cod_set)
-all_c = LongDNA{4}.(ALL_CODONS)
-data_max = CodonGraphData(all_c)
-fig = plot_codon_graph(data_max)
-
+empty!(data.vert_labels)
 plot_codon_graph(data)
-is_c3(data)
-nv(data.graph)
-add_vertex!(data.graph)
-is_circular(data)
-is_self_complementary(data)
-is_strong_c3(data)
-is_comma_free(data)
-get_cycles_all(data)
-get_all_paths(data)
+println(data)
+_has_cycle_longer_than(data.graph, 2)
+println(get_all_paths(data))
+
+g = SimpleDiGraph(5)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 1)
+add_edge!(g, 3, 4)
+add_edge!(g, 4, 1)
+graphplot(g)
+for i in 0:10
+    if _has_cycle_longer_than(g, i)
+        println("TRUE FOR i: $i")
+    end
+end

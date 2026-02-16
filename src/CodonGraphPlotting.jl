@@ -4,12 +4,8 @@ using NetworkLayout
 
 
 function plot_codon_graph(data::CodonGraphData)
-    # check if length of vert_labels is equal to number of vertices
-    length(data.vert_labels) != nv(data.graph) && throw(
-        ArgumentError(
-            "Length of vert_labels ($(length(data.vert_labels))) is not equal to number of vertices ($(nv(data.graph))).",
-        ),
-    )
+    # validate data object
+    _validate_cgd(data)
 
     # create plot figure
     fig = Figure(size = (1800, 900))
@@ -51,16 +47,10 @@ function plot_multiple_codon_graphs(
 )
     # do not allow empty data_list
     isempty(data_list) && throw(ArgumentError("data_list cannot be empty."))
-    # check if length of vert_labels is equal to number of vertices for each data
-    for data in data_list
-        length(data.vert_labels) != nv(data.graph) && throw(
-            ArgumentError(
-                "Length of vert_labels ($(length(data.vert_labels))) is not equal to number of vertices ($(nv(data.graph))).",
-            ),
-        )
-    end
+    # validate data objects
+    _validate_cgd.(data_list)
 
-    # get grid size
+    # get number of columns for grid layout based on amount of graphs
     col_count = _get_col_count(length(data_list))
     # einheitliche Titelgröße anhand des längsten Titels schätzen
     max_title_len = maximum(length.(getfield.(data_list, :graph_title)))

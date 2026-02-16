@@ -1,4 +1,5 @@
 ﻿function is_c3(data::CodonGraphData)
+    # validate data object
     _validate_cgd(data)
     # do not allow graph with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if C3."))
@@ -23,6 +24,7 @@ end
 
 
 function is_circular(data::CodonGraphData)
+    # validate data object
     _validate_cgd(data)
     # do not allow graph with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if circular."))
@@ -35,7 +37,7 @@ function is_circular(data::CodonGraphData)
     # perform DFS for each vertice
     for vertex in vertices(data.graph)
         if state_array[vertex] == 0
-            if _dfs_cycle_detection(data.graph, vertex, state_array)
+            if _has_cycle_longer_than(data.graph, 0)
                 return false
             end
         end
@@ -46,6 +48,7 @@ end
 
 
 function is_comma_free(data::CodonGraphData)
+    # validate data object
     _validate_cgd(data)
     # do not allow graph with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if comma-free."))
@@ -55,7 +58,7 @@ function is_comma_free(data::CodonGraphData)
     max_depth = 2
     # perform depth-limited DFS for each vertice
     for vertex in vertices(data.graph)
-        if _dfs_depth_limited(data.graph, vertex, 0, max_depth)
+        if _dfs_depth(data.graph, vertex, 0, max_depth)
             return false
         end
     end
@@ -65,6 +68,7 @@ end
 
 
 function is_self_complementary(data::CodonGraphData)
+    # validate data object
     _validate_cgd(data)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 &&
@@ -77,6 +81,7 @@ function is_self_complementary(data::CodonGraphData)
 
     # create CodonGraphData from complemented, reversed codon set 
     comp_rev_data = CodonGraphData(comp_rev_codon_set)
+    _validate_cgd(comp_rev_data)
 
     # compare original graph with complemented, reversed graph
     if _is_codon_graphs_equal(data, comp_rev_data)
@@ -89,6 +94,7 @@ end
 
 # function to check if a codon graph is strong C3 (i.e., C3 and expanded graph only has cycles of length 2)
 function is_strong_c3(data::CodonGraphData)
+    # validate data object
     _validate_cgd(data)
     # do not allow graphs with no vertices
     nv(data.graph) == 0 && throw(ArgumentError("Graph has no vertices! Cannot determine if strong C3."))
@@ -97,9 +103,12 @@ function is_strong_c3(data::CodonGraphData)
 
     # check if original graph is C3
     if is_c3(data)
-        # create graph copy and expand it
+        # create graph copy
         data_expanded = CodonGraphData(data.codon_set)
+        _validate_cgd(data_expanded)
+        # expand copy graph
         _expand_graph(data_expanded)
+        # validate expanded data object
         _validate_cgd(data_expanded)
 
         # check if expanded graph has cycles longer than 2
@@ -117,25 +126,34 @@ end
 
 # adds edge to graph by vertex labels
 function _add_edge_by_label!(data::CodonGraphData, src_label::String, dst_label::String)
-    # do not allow empty labels or not existing labels in vert_idxs
-    isempty(src_label) && throw(ArgumentError("from_label cannot be empty!"))
-    isempty(dst_label) && throw(ArgumentError("to_label cannot be empty!"))
+    # do not allow empty labels
+    isempty(src_label) && throw(ArgumentError("2nd argument cannot be empty!"))
+    isempty(dst_label) && throw(ArgumentError("3rd argument cannot be empty!"))
+    # labels must be of length 1 or 2
+    !(length(src_label) in (1, 2)) &&
+        throw(ArgumentError("2nd argument must be of length 1 or 2, got length $(length(src_label))!"))
+    !(length(dst_label) in (1, 2)) &&
+        throw(ArgumentError("3rd argument must be of length 1 or 2, got length $(length(dst_label))!"))
+    # check if labels exist in vert_idxs
     !haskey(data.vert_idxs, src_label) &&
         throw(ArgumentError("Vertex with label $src_label does not exist in graph!"))
     !haskey(data.vert_idxs, dst_label) &&
         throw(ArgumentError("Vertex with label $dst_label does not exist in graph!"))
 
-    if _has_edge_label(data, src_label, dst_label) # edge already exists
-        return false
-    else # edge does not already exist
-        # get vertex indices from labels
-        from_index = data.vert_idxs[src_label]
-        to_index = data.vert_idxs[dst_label]
 
+    # edge already exists
+    if _has_edge_label(data, src_label, dst_label)
+        println("Edge from $src_label to $dst_label already exists in graph! No edge added.")
+        return false
+    else
+        src_idx = data.vert_idxs[src_label]
+        dst_idx = data.vert_idxs[dst_label]
         # add edge to graph and update affected data fields
-        push!(data.edge_labels, (src_label, dst_label))
-        add_edge!(data.graph, from_index, to_index)
-        return true
+        if add_edge!(data.graph, src_idx, dst_idx)
+            push!(data.edge_labels, (src_label, dst_label))
+            println("Edge from $src_label to $dst_label added to graph.")
+            return true
+        end
     end
 end
 
@@ -143,10 +161,17 @@ end
 # adds vertices and edges to graph after extracting needed labels from codon set
 function _add_vert_by_label!(data::CodonGraphData, label::String)
     # do not allow empty labels
-    isempty(label) && throw(ArgumentError("label cannot be empty!"))
+    isempty(label) && throw(ArgumentError("label cannot be empty."))
     # only allow labels of length 1 or 2
     !(length(label) in (1, 2)) &&
-        throw(ArgumentError("label must be of length 1 or 2, got length $(length(label))!"))
+        throw(ArgumentError("label must be of length 1 or 2, got length $(length(label))."))
+    # only allow labels containing A, C, G or T
+    for char in label
+        char in ALLOWED_BASES_STR || throw(
+            ArgumentError("label contains invalid character \"$char\". Only A, C, G and T are allowed."),
+        )
+    end
+
     if _has_vert_label(data.vert_idxs, label)
         return false
     else
@@ -158,61 +183,11 @@ function _add_vert_by_label!(data::CodonGraphData, label::String)
 end
 
 
-# recursive DFS to detect cycles
-function _dfs_cycle_detection(graph::SimpleDiGraph, vertex::Int, state_array::Vector{Int})
-    # mark the current vertice as visiting
-    state_array[vertex] = 1
-    for neighbor in outneighbors(graph, vertex)
-        if state_array[neighbor] == 1
-            return true # neighbor already visited, cycle detected
-        elseif state_array[neighbor] == 0
-            if _dfs_cycle_detection(graph, neighbor, state_array)
-                return true # cycle detected in recursion
-            end
-        end
-    end
-
-    # mark the current vertice as visited
-    state_array[vertex] = 2
-    return false # no cycle detected from this path
-end
-
-
-# recursive DFS to detect cycles longer than min_length
-function _dfs_cycles(
-    graph::SimpleDiGraph,
-    vertex::Int,
-    max_length::Int,
-    state::Vector{Int},
-    stack::Vector{Int},
-)
-    # mark the current vertice as visiting
-    state[vertex] = 1
-    # add vertex to current path stack
-    push!(stack, vertex)
-
-    for neighbor in outneighbors(graph, vertex)
-        if state[neighbor] == 0 # if neighbor not visited, visit it
-            _dfs_cycles(graph, neighbor, max_length, state, stack) && return true
-        elseif state[neighbor] == 1 # if neighbor is visiting, cycle detected
-            index = findlast(==(neighbor), stack)
-            cycle_length = length(stack) - index + 1
-            if cycle_length > max_length
-                return true
-            end
-        end
-    end
-
-    # remove vertex from current path stack
-    pop!(stack)
-    # mark the current vertice as visited
-    state[vertex] = 2
-    return false
-end
-
-
 # recursive depth-limited DFS to find paths longer than max_depth
-function _dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int, max_depth::Int)
+function _dfs_depth(graph::SimpleDiGraph, vertex::Int, depth::Int, max_depth::Int)
+    # do not allow negative max_depth
+    max_depth < 0 && throw(ArgumentError("max_depth must be at least 0."))
+
     if depth > max_depth
         return true
     end
@@ -220,7 +195,7 @@ function _dfs_depth_limited(graph::SimpleDiGraph, vertex::Int, depth::Int, max_d
     # mark the current vertice as visited
     for neighbor in outneighbors(graph, vertex)
         # recursively visit neighbor with increased depth
-        if _dfs_depth_limited(graph, neighbor, depth + 1, max_depth)
+        if _dfs_depth(graph, neighbor, depth + 1, max_depth)
             return true
         end
     end
@@ -239,79 +214,59 @@ function _expand_graph(data::CodonGraphData)
         _add_edge_by_label!(data, n2, n3n1)
         _add_edge_by_label!(data, n3n1, n2)
     end
-    return true
 end
 
 
 # check if graph has cycle longer than max_length
 function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int)
-    # do not allow max_length < 2
-    max_length < 1 && throw(ArgumentError("max_length must be at least 2!"))
+    max_length < 0 && throw(ArgumentError("max_length must be at least 0"))
 
+    # stack for DFS: (current_vertex, remaining_neighbors, current_depth)
+    dfs_stack = Vector{Tuple{Int, Vector{Int}, Int}}()
     vert_count = nv(graph)
-    in_curr_path = falses(vert_count)
     curr_path = Int[]
+    in_curr_path = falses(vert_count)
 
-    function dfs(vert::Int, depth::Int)
-        push!(curr_path, vert)
-        in_curr_path[vert] = true
+    for root_idx in 1:vert_count
+        # reset stack and path tracking for each new root vertex
+        empty!(dfs_stack)
+        empty!(curr_path)
+        fill!(in_curr_path, false)
 
-        @inbounds for neigh_vert in outneighbors(graph, vert)
-            if in_curr_path[neigh_vert]
-                neigh_idx = findlast(==(neigh_vert), curr_path)
-                cyc_len = depth - neigh_idx + 1
-                if cyc_len > max_length
-                    pop!(curr_path)
-                    in_curr_path[vert] = false
-                    return true
-                end
-            elseif dfs(neigh_vert, depth + 1)
+        # initialize stack with root vertex
+        push!(dfs_stack, (root_idx, collect(outneighbors(graph, root_idx)), 1))
+        push!(curr_path, root_idx)
+        in_curr_path[root_idx] = true
+        # DFS loop
+        while !isempty(dfs_stack)
+            curr_vert, rem_neighs, curr_depth = dfs_stack[end]
+
+            # if no more neighbors to visit, backtrack
+            if isempty(rem_neighs)
+                # backtrack
+                pop!(dfs_stack)
                 pop!(curr_path)
-                in_curr_path[vert] = false
-                return true
+                in_curr_path[curr_vert] = false
+                continue
+            end
+
+            # visit next neighbor
+            next_neigh = popfirst!(rem_neighs)
+            dfs_stack[end] = (curr_vert, rem_neighs, curr_depth)
+
+            if in_curr_path[next_neigh]
+                idx = findlast(==(next_neigh), curr_path)
+                cyc_len = curr_depth - idx + 1
+                cyc_len > max_length && return true
+            else
+                push!(dfs_stack, (next_neigh, collect(outneighbors(graph, next_neigh)), curr_depth + 1))
+                push!(curr_path, next_neigh)
+                in_curr_path[next_neigh] = true
             end
         end
-
-        pop!(curr_path)
-        in_curr_path[vert] = false
-        return false
-    end
-
-    @inbounds for root in 1:vert_count
-        dfs(root, 1) && return true
     end
 
     return false
-end
-
-
-# check if two codon graphs are equal by comparing vertices and edges
-function _is_codon_graphs_equal(data_1::CodonGraphData, data_2::CodonGraphData)
-    # check if same amount of vertices and edges
-    if nv(data_1.graph) != nv(data_2.graph)
-        return false
-    end
-    if ne(data_1.graph) != ne(data_2.graph)
-        return false
-    end
-
-    # check if same vertice labels
-    for index in 1:nv(data_1.graph)
-        if !_has_vert_label(data_2.vert_idxs, data_1.vert_labels[index])
-            return false
-        end
-    end
-
-    # check if same edges
-    for edge in edges(data_1.graph)
-        src_label = data_1.vert_labels[src(edge)]
-        dst_label = data_1.vert_labels[dst(edge)]
-        if _has_edge_label(data_2, src_label, dst_label)
-        else
-            return false
-        end
-    end
-    return true
 end
 
 
@@ -334,53 +289,176 @@ function _has_vert_label(vert_idxs::Dict{String, Int}, label::String)
 end
 
 
+# check if two codon graphs are equal by comparing vertices and edges
+function _is_codon_graphs_equal(data_1::CodonGraphData, data_2::CodonGraphData)
+    # check if same amount of vertices
+    if nv(data_1.graph) != nv(data_2.graph)
+        return false
+    end
+    # check if same amount of edges
+    if ne(data_1.graph) != ne(data_2.graph)
+        return false
+    end
+
+    # check if same vertice labels
+    for index in 1:nv(data_1.graph)
+        if !_has_vert_label(data_2.vert_idxs, data_1.vert_labels[index])
+            return false
+        end
+    end
+
+    # check if same edges
+    for edge in edges(data_1.graph)
+        src_label = data_1.vert_labels[src(edge)]
+        dst_label = data_1.vert_labels[dst(edge)]
+        if _has_edge_label(data_2, src_label, dst_label)
+        else
+            return false
+        end
+    end
+
+    return true
+end
+
+
 # validate CodonGraphData consistency (labels, indices, graph size)
 function _validate_cgd(data::CodonGraphData)
-    # vert_labels consistent with graph
-    if length(data.vert_labels) != nv(data.graph)
-        throw(
-            ArgumentError(
-                "Inconsistent CodonGraphData: vert_labels length does not match number of vertices in graph!",
-            ),
-        )
-    end
-    # edge_labels consistent with graph
-    if length(data.edge_labels) != ne(data.graph)
-        throw(
-            ArgumentError(
-                "Inconsistent CodonGraphData: edge_labels length does not match number of edges in graph!",
-            ),
-        )
-    end
-    # vert_idxs consistent with graph and vert_labels
-    if length(data.vert_idxs) != nv(data.graph)
-        throw(
-            ArgumentError(
-                "Inconsistent CodonGraphData: vert_idxs length does not match number of vertices in graph!",
-            ),
-        )
-    end
-    for (label, index) in data.vert_idxs
-        if data.vert_labels[index] != label
-            throw(ArgumentError("Inconsistent CodonGraphData: vert_idxs and vert_labels do not match!"))
-        end
-    end
-    # codon_set not empty
-    if length(data.codon_set) == 0
-        throw(ArgumentError("Codon set is empty in CodonGraphData!"))
-    end
-    # codon length in codon_set is 3
+    _validate_vertices(data)
+    _validate_edges(data)
+    _validate_codon_set(data)
+end
+
+
+# validate codon_set contents
+function _validate_codon_set(data::CodonGraphData)
+    # do not allow empty codon sets
+    length(data.codon_set) == 0 && throw(ArgumentError("\"codon_set\" is empty."))
+
+    # do not allow duplicates
+    length(data.codon_set) == length(Set(data.codon_set)) ||
+        throw(ArgumentError("\"codon_set\" contains duplicate codons!"))
+
+    # check if all codons in codon_set are valid
     for codon in data.codon_set
-        if length(codon) != 3
-            throw(ArgumentError("Codon in codon_set does not have length 3!"))
+        codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" in \"codon_set\" is not a valid codon!"))
+    end
+end
+
+
+# validate edge labels against edge count
+function _validate_edges(data::CodonGraphData)
+    # check if edge_labels is empty
+    isempty(data.edge_labels) &&
+        throw(ArgumentError("inconsistent CodonGraphData: \"edge_labels\" is empty."))
+    # check if graph contains edges
+    ne(data.graph) == 0 && throw(ArgumentError("inconsistent CodonGraphData: graph has no edges."))
+    # check if edge_labels length matches number of edges in graph
+    length(data.edge_labels) == ne(data.graph) || throw(
+        ArgumentError(
+            "inconsistent CodonGraphData: \"edge_labels\" length does not match number of edges in graph.",
+        ),
+    )
+
+    # check if duplicates exist in edge_labels
+    length(data.edge_labels) == length(Set(data.edge_labels)) ||
+        throw(ArgumentError("inconsistent CodonGraphData: \"edge_labels\" contains duplicate labels."))
+
+    # check if every label in edge_labels corresponds to an actual edge in the graph
+    for (src_label, dst_label) in data.edge_labels
+        # check if src_label exists in vert_idxs
+        haskey(data.vert_idxs, src_label) || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"edge_labels\" contains \"$src_label\" that does not exist in \"vert_idxs\".",
+            ),
+        )
+        # check if dst_label exists in vert_idxs
+        haskey(data.vert_idxs, dst_label) || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"edge_labels\" contains \"$dst_label\" that does not exist in \"vert_idxs\".",
+            ),
+        )
+        # check if src_label exists in vert_labels
+        src_label in data.vert_labels || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"edge_labels\" contains \"$src_label\" that does not exist in \"vert_labels\".",
+            ),
+        )
+        # check if dst_label exists in vert_labels
+        dst_label in data.vert_labels || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"edge_labels\" contains \"$dst_label\" that does not exist in \"vert_labels\".",
+            ),
+        )
+        # check if edge from src_label to dst_label exists in graph
+        _has_edge_label(data, src_label, dst_label) || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"edge_labels\" contains edge from \"$src_label\" to \"$dst_label\" that does not exist in graph.",
+            ),
+        )
+    end
+
+    # check if every edge in graph has a corresponding label in edge_labels
+    for edge in edges(data.graph)
+        src_label = data.vert_labels[src(edge)]
+        dst_label = data.vert_labels[dst(edge)]
+        (src_label, dst_label) in data.edge_labels || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: edge from \"$src_label\" to \"$dst_label\" does not have a corresponding label in \"edge_labels\".",
+            ),
+        )
+    end
+end
+
+
+# validate vertices and index mappings
+function _validate_vertices(data::CodonGraphData)
+    # check if vert_labels is empty
+    isempty(data.vert_labels) &&
+        throw(ArgumentError("inconsistent CodonGraphData: \"vert_labels\" is empty."))
+    # check if vert_idxs is empty
+    isempty(data.vert_idxs) && throw(ArgumentError("inconsistent CodonGraphData: \"vert_idxs\" is empty."))
+    # check if graph contains vertices
+    nv(data.graph) == 0 && throw(ArgumentError("inconsistent CodonGraphData: graph has no vertices."))
+    # check if no duplicates exist in vert_labels
+    length(data.vert_labels) == length(Set(data.vert_labels)) ||
+        throw(ArgumentError("inconsistent CodonGraphData: \"vert_labels\" contains duplicate labels."))
+
+    # check if vert_labels only contains valid labels (length 1 or 2, only A,C,G,T or combinations thereof)
+    for label in data.vert_labels
+        (length(label) in (1, 2)) || throw(
+            ArgumentError("inconsistent CodonGraphData: \"vert_labels\" contains invalid label \"$label\"."),
+        )
+        for char in label
+            char in ALLOWED_BASES_STR || throw(
+                ArgumentError(
+                    "inconsistent CodonGraphData: \"vert_labels\" contains invalid label \"$label\".",
+                ),
+            )
         end
     end
-    # only allowed bases in codon_set
-    for codon in data.codon_set
-        for base in codon
-            if !(base in ALLOWED_BASES_DNA)
-                throw(ArgumentError("Codon in codon_set contains invalid base $base!"))
-            end
-        end
+
+    # check if vert_labels length matches graph size
+    length(data.vert_labels) == nv(data.graph) || throw(
+        ArgumentError(
+            "inconsistent CodonGraphData: \"vert_labels\" length does not match number of vertices in graph.",
+        ),
+    )
+
+    # check if vert_idxs length matches graph size
+    length(data.vert_idxs) == nv(data.graph) || throw(
+        ArgumentError(
+            "inconsistent CodonGraphData: \"vert_idxs\" length does not match number of vertices in graph.",
+        ),
+    )
+
+    # check if vert_idxs keys match vert_labels and indices are valid
+    for (label, idx) in data.vert_idxs
+        (1 <= idx <= nv(data.graph)) || throw(
+            ArgumentError(
+                "inconsistent CodonGraphData: \"vert_idxs\" contains invalid vertex index \"$idx\".",
+            ),
+        )
+        data.vert_labels[idx] == label ||
+            throw(ArgumentError("inconsistent CodonGraphData: \"vert_idxs\" and vert_labels do not match."))
     end
 end

@@ -4,33 +4,37 @@ using Graphs
 
 # struct to hold all data related to a codon graph
 mutable struct CodonGraphData
-    graph::Graphs.SimpleDiGraph
     codon_set::Vector{LongDNA{4}}
-    vert_labels::Vector{String}
     edge_labels::Vector{Tuple{String, String}}
-    vert_idxs::Dict{String, Int}
+    graph::Graphs.SimpleDiGraph
     graph_title::String
+    vert_idxs::Dict{String, Int}
+    vert_labels::Vector{String}
 end
 
 
 # constructor for CodonGraphData that takes a codon set and builds the other fields
 function CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "")
-    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty!"))
-    any(length(codon) != 3 for codon in codon_set) &&
-        throw(ArgumentError("All codons in codon set must have length 3!"))
-    length(codon_set) != length(Set(codon_set)) &&
-        throw(ArgumentError("Codon set cannot contain duplicate codons!"))
-    valid_bases = Set((DNA_A, DNA_C, DNA_G, DNA_T))
-    any(any(!(base in valid_bases) for base in codon) for codon in codon_set) &&
-        throw(ArgumentError("Codon set contains invalid DNA bases! Only A, C, G, T are allowed."))
+    # do not allow empty codon sets
+    length(codon_set) == 0 && throw(ArgumentError("\"codon_set\" is empty."))
+
+    # do not allow duplicates
+    length(codon_set) == length(Set(codon_set)) ||
+        throw(ArgumentError("\"codon_set\" contains duplicate codons."))
+
+    # check if all codons in codon_set are valid
+    for codon in codon_set
+        codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" in \"codon_set\" is not a valid codon."))
+    end
+
 
     obj = CodonGraphData(
-        Graphs.SimpleDiGraph(0),
         copy(codon_set),
-        String[],
         Tuple{String, String}[],
-        Dict{String, Int}(),
+        Graphs.SimpleDiGraph(0),
         graph_title,
+        Dict{String, Int}(),
+        String[],
     )
 
     # build graph by adding vertices and edges based on codon set
