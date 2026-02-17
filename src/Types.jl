@@ -15,18 +15,8 @@ end
 
 # constructor for CodonGraphData that takes a codon set and builds the other fields
 function CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "")
-    # do not allow empty codon sets
-    length(codon_set) == 0 && throw(ArgumentError("\"codon_set\" is empty."))
-
-    # do not allow duplicates
-    length(codon_set) == length(Set(codon_set)) ||
-        throw(ArgumentError("\"codon_set\" contains duplicate codons."))
-
-    # check if all codons in codon_set are valid
-    for codon in codon_set
-        codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" in \"codon_set\" is not a valid codon."))
-    end
-
+    # validate codon_set
+    _validate_codon_set(codon_set)
 
     obj = CodonGraphData(
         copy(codon_set),

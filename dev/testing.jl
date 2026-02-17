@@ -1,14 +1,13 @@
 using Revise
 isdefined(Main, :GCATCodes) || using GCATCodes
-using JuliaFormatter
-using Logging
-using CairoMakie
-using GraphMakie
-using Graphs
-using BioSequences
-using NetworkLayout
 using Base.Threads
 using BenchmarkTools
+using BioSequences
+using CairoMakie
+using Graphs
+using GraphMakie
+using JuliaFormatter
+using Logging
 
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
@@ -145,7 +144,7 @@ function get_count_tier(codon::LongDNA{4}, size::Int)
     end
 end
 
-function compare_analysis_files_linewise(orig_file_path::String, comp_file_path::String)
+function compare_files(orig_file_path::String, comp_file_path::String)
     open(orig_file_path, "r") do orig_file
         open(comp_file_path, "r") do comp_file
             line_number = 0
@@ -153,8 +152,9 @@ function compare_analysis_files_linewise(orig_file_path::String, comp_file_path:
                 line_number += 1
                 if orig_line != comp_line
                     println("Difference found at line $line_number:")
-                    println("Original: $orig_line")
+                    println("Original:   $orig_line")
                     println("Comparison: $comp_line")
+                    return false
                 end
             end
         end
@@ -275,6 +275,8 @@ function sort_by_indices(infile::AbstractString, outfile::AbstractString)
     open(outfile, "w") do io
         write(io, join(sorted, "\n"))
     end
+
+    return true
 end
 
 # check if there is an empty line in a file
@@ -290,18 +292,7 @@ function check_empty_lines_in_file(file_path::String)
     end
 end
 
-# function to get combination from codon set
-function _get_combination_from_codon_set(codon_set::Vector{LongDNA{4}}, codons::Vector{LongDNA{4}})
-    combination = Vector{Int}()
-    codon_set_set = Set(codon_set)
-    @inbounds for (i, c) in enumerate(codons)
-        if c in codon_set_set
-            push!(combination, i)
-        end
-    end
-    return combination
-end
-
+# function to get all subsets of a codon set
 function subsets(codon_set::Vector{LongDNA{4}})
     n = length(codon_set)
     result = Vector{Vector{LongDNA{4}}}()
@@ -332,22 +323,19 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
 end
 
 
-cod_set = LongDNA{4}.(["CCA", "CCT", "GGA", "CGA", "AGA", "TCT", "CAC"])
-data = CodonGraphData(cod_set)
-empty!(data.vert_labels)
-plot_codon_graph(data)
-println(data)
-_has_cycle_longer_than(data.graph, 2)
-println(get_all_paths(data))
+stop_flag[] = false
+comb_size = 2
+prev_res_path = "files/tests/results/res_$(comb_size - 1).csv"
+res_path = "files/tests/results/res_$(comb_size).csv"
+ckp_path = "files/tests/checkpoints/ckp_$(comb_size).csv"
 
-g = SimpleDiGraph(5)
-add_edge!(g, 1, 2)
-add_edge!(g, 2, 1)
-add_edge!(g, 3, 4)
-add_edge!(g, 4, 1)
-graphplot(g)
-for i in 0:10
-    if _has_cycle_longer_than(g, i)
-        println("TRUE FOR i: $i")
-    end
-end
+calc_strong_c3_comb_by_size(comb_size, ckp_path, prev_res_path, res_path, stop_flag)
+
+sort_by_indices("files/tests/results/res_5.csv", "files/tests/results/res_5_sorted.csv")
+
+read("files/results/sorted_res_5.csv") == read("files/tests/results/res_5_sorted.csv")
+
+countlines("files/results/sorted_res_5.csv")
+countlines("files/tests/results/res_5_sorted.csv")
+
+compare_files("files/results/sorted_res_5.csv", "files/tests/results/res_5_sorted.csv")
