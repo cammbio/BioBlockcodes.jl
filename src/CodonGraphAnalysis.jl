@@ -46,6 +46,10 @@ function is_circular(data::CodonGraphData)
     return true
 end
 
+function is_circular(codons::Vector{LongDNA{4}})
+    cgd = CodonGraphData(codons)
+    return is_circular(cgd)
+end
 
 function is_comma_free(data::CodonGraphData)
     # validate data object
