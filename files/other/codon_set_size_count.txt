@@ -1,0 +1,14 @@
+Size count for C3 and comma-free codon sets:
+Size 1: 216
+Size 2: 216
+Size 3: 190
+Size 4: 190
+Size 5: 149
+Size 6: 143
+Size 7: 73
+Size 8: 65
+Size 9: 27
+Size 10: 24
+Size 11: 10
+Size 12: 8
+Size 13: 1

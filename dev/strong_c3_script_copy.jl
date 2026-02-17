@@ -23,9 +23,9 @@ function start_process(min_comb_size::Int, max_comb_size::Int; worker_count::Int
         start_time = time()
         for comb_size in min_comb_size:max_comb_size
             stop_flag[] && break
-            prev_res_path = "files/results/res_$(comb_size - 1).csv"
-            res_path = "files/results/res_$(comb_size).csv"
-            ckp_path = "files/checkpoints/ckp_$(comb_size).csv"
+            prev_res_path = "files/tests/results/res_$(comb_size - 1).csv"
+            res_path = "files/tests/results/res_$(comb_size).csv"
+            ckp_path = "files/tests/checkpoints/ckp_$(comb_size).csv"
 
             println("Threads: $(nthreads()) | size=$comb_size | input=$prev_res_path -> output=$res_path")
             calc_strong_c3_comb_by_size(
@@ -37,15 +37,9 @@ function start_process(min_comb_size::Int, max_comb_size::Int; worker_count::Int
                 worker_count = worker_count,
             )
         end
-        if stop_flag[]
-            total_time = time() - start_time
-            println("Processing interrupted by user after $(round(total_time, digits = 3)) seconds.")
-        else
-            total_time = time() - start_time
-            println(
-                "All requested sizes ($(min_comb_size)-$(max_comb_size)) processed in $(round(total_time, digits = 3)) seconds.",
-            )
-        end
+        println("All requested sizes processed.")
+        total_time = time() - start_time
+        @info "Finished sizes $(min_comb_size):$(max_comb_size) in $(round(total_time, digits = 3)) seconds."
     end
 end
 

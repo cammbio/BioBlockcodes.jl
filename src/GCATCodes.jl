@@ -1,13 +1,13 @@
 module GCATCodes
-# ------------------------------------------------ USING ------------------------------------------------
+# ----------------------------------------------- PACKAGES ----------------------------------------------
 using Base.Threads
+using BenchmarkTools
 using BioSequences
 using CairoMakie
-using GraphMakie
 using Graphs
+using GraphMakie
 using JuliaFormatter
 using Logging
-using NetworkLayout
 # ---------------------------------------------- VARIABLES ----------------------------------------------
 
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
@@ -79,9 +79,11 @@ const ALL_CODONS =
 
 const ALLOWED_BASES_DNA = Set((DNA_A, DNA_C, DNA_G, DNA_T))
 const ALLOWED_BASES_STR = Set(('A', 'C', 'G', 'T'))
-const BASE_COMPLEMENT = Dict('A' => 'T', 'T' => 'A', 'C' => 'G', 'G' => 'C')
+const BASE_COMPLEMENT = Dict(DNA_A => DNA_T, DNA_T => DNA_A, DNA_C => DNA_G, DNA_G => DNA_C)
+const CODON_INDEX = Dict{LongDNA{4}, Int}(codon => i for (i, codon) in enumerate(ALL_CODONS))
 # ---------------------------------------------- INCLUDES -----------------------------------------------
 include("Types.jl")
+include("ErrorHandling.jl")
 include("InputOutputUtilities.jl")
 include("CodonUtilities.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphBuilder.jl
@@ -123,6 +125,8 @@ export
     codon_set_to_str,
     # StrongC3.jl
     calc_strong_c3_comb_by_size,
+
     # temp testing functions
-    _has_cycle_longer_than
+    _get_comp_codon,
+    _get_comp_codon_set
 end

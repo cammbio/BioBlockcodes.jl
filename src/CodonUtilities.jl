@@ -1,39 +1,24 @@
 function get_comp_rev_codon_set(codon_set::Vector{LongDNA{4}})
-    # do not allow empty codon sets
-    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
-    # do not allow codons of length different than 3
-    for codon in codon_set
-        length(codon) != 3 && throw(
-            ArgumentError(
-                "All codons in codon set must be of length 3, got codon \"$codon\" of length $(length(codon)).",
-            ),
-        )
-    end
+    # validate codon_set
+    _validate_codon_set(codon_set)
     # get complemented, reversed codon set
-    complemented_reversed_codon_set = _comp_codon_set(_rev_codon_set(codon_set))
+    complemented_reversed_codon_set = _get_comp_codon_set(_get_rev_codon_set(codon_set))
 
     return complemented_reversed_codon_set
 end
 
 
 function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int)
-    # do not allow empty codon sets
-    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
-    # do not allow codons of length different than 3
-    for codon in codon_set
-        length(codon) != 3 && throw(
-            ArgumentError(
-                "All codons in codon set must be of length 3, got codon \"$codon\" of length $(length(codon)).",
-            ),
-        )
-    end
+    # do not allow negative shift_by
+    shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
+    # validate codon_set
+    _validate_codon_set(codon_set)
 
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon_set[1]))
     # shift every codon from codon_set
     shifted_codon_set = Vector{LongDNA{4}}()
     for codon in codon_set
-        # cut of first shift_by characters and append them to the end
         shifted_codon = left_shift_codon(codon, shift_by)
         push!(shifted_codon_set, shifted_codon)
     end
@@ -42,9 +27,10 @@ end
 
 
 function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
-    # do not allow codons of length different than 3
-    length(codon) != 3 &&
-        throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
+    # do not allow negative shift_by
+    shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
+    # validate codon
+    _validate_codon(codon)
 
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon))
@@ -55,82 +41,63 @@ end
 
 
 #
-function _comp_base(base::Char)
-    # do not allow bases not in BASE_COMPLEMENT
-    !haskey(BASE_COMPLEMENT, base) &&
-        throw(ArgumentError("Base must be one of $(keys(BASE_COMPLEMENT)), got base \"$base\"."))
+function _get_comp_base(base::DNA)
+    # do not allow bases not in ALLOWED_BASES_DNA
+    !(base in ALLOWED_BASES_DNA) && throw(ArgumentError("invalid base \"$base\": must be A, C, G or T."))
 
     return BASE_COMPLEMENT[base]
 end
 
 
 #
-function _comp_codon_set(codon_set::Vector{LongDNA{4}})
-    # do not allow empty codon sets
-    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
-    # do not allow codons of length different than 3
-    for codon in codon_set
-        length(codon) != 3 && throw(
-            ArgumentError(
-                "All codons in codon set must be of length 3, got codon \"$codon\" of length $(length(codon)).",
-            ),
-        )
-    end
+function _get_comp_codon_set(codon_set::Vector{LongDNA{4}})
+    # validate codon_set
+    _validate_codon_set(codon_set)
 
     # build complemented codon set
-    complemented_codons = Vector{LongDNA{4}}()
+    comp_codon_set = Vector{LongDNA{4}}()
     for codon in codon_set
         # add the complemented codon to the complemented_codons set
-        push!(complemented_codons, _comp_codon(codon))
+        push!(comp_codon_set, _get_comp_codon(codon))
     end
 
-    return complemented_codons
+    return comp_codon_set
 end
 
 
 #
-function _comp_codon(codon::LongDNA{4})
-    # do not allow codons of length different than 3
-    length(codon) != 3 &&
-        throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
+function _get_comp_codon(codon::LongDNA{4})
+    # validate codon
+    _validate_codon(codon)
 
     # get complemented codon
-    complemented_codon = BioSequences.complement(codon)
-    return complemented_codon
+    comp_codon = LongDNA{4}(_get_comp_base.(codon))
+    return comp_codon
 end
 
 
 # 
-function _rev_codon_set(codon_set::Vector{LongDNA{4}})
-    # do not allow empty codon sets
-    isempty(codon_set) && throw(ArgumentError("Codon set cannot be empty."))
-    # do not allow codons of length different than 3
-    for codon in codon_set
-        length(codon) != 3 && throw(
-            ArgumentError(
-                "All codons in codon set must be of length 3, got codon \"$codon\" of length $(length(codon)).",
-            ),
-        )
-    end
+function _get_rev_codon_set(codon_set::Vector{LongDNA{4}})
+    # validate codon_set
+    _validate_codon_set(codon_set)
 
     # build reversed codon set
-    reversed_codons = Vector{LongDNA{4}}()
+    rev_codon_set = Vector{LongDNA{4}}()
     for codon in codon_set
         # add the reversed complemented codon to the reversed_codons set
-        push!(reversed_codons, _rev_codon(codon))
+        push!(rev_codon_set, _get_rev_codon(codon))
     end
 
-    return reversed_codons
+    return rev_codon_set
 end
 
 
 #
-function _rev_codon(codon::LongDNA{4})
-    # do not allow codons of length different than 3
-    length(codon) != 3 &&
-        throw(ArgumentError("Codon must be of length 3, got codon \"$codon\" of length $(length(codon))."))
+function _get_rev_codon(codon::LongDNA{4})
+    # validate codon
+    _validate_codon(codon)
 
     # get reversed codon
-    reversed_codon = BioSequences.reverse(codon)
-    return reversed_codon
+    rev_codon = codon[end:-1:1]
+    return rev_codon
 end
