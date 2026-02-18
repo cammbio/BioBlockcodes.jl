@@ -128,5 +128,8 @@ export
 
     # temp testing functions
     _get_comp_codon,
-    _get_comp_codon_set
+    _get_comp_codon_set,
+    _has_cycle_longer_than,
+    _expand_graph!,
+    _dfs_depth
 end

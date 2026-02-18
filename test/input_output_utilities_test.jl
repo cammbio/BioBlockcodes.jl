@@ -27,7 +27,7 @@ end
 
 @testset "get_codon_set_from_line" begin
     @testset "happy path" begin
-        line = "AAT|ACT,4|5"
+        line = "AAT|ACT,3|7"
         codon_set = get_codon_set_from_line(line)
         @test codon_set == LongDNA{4}.(["AAT", "ACT"])
     end
