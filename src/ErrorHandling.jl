@@ -24,22 +24,22 @@ function _validate_ckp_file(path::AbstractString)
 end
 
 
-function _validate_checkpoint(ckp::Checkpoint, ckp_path::String, comb_size::Int, max_lines::Int)
-    ckp_comb_size = ckp.comb_size
-    ckp_curr_line = ckp.curr_line
-    ckp_status = ckp.status
+# function _validate_checkpoint(ckp::Checkpoint, ckp_path::String, comb_size::Int, max_lines::Int)
+#     ckp_comb_size = ckp.comb_size
+#     ckp_curr_line = ckp.curr_line
+#     ckp_status = ckp.status
 
-    # check if checkpoint combination size matches the actual combination size
-    (ckp_comb_size != comb_size) && throw(
-        ArgumentError(
-            "Checkpoint file $ckp_path corrupted. Expected combination size: $comb_size, found: $ckp_comb_size.",
-        ),
-    )
+#     # check if checkpoint combination size matches the actual combination size
+#     (ckp_comb_size != comb_size) && throw(
+#         ArgumentError(
+#             "Checkpoint file $ckp_path corrupted. Expected combination size: $comb_size, found: $ckp_comb_size.",
+#         ),
+#     )
 
-    # check if checkpoint current line is valid
-    (ckp_curr_line < 1) &&
-        throw(ArgumentError("Checkpoint file corrupted. Invalid current line: $ckp_curr_line."))
-end
+#     # check if checkpoint current line is valid
+#     (ckp_curr_line < 1) &&
+#         throw(ArgumentError("Checkpoint file corrupted. Invalid current line: $ckp_curr_line."))
+# end
 
 
 # validate codon_set contents
@@ -92,7 +92,6 @@ function _validate_dir(path::AbstractString)
     isdir(dir) || throw(ArgumentError("directory does not exist: $dir"))
 end
 
-
 # validate edge labels against edge count
 function _validate_edges(data::CodonGraphData)
     # check if edge_labels is empty
@@ -112,7 +111,8 @@ function _validate_edges(data::CodonGraphData)
         throw(ArgumentError("inconsistent CodonGraphData: \"edge_labels\" contains duplicate labels."))
 
     # check if every label in edge_labels corresponds to an actual edge in the graph
-    for (src_label, dst_label) in data.edge_labels
+    for edge in data.edge_labels
+        src_label, dst_label = edge
         # check if src_label exists in vert_idxs
         haskey(data.vert_idxs, src_label) || throw(
             ArgumentError(
@@ -138,7 +138,7 @@ function _validate_edges(data::CodonGraphData)
             ),
         )
         # check if edge from src_label to dst_label exists in graph
-        _has_edge_label(data, src_label, dst_label) || throw(
+        _has_edge_label(data, edge) || throw(
             ArgumentError(
                 "inconsistent CodonGraphData: \"edge_labels\" contains edge from \"$src_label\" to \"$dst_label\" that does not exist in graph.",
             ),
@@ -157,6 +157,28 @@ function _validate_edges(data::CodonGraphData)
     end
 end
 
+
+function _validate_graph(graph::SimpleDiGraph)
+    # do not allow empty graphs
+    ne(graph) == 0 && throw(ArgumentError("graph has no edges."))
+    nv(graph) == 0 && throw(ArgumentError("graph has no vertices."))
+end
+
+
+function _validate_label(label::String)
+    # do not allow empty labels
+    isempty(label) && throw(ArgumentError("label cannot be empty."))
+    # only allow labels of length 1 or 2
+    (length(label) in (1, 2)) || throw(ArgumentError("label \"$label\" must be of length 1 or 2."))
+    # only allow labels containing A, C, G and T
+    for char in label
+        char in ALLOWED_BASES_STR || throw(
+            ArgumentError(
+                "label \"$label\" contains invalid character \"$char\". Only A, C, G and T allowed.",
+            ),
+        )
+    end
+end
 
 # validate vertices and index mappings
 function _validate_vertices(data::CodonGraphData)

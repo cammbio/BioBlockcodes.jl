@@ -2,8 +2,6 @@ using GCATCodes
 using Test
 
 
-println("Running tests...")
-
 isfile("codon_graph_analysis_test.jl") ? include("codon_graph_analysis_test.jl") :
 @warn "Test file \"codon_graph_analysis_test.jl\" not found. Skipping file."
 

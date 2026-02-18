@@ -61,7 +61,7 @@ function plot_multiple_codon_graphs(
     # create plot figure with minimal padding
     fig = Figure(size = (1800, 900), figure_padding = 2)
     # set fig_title as label above all graphs if provided
-    if !isempty(fig_title) && fig_title !== nothing
+    if fig_title !== nothing && !isempty(fig_title)
         Label(fig[0, 1:col_count], fig_title; fontsize = 24)
     end
 

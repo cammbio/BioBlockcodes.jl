@@ -339,3 +339,49 @@ countlines("files/results/sorted_res_5.csv")
 countlines("files/tests/results/res_5_sorted.csv")
 
 compare_files("files/results/sorted_res_5.csv", "files/tests/results/res_5_sorted.csv")
+
+for i in 1:60
+    for j in 1:60
+        if i == j
+            continue
+        end
+        codon_set = LongDNA{4}.([ALL_CODONS[i], ALL_CODONS[j]])
+        if test(codon_set)
+            println("i: $i, j: $j")
+            println("Found non-circular codon set: ", codon_set)
+            break
+        end
+    end
+end
+
+
+
+codon_set = LongDNA{4}.(["AAC", "ATG", "TGC"])
+data = CodonGraphData(codon_set)
+println(data.vert_labels)
+_expand_graph!(data)
+println(nv(data.graph))
+
+
+codon_set = LongDNA{4}.(["AGA", "GAC", "TGG"])
+data = CodonGraphData(codon_set)
+println(data.edge_labels)
+is_strong_c3(data)
+_expand_graph!(data)
+println(ne(data.graph))
+println(length(data.edge_labels))
+println(data)
+
+
+
+codon_set = LongDNA{4}.(["CCG", "GTA"])
+data = CodonGraphData(codon_set)
+println(data.vert_labels)
+println(data.edge_labels)
+
+
+codon_set = LongDNA{4}.(["AGT", "GCC"])
+data = CodonGraphData(codon_set)
+println(data.vert_labels)
+println(data.edge_labels)
+

@@ -22,7 +22,7 @@ function calc_strong_c3_comb_by_size(
             # load checkpoint
             ckp = _load_ckp(ckp_path)
             # validate checkpoint
-            _validate_checkpoint(ckp, ckp_path, comb_size)
+            # _validate_checkpoint(ckp, ckp_path, comb_size)
             # check if checkpoint combination size matches the actual combination size
             (ckp.comb_size != comb_size) && throw(
                 ArgumentError(
