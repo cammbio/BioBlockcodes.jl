@@ -1,11 +1,13 @@
-using Base.Threads: @threads, @spawn, ReentrantLock, nthreads, Atomic
+# using Base.Threads: @spawn, ReentrantLock, nthreads
+
+
 # process strong c3 combinations incrementally from previous results file
 function calc_strong_c3_comb_by_size(
     comb_size::Int,
     ckp_path::AbstractString,
     prev_res_path::AbstractString,
     res_path::AbstractString,
-    stop_flag::Atomic{Bool};
+    stop_flag::Base.Threads.Atomic{Bool};
     worker_count::Int = nthreads(),
 )
     # only allow combination sizes from 1 to 20
@@ -17,58 +19,71 @@ function calc_strong_c3_comb_by_size(
 
     # load from checkpoint if results file exists and is not empty
     if isfile(res_path) && filesize(res_path) > 0
-        # validate checkpoint file exists and is not empty
+        # checkpoint file exists and is not empty
         if isfile(ckp_path) && filesize(ckp_path) > 0
+            # check previous results file exists and is not empty if comb_size != 1
+            if comb_size == 1
+                max_lines = length(ALL_CODONS)
+            else
+                isfile(prev_res_path) ||
+                    throw(ArgumentError("Previous result file not found: $prev_res_path"))
+                filesize(prev_res_path) == 0 &&
+                    throw(ArgumentError("Previous result file is empty: $prev_res_path"))
+                max_lines = countlines(prev_res_path)
+            end
             # load checkpoint
             ckp = _load_ckp(ckp_path)
-            # validate checkpoint
-            # _validate_checkpoint(ckp, ckp_path, comb_size)
-            # check if checkpoint combination size matches the actual combination size
-            (ckp.comb_size != comb_size) && throw(
-                ArgumentError(
-                    "Checkpoint file corrupted. Expected combination size: $comb_size, found: $(ckp.comb_size). Checkpoint file: $ckp_path",
-                ),
-            )
-            curr_line = ckp.curr_line
+            # validate checkpoint content
+            _validate_ckp(ckp, ckp_path, comb_size, max_lines)
+
+            next_line = ckp.next_line
             status = ckp.status
 
-            if status == "finished"
+            if next_line == 0 && status == "finished"
                 println("Checkpoint file indicates that combination size $comb_size is already processed.")
                 return true
             end
 
             w_mode = "a"
-        else # results file exists but checkpoint file is missing or empty - this should not happen if checkpoint is saved correctly after each run, so throw error to avoid silent data corruption
+        else # results file exists but checkpoint file is missing or empty - this should not happen in normal execution, but we handle it just in case
             if !isfile(ckp_path)
-                throw(ArgumentError("Checkpoint file $ckp_path MISSING while results file exists."))
+                throw(
+                    ArgumentError(
+                        "Checkpoint file \"$ckp_path\" MISSING while results file exists and not empty.",
+                    ),
+                )
             elseif filesize(ckp_path) == 0
-                throw(ArgumentError("Checkpoint file $ckp_path EMPTY while results file exists."))
+                throw(
+                    ArgumentError(
+                        "Checkpoint file \"$ckp_path\" EMPTY while results file exists and not empty.",
+                    ),
+                )
             end
         end
     else # start from scratch
-        curr_line = 1
+        next_line = 1
         status = "unfinished"
         w_mode = "w"
     end
 
+    # flag to track if processing was cancelled during execution (e.g. due to stop flag) to provide accurate messaging and checkpoint saving
+    is_cancelled = false
     # special case comb_size == 1: no need to read from previous results file, just write all codons as single combinations
     if comb_size == 1
         open(res_path, w_mode) do io
-            @inbounds for line_count in curr_line:length(ALL_CODONS)
+            @inbounds for line_count in next_line:length(ALL_CODONS)
+                # stop flag to allow graceful interruption
                 if stop_flag[]
-                    println("Processing interrupted at line $curr_line for combination size $comb_size.")
+                    next_line = line_count
+                    is_cancelled = true
                     break
                 end
+
                 codon = ALL_CODONS[line_count]
                 write_res(io, [codon], [line_count])
-                curr_line = line_count
             end
         end
-        status = "finished"
     else
-        # check previous results file exists
-        isfile(prev_res_path) || throw(ArgumentError("Previous result file not found: $prev_res_path"))
-
         codon_rot_masks = _get_rot_masks(ALL_CODONS)
         idx_dict = Dict{LongDNA{4}, Int}(codon => idx for (idx, codon) in enumerate(ALL_CODONS))
         w_lock = ReentrantLock()
@@ -78,22 +93,24 @@ function calc_strong_c3_comb_by_size(
         producer = @spawn begin
             open(prev_res_path, "r") do input
                 for (line_count, line) in enumerate(eachline(input))
-                    # skip lines until curr_line is reached
-                    line_count < curr_line && continue
+                    # skip lines until next_line is reached
+                    line_count < next_line && continue
+
+                    # stop flag to allow graceful interruption
                     if stop_flag[]
-                        curr_line = line_count
-                        println("Processing interrupted at line $curr_line for combination size $comb_size.")
+                        next_line = line_count
+                        is_cancelled = true
                         break
                     end
+
                     prev_codon_set = get_codon_set_from_line(line)
-                    isempty(prev_codon_set) && continue
+                    # validate codon set length in previous results file
                     length(prev_codon_set) == comb_size - 1 || throw(
                         ArgumentError(
-                            "Invalid codon set length in previous results file at line $line_count. Expected length: $(comb_size - 1), got: $(length(prev_codon_set))",
+                            "invalid codon set length in previous results file at line $line_count. Expected length: $(comb_size - 1), got: $(length(prev_codon_set))",
                         ),
                     )
                     put!(buffer, prev_codon_set)
-                    curr_line = line_count
                 end
             end
             close(buffer)
@@ -132,16 +149,21 @@ function calc_strong_c3_comb_by_size(
         end
     end
 
-    # mark as finished if not interrupted
-    if !stop_flag[]
+    # final check if stop flag was triggered during processing
+    if is_cancelled
+        println(
+            "Processing for combination size $comb_size was cancelled. You can resume by running the function again with the exact same parameters.",
+        )
+    else
+        next_line = 0
         status = "finished"
-        println("Processing strong C3 combinations of size $comb_size finished successfully.")
+        println("Processing for combination size $comb_size completed.")
     end
 
     # save checkpoint
-    _save_ckp(ckp_path, comb_size, curr_line, status)
+    _save_ckp(ckp_path, comb_size, next_line, status)
     println(
-        "Checkpoint for comb_size $comb_size saved at path $ckp_path: comb_size: $comb_size, curr_line: $curr_line, status: $status.",
+        "Checkpoint for comb_size $comb_size saved at path $ckp_path: comb_size: $comb_size, next_line: $next_line, status: $status.",
     )
     return true
 end
@@ -191,8 +213,8 @@ end
     _validate_comb(comb)
 
     codon_set = ALL_CODONS[comb]
-    data = CodonGraphData(codon_set)
-    return is_strong_c3(data)
+    cgd = CodonGraphData(codon_set)
+    return is_strong_c3(cgd)
 end
 
 
@@ -203,16 +225,16 @@ function _load_ckp(path::AbstractString)
 
     pairs = Dict{String, String}()
     for line in readlines(path)
-        key, value = split(line, ",")
-        pairs[key] = value
+        key, value = split(line, ","; limit = 2)
+        pairs[strip(key)] = strip(value)
     end
 
     # parse current_combination as Vector{Int} after removing brackets and spaces
     comb_size = parse(Int, pairs["comb_size"])
-    curr_line = parse(Int, pairs["curr_line"])
+    next_line = parse(Int, pairs["next_line"])
     status = pairs["status"]
 
-    return (; comb_size, curr_line, status)
+    return (; comb_size, next_line, status)
 end
 
 
@@ -234,10 +256,13 @@ end
 function _save_ckp(path::AbstractString, comb_size::Int, line_number::Int, status::AbstractString)
     # validate checkpoint directory
     _validate_dir(path)
+    # check status value
+    !(status in ("unfinished", "finished")) &&
+        throw(ArgumentError("invalid status value: $status. Must be \"unfinished\" or \"finished\"."))
 
     mktemp() do temp_file, io
         println(io, "comb_size,", string(comb_size))
-        println(io, "curr_line,", string(line_number))
+        println(io, "next_line,", string(line_number))
         println(io, "status,", status)
         close(io)
         mv(temp_file, path; force = true)

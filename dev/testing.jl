@@ -12,71 +12,7 @@ using Logging
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 # global_logger(ConsoleLogger(Logging.Info)) # deactivate
-const ALL_CODONS =
-    LongDNA{
-        4,
-    }.([
-        "AAC",
-        "AAG",
-        "AAT",
-        "ACA",
-        "ACC",
-        "ACG",
-        "ACT",
-        "AGA",
-        "AGC",
-        "AGG",
-        "AGT",
-        "ATA",
-        "ATC",
-        "ATG",
-        "ATT",
-        "CAA",
-        "CAC",
-        "CAG",
-        "CAT",
-        "CCA",
-        "CCG",
-        "CCT",
-        "CGA",
-        "CGC",
-        "CGG",
-        "CGT",
-        "CTA",
-        "CTC",
-        "CTG",
-        "CTT",
-        "GAA",
-        "GAC",
-        "GAG",
-        "GAT",
-        "GCA",
-        "GCC",
-        "GCG",
-        "GCT",
-        "GGA",
-        "GGC",
-        "GGT",
-        "GTA",
-        "GTC",
-        "GTG",
-        "GTT",
-        "TAA",
-        "TAC",
-        "TAG",
-        "TAT",
-        "TCA",
-        "TCC",
-        "TCG",
-        "TCT",
-        "TGA",
-        "TGC",
-        "TGG",
-        "TGT",
-        "TTA",
-        "TTC",
-        "TTG",
-    ])
+
 const stop_flag = Base.Threads.Atomic{Bool}(false)
 
 # function to get all paths from a graph
@@ -323,65 +259,41 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
 end
 
 
-stop_flag[] = false
-comb_size = 2
-prev_res_path = "files/tests/results/res_$(comb_size - 1).csv"
-res_path = "files/tests/results/res_$(comb_size).csv"
-ckp_path = "files/tests/checkpoints/ckp_$(comb_size).csv"
 
-calc_strong_c3_comb_by_size(comb_size, ckp_path, prev_res_path, res_path, stop_flag)
 
-sort_by_indices("files/tests/results/res_5.csv", "files/tests/results/res_5_sorted.csv")
 
-read("files/results/sorted_res_5.csv") == read("files/tests/results/res_5_sorted.csv")
+for i in 1:1
+    res_path = "files/results/res_$(i).csv"
+    ckp_path = "files/checkpoints/ckp_$(i).csv"
+    sort_path = "files/results/sorted_res_$(i).csv"
 
-countlines("files/results/sorted_res_5.csv")
-countlines("files/tests/results/res_5_sorted.csv")
+    test_res_path = "files/tests/results/res_$(i).csv"
+    test_ckp_path = "files/tests/checkpoints/ckp_$(i).csv"
+    test_sort_path = "files/tests/results/sorted_res_$(i).csv"
 
-compare_files("files/results/sorted_res_5.csv", "files/tests/results/res_5_sorted.csv")
+    # println(countlines(res_path))
+    # println(countlines(test_res_path))
+    # continue
 
-for i in 1:60
-    for j in 1:60
-        if i == j
-            continue
-        end
-        codon_set = LongDNA{4}.([ALL_CODONS[i], ALL_CODONS[j]])
-        if test(codon_set)
-            println("i: $i, j: $j")
-            println("Found non-circular codon set: ", codon_set)
-            break
-        end
-    end
+    read(res_path) == read(test_res_path)
+    read(ckp_path) == read(test_ckp_path)
+    read(sort_path) == read(test_sort_path)
+
+    println("Countlines in res_$(i).csv: $(countlines(res_path))")
+    println("Countlines in test res_$(i).csv: $(countlines(test_res_path))")
+    println("Countlines in ckp_$(i).csv: $(countlines(ckp_path))")
+    println("Countlines in test ckp_$(i).csv: $(countlines(test_ckp_path))")
+    println("Countlines in sorted_res_$(i).csv: $(countlines(sort_path))")
+    println("Countlines in test sorted_res_$(i).csv: $(countlines(test_sort_path))")
+
+    compare_files(res_path, test_res_path)
+    compare_files(ckp_path, test_ckp_path)
+    compare_files(sort_path, test_sort_path)
 end
 
 
-
-codon_set = LongDNA{4}.(["AAC", "ATG", "TGC"])
-data = CodonGraphData(codon_set)
-println(data.vert_labels)
-_expand_graph!(data)
-println(nv(data.graph))
-
-
-codon_set = LongDNA{4}.(["AGA", "GAC", "TGG"])
-data = CodonGraphData(codon_set)
-println(data.edge_labels)
-is_strong_c3(data)
-_expand_graph!(data)
-println(ne(data.graph))
-println(length(data.edge_labels))
-println(data)
-
-
-
-codon_set = LongDNA{4}.(["CCG", "GTA"])
-data = CodonGraphData(codon_set)
-println(data.vert_labels)
-println(data.edge_labels)
-
-
-codon_set = LongDNA{4}.(["AGT", "GCC"])
-data = CodonGraphData(codon_set)
-println(data.vert_labels)
-println(data.edge_labels)
+g = SimpleDiGraph(2)
+add_edge!(g, 1, 2)
+add_edge!(g, 2, 1)
+GCATCodes._dfs_depth(g, 1, 0, 3)
 

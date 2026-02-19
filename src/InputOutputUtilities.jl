@@ -14,11 +14,11 @@ function get_codon_set_from_line(line::AbstractString)
     # do not allow empty line
     isempty(line) && throw(ArgumentError("line is empty."))
 
-    # do not allow more than one comma
-    parts = split(line, ",")
-    length(parts) == 2 || throw(
+    # require exactly one comma separator
+    count(==(','), line) == 1 || throw(
         ArgumentError("line has wrong format. Expected format: \"COD1|COD2|...|CODn,idx1|idx2|...|idxn\"."),
     )
+    parts = split(line, ","; limit = 2)
 
     # check codon list format
     codon_tokens = split(strip(parts[1]), "|"; keepempty = false)
@@ -54,7 +54,7 @@ end
 
 
 # write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
-function write_res(io::IOStream, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
+function write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
     # validate codon set
     _validate_codon_set(codon_set)
     # validate combination indices

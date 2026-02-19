@@ -2,27 +2,9 @@ function get_comp_rev_codon_set(codon_set::Vector{LongDNA{4}})
     # validate codon_set
     _validate_codon_set(codon_set)
     # get complemented, reversed codon set
-    complemented_reversed_codon_set = _get_comp_codon_set(_get_rev_codon_set(codon_set))
+    comp_rev_codon_set = _get_comp_codon_set(_get_rev_codon_set(codon_set))
 
-    return complemented_reversed_codon_set
-end
-
-
-function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int)
-    # do not allow negative shift_by
-    shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
-    # validate codon_set
-    _validate_codon_set(codon_set)
-
-    # limit shift_by to length of codon
-    shift_by = mod(shift_by, length(codon_set[1]))
-    # shift every codon from codon_set
-    shifted_codon_set = Vector{LongDNA{4}}()
-    for codon in codon_set
-        shifted_codon = left_shift_codon(codon, shift_by)
-        push!(shifted_codon_set, shifted_codon)
-    end
-    return shifted_codon_set
+    return comp_rev_codon_set
 end
 
 
@@ -34,13 +16,31 @@ function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
 
     # limit shift_by to length of codon
     shift_by = mod(shift_by, length(codon))
+    shift_by == 0 && return copy(codon)
     # cut of first shift_by characters and append them to the end
     shifted_codon = codon[(shift_by + 1):end] * codon[1:shift_by]
     return shifted_codon
 end
 
 
-#
+function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int)
+    # do not allow negative shift_by
+    shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
+    # validate codon_set
+    _validate_codon_set(codon_set)
+
+    # limit shift_by to length of codon
+    shift_by = mod(shift_by, length(codon_set[1]))
+    shift_by == 0 && return copy(codon_set)
+    # shift every codon from codon_set
+    shifted_codon_set = Vector{LongDNA{4}}(undef, length(codon_set))
+    for (idx, codon) in enumerate(codon_set)
+        shifted_codon_set[idx] = left_shift_codon(codon, shift_by)
+    end
+    return shifted_codon_set
+end
+
+
 function _get_comp_base(base::DNA)
     # do not allow bases not in ALLOWED_BASES_DNA
     !(base in ALLOWED_BASES_DNA) && throw(ArgumentError("invalid base \"$base\": must be A, C, G or T."))
@@ -49,7 +49,16 @@ function _get_comp_base(base::DNA)
 end
 
 
-#
+function _get_comp_codon(codon::LongDNA{4})
+    # validate codon
+    _validate_codon(codon)
+
+    # get complemented codon
+    comp_codon = LongDNA{4}(_get_comp_base.(codon))
+    return comp_codon
+end
+
+
 function _get_comp_codon_set(codon_set::Vector{LongDNA{4}})
     # validate codon_set
     _validate_codon_set(codon_set)
@@ -65,18 +74,16 @@ function _get_comp_codon_set(codon_set::Vector{LongDNA{4}})
 end
 
 
-#
-function _get_comp_codon(codon::LongDNA{4})
+function _get_rev_codon(codon::LongDNA{4})
     # validate codon
     _validate_codon(codon)
 
-    # get complemented codon
-    comp_codon = LongDNA{4}(_get_comp_base.(codon))
-    return comp_codon
+    # get reversed codon
+    rev_codon = codon[end:-1:1]
+    return rev_codon
 end
 
 
-# 
 function _get_rev_codon_set(codon_set::Vector{LongDNA{4}})
     # validate codon_set
     _validate_codon_set(codon_set)
@@ -89,15 +96,4 @@ function _get_rev_codon_set(codon_set::Vector{LongDNA{4}})
     end
 
     return rev_codon_set
-end
-
-
-#
-function _get_rev_codon(codon::LongDNA{4})
-    # validate codon
-    _validate_codon(codon)
-
-    # get reversed codon
-    rev_codon = codon[end:-1:1]
-    return rev_codon
 end

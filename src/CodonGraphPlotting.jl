@@ -1,14 +1,14 @@
-using CairoMakie
-using GraphMakie
-using NetworkLayout
+# using CairoMakie
+# using GraphMakie
+# using NetworkLayout
 
 
-function plot_codon_graph(data::CodonGraphData)
-    # validate data object
-    _validate_cgd(data)
+function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900))
+    # validate cgd object
+    _validate_cgd(cgd)
 
     # create plot figure
-    fig = Figure(size = (1800, 900))
+    fig = Figure(size = fig_size)
     ax = Axis(
         fig[1, 1];
         xgridvisible = false,
@@ -19,12 +19,12 @@ function plot_codon_graph(data::CodonGraphData)
         yticklabelsvisible = false,
     )
     hidespines!(ax) # remove axis spines
-    ax.title = data.graph_title
+    ax.title = cgd.graph_title
     graphplot!(
         ax,
-        data.graph;
-        layout = Spring(C = 50.0),
-        nlabels = data.vert_labels,
+        cgd.graph;
+        layout = NetworkLayout.Spring(C = 50.0),
+        nlabels = cgd.vert_labels,
         nlabels_color = :white,
         nlabels_size = 18,
         nlabels_offset = Point2f(0, 0),
@@ -42,31 +42,32 @@ end
 
 
 function plot_multiple_codon_graphs(
-    data_list::Vector{CodonGraphData};
+    cgd_list::Vector{CodonGraphData};
     fig_title::Union{String, Nothing} = nothing,
+    fig_size::Tuple{Int, Int} = (1800, 900),
 )
-    # do not allow empty data_list
-    isempty(data_list) && throw(ArgumentError("data_list cannot be empty."))
-    # validate data objects
-    _validate_cgd.(data_list)
+    # do not allow empty cgd_list
+    isempty(cgd_list) && throw(ArgumentError("cgd_list is empty."))
+    # validate cgd objects
+    _validate_cgd.(cgd_list)
 
     # get number of columns for grid layout based on amount of graphs
-    col_count = _get_col_count(length(data_list))
+    col_count = _get_col_count(length(cgd_list))
     # einheitliche Titelgröße anhand des längsten Titels schätzen
-    max_title_len = maximum(length.(getfield.(data_list, :graph_title)))
+    max_title_len = maximum(length.(getfield.(cgd_list, :graph_title)))
     title_width = 1800 / col_count
     fontsize_est = title_width / max(max_title_len, 1) / 0.6
     title_size = clamp(fontsize_est, 8, 26)
 
     # create plot figure with minimal padding
-    fig = Figure(size = (1800, 900), figure_padding = 2)
+    fig = Figure(size = fig_size, figure_padding = 2)
     # set fig_title as label above all graphs if provided
     if fig_title !== nothing && !isempty(fig_title)
         Label(fig[0, 1:col_count], fig_title; fontsize = 24)
     end
 
     # add each graph to figure
-    for (idx, data) in enumerate(data_list)
+    for (idx, cgd) in enumerate(cgd_list)
         quot, rem = divrem(idx - 1, col_count)
         row = quot + 1
         column = rem + 1
@@ -80,12 +81,12 @@ function plot_multiple_codon_graphs(
             yticklabelsvisible = false,
         )
         ax.titlesize = title_size
-        ax.title = data.graph_title
+        ax.title = cgd.graph_title
         graphplot!(
             ax,
-            data.graph;
-            layout = Spring(C = 50.0),
-            nlabels = data.vert_labels,
+            cgd.graph;
+            layout = NetworkLayout.Spring(C = 50.0),
+            nlabels = cgd.vert_labels,
             nlabels_color = :white,
             nlabels_size = 18,
             nlabels_offset = Point2f(0, 0),
@@ -105,6 +106,11 @@ end
 
 # determine number of columns for grid layout based on amount of graphs
 function _get_col_count(graph_count::Int)
+    # do not allow 0 or negative graph count
+    if graph_count <= 0
+        throw(ArgumentError("graph_count must be a positive integer."))
+    end
+
     col_count = max(1, ceil(Int, sqrt(graph_count)))
     return col_count
 end
