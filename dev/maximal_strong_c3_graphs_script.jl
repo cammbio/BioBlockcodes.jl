@@ -18,8 +18,8 @@ function run(max_res_path::String, stop_flag::Base.Threads.Atomic{Bool})
                 return false
             end
             codon_set = get_codon_set_from_line(line)
-            data_list = _get_cod_graphs(codon_set)
-            fig = show_multiple_codon_graphs(data_list; fig_title = "Line $line_count")
+            cgd_list = _get_cod_graphs(codon_set)
+            fig = show_multiple_codon_graphs(cgd_list; fig_title = "Line $line_count")
 
             save_path = joinpath(@__DIR__, "..", "files", "diagrams", "max", "line_$(string(line_count)).png")
 
@@ -34,14 +34,14 @@ end
 
 # grows a maximal strong c3 codon set from size 1-12 and displays graphs for each size
 function _get_cod_graphs(max_codon_set::Vector{LongDNA{4}})
-    data_list = Vector{CodonGraphData}()
+    cgd_list = Vector{CodonGraphData}()
     for i in 1:length(max_codon_set)
         codon_set = max_codon_set[1:i]
         codon_set_str = codon_set_to_str(codon_set)
-        data = CodonGraphData(codon_set; graph_title = codon_set_str)
-        push!(data_list, data)
+        cgd = CodonGraphData(codon_set; graph_title = codon_set_str)
+        push!(cgd_list, cgd)
     end
-    return data_list
+    return cgd_list
 end
 
 

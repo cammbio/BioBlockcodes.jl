@@ -23,9 +23,13 @@ function start_process(min_comb_size::Int, max_comb_size::Int; worker_count::Int
         start_time = time()
         for comb_size in min_comb_size:max_comb_size
             stop_flag[] && break
-            prev_res_path = "files/results/res_$(comb_size - 1).csv"
-            res_path = "files/results/res_$(comb_size).csv"
-            ckp_path = "files/checkpoints/ckp_$(comb_size).csv"
+            # prev_res_path = "files/results/res_$(comb_size - 1).csv"
+            # res_path = "files/results/res_$(comb_size).csv"
+            # ckp_path = "files/checkpoints/ckp_$(comb_size).csv"
+            prev_res_path = "files/tests/results/res_$(comb_size - 1).csv"
+            res_path = "files/tests/results/res_$(comb_size).csv"
+            ckp_path = "files/tests/checkpoints/ckp_$(comb_size).csv"
+            sort_path = "files/tests/results/sorted_res_$(comb_size).csv"
 
             println("Threads: $(nthreads()) | size=$comb_size | input=$prev_res_path -> output=$res_path")
             calc_strong_c3_comb_by_size(
@@ -36,7 +40,9 @@ function start_process(min_comb_size::Int, max_comb_size::Int; worker_count::Int
                 stop_flag;
                 worker_count = worker_count,
             )
+            _sort_by_indices(res_path, sort_path)
         end
+
         if stop_flag[]
             total_time = time() - start_time
             println("Processing interrupted by user after $(round(total_time, digits = 3)) seconds.")
@@ -59,5 +65,24 @@ function cancel_process(task::Task)
         @warn "Task encountered an error: $(sprint(showerror, err))"
     end
 end
+
+
+# temp
+function _sort_by_indices(infile::AbstractString, outfile::AbstractString)
+    lines = readlines(infile)
+
+    sorted = sort(lines; lt = (a, b) -> begin
+        idxs_a = parse.(Int, split(last(split(a, ',')), '|'))
+        idxs_b = parse.(Int, split(last(split(b, ',')), '|'))
+        idxs_a < idxs_b
+    end)
+
+    open(outfile, "w") do io
+        write(io, join(sorted, "\n"))
+    end
+
+    return true
+end
+
 
 println("Script loaded.")

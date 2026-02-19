@@ -122,6 +122,8 @@ function _add_edge_by_label!(cgd::CodonGraphData, edge_label::Tuple{String, Stri
         if add_edge!(cgd.graph, edge_idx)
             push!(cgd.edge_labels, edge_label)
             return true
+        else
+            return false
         end
     else
         return false
@@ -142,6 +144,8 @@ function _add_vert_by_label!(cgd::CodonGraphData, vert_label::String)
             push!(cgd.vert_labels, vert_label)
             cgd.vert_idxs[vert_label] = nv(cgd.graph)
             return true
+        else
+            return false
         end
     else
         return false
