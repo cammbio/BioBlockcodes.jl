@@ -19,7 +19,7 @@ using Test
         cgd = CodonGraphData(codon_set)
         fig_size = (1200, 700)
         fig = plot_codon_graph(cgd; fig_size = fig_size)
-        @test fig.scene.px_area[].widths == fig_size
+        @test Tuple(fig.scene.viewport[].widths) == fig_size
     end
 
 
@@ -89,7 +89,7 @@ end
         cgd_list = [cgd_1, cgd_2]
         fig_size = (1400, 800)
         fig = plot_multiple_codon_graphs(cgd_list; fig_size = fig_size)
-        @test fig.scene.px_area[].widths == fig_size
+        @test Tuple(fig.scene.viewport[].widths) == fig_size
     end
 
 
