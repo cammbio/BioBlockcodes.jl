@@ -1,7 +1,6 @@
 using Revise
 isdefined(Main, :GCATCodes) || using GCATCodes
 using Base.Threads
-using BenchmarkTools
 using BioSequences
 using CairoMakie
 using Graphs
@@ -262,7 +261,8 @@ end
 
 
 
-for i in 1:1
+for i in 1:12
+    println("Comparing files for combination size $i....................................................")
     res_path = "files/results/res_$(i).csv"
     ckp_path = "files/checkpoints/ckp_$(i).csv"
     sort_path = "files/results/sorted_res_$(i).csv"
@@ -286,8 +286,11 @@ for i in 1:1
     println("Countlines in sorted_res_$(i).csv: $(countlines(sort_path))")
     println("Countlines in test sorted_res_$(i).csv: $(countlines(test_sort_path))")
 
+    println("Comparing res files:")
     compare_files(res_path, test_res_path)
+    println("Comparing ckp files:")
     compare_files(ckp_path, test_ckp_path)
+    println("Comparing sorted res files:")
     compare_files(sort_path, test_sort_path)
 end
 
