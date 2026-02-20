@@ -300,3 +300,7 @@ add_edge!(g, 1, 2)
 add_edge!(g, 2, 1)
 GCATCodes._dfs_depth(g, 1, 0, 3)
 
+codon_set = LongDNA{4}.(["CGT", "TCG", "GTC"])
+cgd = CodonGraphData(codon_set)
+plot_codon_graph(cgd)
+is_comma_free(cgd)
