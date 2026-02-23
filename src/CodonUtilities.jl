@@ -15,6 +15,7 @@ Builds the complemented and reversed codon for each codon in the set.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
 julia> get_comp_rev_codon_set([LongDNA{4}("ATG")])
@@ -50,6 +51,7 @@ Performs a cyclic left shift on a codon.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
 julia> left_shift_codon(LongDNA{4}("ATG"), 1) == LongDNA{4}("TGA")
@@ -89,6 +91,7 @@ Performs a cyclic left shift on all codons in a set.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
 julia> left_shift_codon_set([LongDNA{4}("ATG")], 1)
