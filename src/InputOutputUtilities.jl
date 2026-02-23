@@ -22,7 +22,7 @@ Formats a codon set as a quoted, comma-separated string.
 julia> using GCATCodes
 
 julia> codon_set_to_str([GCATCodes.LongDNA{4}("ATG"), GCATCodes.LongDNA{4}("TGA")])
-""ATG", "TGA""
+"\"ATG\", \"TGA\""
 ```
 """
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
@@ -59,9 +59,9 @@ Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
 julia> using GCATCodes
 
 julia> get_codon_set_from_line("AAC|AAG,1|2")
-2-element Vector{LongDNA{4}}:
- DNA "AAC"
- DNA "AAG"    # do not allow empty line
+2-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}:
+ AAC
+ AAG
 ```
 """
 function get_codon_set_from_line(line::AbstractString)
