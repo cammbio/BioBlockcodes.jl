@@ -258,9 +258,6 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
 end
 
 
-
-
-
 for i in 1:12
     println("Comparing files for combination size $i....................................................")
     res_path = "files/results/res_$(i).csv"
@@ -295,12 +292,12 @@ for i in 1:12
 end
 
 
-g = SimpleDiGraph(2)
-add_edge!(g, 1, 2)
-add_edge!(g, 2, 1)
-GCATCodes._dfs_depth(g, 1, 0, 3)
-
-codon_set = LongDNA{4}.(["CGT", "TCG", "GTC"])
+codon_set = GCATCodes.LongDNA{4}.(["CAA", "GTC"])
 cgd = CodonGraphData(codon_set)
-plot_codon_graph(cgd)
-is_comma_free(cgd)
+fig = plot_codon_graph(cgd)
+typeof(fig)
+
+codon_set = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
+cgd = CodonGraphData(codon_set);
+fig = plot_multiple_codon_graphs([cgd]; fig_title = "Example");
+typeof(fig)

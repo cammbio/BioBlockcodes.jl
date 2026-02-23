@@ -1,7 +1,3 @@
-# using CairoMakie
-# using GraphMakie
-# using NetworkLayout
-
 """
     plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900)) -> Figure
 

@@ -25,7 +25,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_c3(cgd) isa Bool
-true    # validate cgd
+true
 ```
 """
 function is_c3(cgd::CodonGraphData)
@@ -76,7 +76,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["AAC", "GTT"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_circular(cgd) isa Bool
-true    # validate cgd
+true
 ```
 """
 function is_circular(cgd::CodonGraphData)
@@ -119,7 +119,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["CGA", "TAC"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_comma_free(cgd) isa Bool
-true    # validate cgd
+true
 ```
 """
 function is_comma_free(cgd::CodonGraphData)
@@ -165,7 +165,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["AGC", "CTG"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_self_complementary(cgd) isa Bool
-true    # validate cgd
+true
 ```
 """
 function is_self_complementary(cgd::CodonGraphData)
@@ -216,7 +216,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["GGA", "TAA"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_strong_c3(cgd) isa Bool
-true    # validate cgd
+true
 ```
 """
 function is_strong_c3(cgd::CodonGraphData)
@@ -281,7 +281,7 @@ function _add_edge_by_label!(cgd::CodonGraphData, edge_label::Tuple{String, Stri
 end
 
 
-# adds vertices and edges to graph after extracting needed labels from codon set
+# adds vertex to graph by label
 function _add_vert_by_label!(cgd::CodonGraphData, vert_label::String)
     # validate cgd
     _validate_cgd(cgd)
