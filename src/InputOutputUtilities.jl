@@ -22,7 +22,7 @@ Formats a codon set as a quoted, comma-separated string.
 julia> using GCATCodes
 
 julia> codon_set_to_str([GCATCodes.LongDNA{4}("ATG"), GCATCodes.LongDNA{4}("TGA")])
-"\"ATG\", \"TGA\""
+""ATG", "TGA""
 ```
 """
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
