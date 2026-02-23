@@ -24,7 +24,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> is_c3(cgd) isa Bool
+julia> is_c3(cgd)
 true
 ```
 """
@@ -75,7 +75,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["AAC", "GTT"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> is_circular(cgd) isa Bool
+julia> is_circular(cgd)
 true
 ```
 """
@@ -118,7 +118,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["CGA", "TAC"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> is_comma_free(cgd) isa Bool
+julia> is_comma_free(cgd)
 true
 ```
 """
@@ -164,7 +164,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["AGC", "CTG"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> is_self_complementary(cgd) isa Bool
+julia> is_self_complementary(cgd)
 true
 ```
 """
@@ -215,7 +215,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["GGA", "TAA"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> is_strong_c3(cgd) isa Bool
+julia> is_strong_c3(cgd)
 true
 ```
 """

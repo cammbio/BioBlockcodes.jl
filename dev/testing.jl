@@ -268,23 +268,22 @@ for i in 1:12
     test_ckp_path = "files/tests/checkpoints/ckp_$(i).csv"
     test_sort_path = "files/tests/results/sorted_res_$(i).csv"
 
-    # println(countlines(res_path))
-    # println(countlines(test_res_path))
-    # continue
 
-    read(res_path) == read(test_res_path)
-    read(ckp_path) == read(test_ckp_path)
-    read(sort_path) == read(test_sort_path)
+    println("read 1: $(read(res_path) == read(test_res_path))")
+    println("read 1: $(read(ckp_path) == read(test_ckp_path))")
+    println("read 1: $(read(sort_path) == read(test_sort_path))")
 
-    println("Countlines in res_$(i).csv: $(countlines(res_path))")
-    println("Countlines in test res_$(i).csv: $(countlines(test_res_path))")
-    println("Countlines in ckp_$(i).csv: $(countlines(ckp_path))")
-    println("Countlines in test ckp_$(i).csv: $(countlines(test_ckp_path))")
-    println("Countlines in sorted_res_$(i).csv: $(countlines(sort_path))")
+
+    println("Countlines in res_$(i).csv:             $(countlines(res_path))")
+    println("Countlines in test res_$(i).csv:        $(countlines(test_res_path))")
+    println("Countlines in ckp_$(i).csv:             $(countlines(ckp_path))")
+    println("Countlines in test ckp_$(i).csv:        $(countlines(test_ckp_path))")
+    println("Countlines in sorted_res_$(i).csv:      $(countlines(sort_path))")
     println("Countlines in test sorted_res_$(i).csv: $(countlines(test_sort_path))")
 
-    println("Comparing res files:")
-    compare_files(res_path, test_res_path)
+
+    # println("Comparing res files:")
+    # compare_files(res_path, test_res_path)
     println("Comparing ckp files:")
     compare_files(ckp_path, test_ckp_path)
     println("Comparing sorted res files:")

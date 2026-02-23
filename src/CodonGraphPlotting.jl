@@ -1,7 +1,7 @@
 """
     plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900)) -> Figure
 
-Creates a single visualization of a codon graph.
+Creates a single visualization of a codon graph in a Figure.
 
 # Arguments
 
@@ -75,7 +75,7 @@ end
 """
     plot_multiple_codon_graphs(cgd_list::Vector{CodonGraphData}; fig_title::Union{String, Nothing}=nothing, fig_size::Tuple{Int, Int}=(1800, 900)) -> Figure
 
-Creates a grid visualization of multiple codon graphs.
+Creates a grid visualization of multiple codon graphs in a Figure.
 
 # Arguments
 
@@ -106,7 +106,7 @@ julia> cgd = CodonGraphData(codon_set);
 julia> fig = plot_multiple_codon_graphs([cgd]; fig_title = "Example");
 
 julia> typeof(fig)
-FigureMakie.Figure
+Makie.Figure
 ```
 """
 function plot_multiple_codon_graphs(
