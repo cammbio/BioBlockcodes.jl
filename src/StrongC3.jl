@@ -2,6 +2,37 @@
 
 
 # process strong c3 combinations incrementally from previous results file
+"""
+    calc_strong_c3_comb_by_size(comb_size::Int, ckp_path::AbstractString, prev_res_path::AbstractString, res_path::AbstractString, stop_flag::Base.Threads.Atomic{Bool}; worker_count::Int=nthreads()) -> Bool
+
+Computes strong-C3 combinations of a given size with checkpoint and resume logic.
+
+# Arguments
+- `comb_size::Int`: Size of combinations to compute (1 to 20).
+- `ckp_path::AbstractString`: Path to the checkpoint file.
+- `prev_res_path::AbstractString`: Path to the result file of the previous combination size.
+- `res_path::AbstractString`: Path to the output file for current results.
+- `stop_flag::Base.Threads.Atomic{Bool}`: Atomic stop flag for graceful interruption.
+
+# Keyword Arguments
+- `worker_count::Int=nthreads()`: Number of parallel workers for processing.
+
+# Returns
+- `Bool`: `true` if processing ends regularly or is completed cleanly.
+
+# Throws
+- `ArgumentError`: If inputs, checkpoint contents, or file states are invalid.
+
+# Examples
+```jldoctest
+julia> using GCATCodes
+
+julia> stop_flag = Base.Threads.Atomic{Bool}(false);
+
+julia> typeof(stop_flag)
+Base.Threads.Atomic{Bool}
+```
+"""
 function calc_strong_c3_comb_by_size(
     comb_size::Int,
     ckp_path::AbstractString,
@@ -279,3 +310,5 @@ end
 
     UInt64(1) << (idx - 1)
 end
+
+

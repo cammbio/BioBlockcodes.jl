@@ -1,4 +1,4 @@
-﻿# using BioSequences
+# using BioSequences
 # using Graphs
 
 
@@ -14,6 +14,33 @@ end
 
 
 # constructor for CodonGraphData that takes a codon set and builds the other fields
+"""
+    CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "") -> CodonGraphData
+
+Constructs a `CodonGraphData` instance from a codon set and builds the corresponding graph.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Input codons used to build the graph.
+
+# Keyword Arguments
+- `graph_title::String=""`: Optional title for the graph.
+
+# Returns
+- `CodonGraphData`: Fully initialized structure with vertices, edges, and labels.
+
+# Throws
+- `ArgumentError`: If `codon_set` is invalid or graph construction fails.
+
+# Examples
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
+
+julia> cgd isa CodonGraphData
+true
+```
+"""
 function CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "")
     # validate codon_set
     _validate_codon_set(codon_set)
@@ -99,3 +126,5 @@ function _add_vertices!(cgd::CodonGraphData)
         add_vertex!(cgd.graph)
     end
 end
+
+
