@@ -2,7 +2,6 @@
 # using GraphMakie
 # using NetworkLayout
 
-
 """
     plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900)) -> Figure
 
@@ -23,9 +22,12 @@ Creates a single visualization of a codon graph.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
-julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
+julia> codon_set = LongDNA{4}.(["CAA", "GTC"]);
+
+julia> cgd = CodonGraphData(codon_set);
 
 julia> fig = plot_codon_graph(cgd);
 
@@ -92,9 +94,12 @@ Creates a grid visualization of multiple codon graphs.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
-julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
+julia> codon_set = LongDNA{4}.(["TTC", "GCA"]);
+
+julia> cgd = CodonGraphData(codon_set);
 
 julia> fig = plot_multiple_codon_graphs([cgd]; fig_title="Example");
 

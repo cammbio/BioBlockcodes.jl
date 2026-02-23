@@ -1,7 +1,6 @@
 # using BioSequences
 # using Graphs
 
-
 # struct to hold all data related to a codon graph
 mutable struct CodonGraphData
     codon_set::Vector{LongDNA{4}}
@@ -34,9 +33,12 @@ Constructs a `CodonGraphData` instance from a codon set and builds the correspon
 # Examples
 ```jldoctest
 julia> using GCATCodes
+
 julia> using BioSequences: LongDNA
 
-julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
+julia> codon_set = LongDNA{4}.(["CCA", "GAT"]);
+
+julia> cgd = CodonGraphData(codon_set);
 
 julia> cgd isa CodonGraphData
 true

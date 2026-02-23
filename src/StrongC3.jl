@@ -1,6 +1,5 @@
 # using Base.Threads: @spawn, ReentrantLock, nthreads
 
-
 # process strong c3 combinations incrementally from previous results file
 """
     calc_strong_c3_comb_by_size(comb_size::Int, ckp_path::AbstractString, prev_res_path::AbstractString, res_path::AbstractString, stop_flag::Base.Threads.Atomic{Bool}; worker_count::Int=nthreads()) -> Bool
