@@ -1,4 +1,26 @@
 # turn a codon set into a string representation for printing
+"""
+    codon_set_to_str(codon_set::Vector{LongDNA{4}}) -> String
+
+Formats a codon set as a quoted, comma-separated string.
+
+# Arguments
+- `codon_set::Vector{LongDNA{4}}`: Codon set to format.
+
+# Returns
+- `String`: Formatted representation, e.g. `"ATG", "TGA"`.
+
+# Throws
+- `ArgumentError`: If `codon_set` is invalid.
+
+# Examples
+```jldoctest
+julia> using GCATCodes
+
+julia> codon_set_to_str([LongDNA{4}("ATG"), LongDNA{4}("TGA")])
+"\"ATG\", \"TGA\""
+```
+"""
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
     # validate codon set
     _validate_codon_set(codon_set)
@@ -10,6 +32,30 @@ end
 
 
 # parse one compact CSV line "COD1|COD2,idx1|idx2" to Vector{LongDNA{4}}
+"""
+    get_codon_set_from_line(line::AbstractString) -> Vector{LongDNA{4}}
+
+Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
+
+# Arguments
+- `line::AbstractString`: Input line with codons and corresponding indices.
+
+# Returns
+- `Vector{LongDNA{4}}`: Parsed and validated codon set.
+
+# Throws
+- `ArgumentError`: If the format, indices, or codons are invalid.
+
+# Examples
+```jldoctest
+julia> using GCATCodes
+
+julia> get_codon_set_from_line("AAC|AAG,1|2")
+2-element Vector{LongDNA{4}}:
+ DNA "AAC"
+ DNA "AAG"
+```
+"""
 function get_codon_set_from_line(line::AbstractString)
     # do not allow empty line
     isempty(line) && throw(ArgumentError("line is empty."))
@@ -54,6 +100,32 @@ end
 
 
 # write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
+"""
+    write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int}) -> Bool
+
+Writes a codon set with indices as one compact CSV line to a stream.
+
+# Arguments
+- `io::IO`: Target output stream.
+- `codon_set::Vector{LongDNA{4}}`: Codons to write.
+- `comb::Vector{Int}`: Corresponding combination indices.
+
+# Returns
+- `Bool`: Always `true` if no error occurs.
+
+# Throws
+- `ArgumentError`: If `codon_set` or `comb` is invalid.
+
+# Examples
+```jldoctest
+julia> using GCATCodes
+
+julia> io = IOBuffer();
+
+julia> write_res(io, [LongDNA{4}("AAC"), LongDNA{4}("AAG")], [1, 2])
+true
+```
+"""
 function write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
     # validate codon set
     _validate_codon_set(codon_set)
@@ -77,3 +149,5 @@ function _get_comb_from_codon_set(codon_set::Vector{LongDNA{4}})
     idxs = getindex.(Ref(CODON_INDEX), codon_set)
     return idxs
 end
+
+

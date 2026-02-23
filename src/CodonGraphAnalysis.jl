@@ -1,4 +1,32 @@
-﻿function is_c3(cgd::CodonGraphData)
+"""
+    is_c3(cgd::CodonGraphData) -> Bool
+
+Checks whether a codon graph satisfies the C3 property.
+
+# Arguments
+
+  - `cgd::CodonGraphData`: Codon graph data object that contains the graph.
+
+# Returns
+
+  - `Bool`: `true` if `cgd` is C3, otherwise `false`.
+
+# Throws
+
+  - `ArgumentError`: If `cgd` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("ATG"), LongDNA{4}("TGA")]);
+
+julia> is_c3(cgd)
+false    # validate cgd
+```
+"""
+function is_c3(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
 
@@ -19,6 +47,34 @@
 end
 
 
+"""
+    is_circular(cgd::CodonGraphData) -> Bool
+
+Checks whether a codon graph is acyclic aka. contains no cycles.
+
+# Arguments
+
+  - `cgd::CodonGraphData`: Codon graph data object that contains the graph.
+
+# Returns
+
+  - `Bool`: `true` if no cycles are present, otherwise `false`.
+
+# Throws
+
+  - `ArgumentError`: If `cgd` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("ATG"), LongDNA{4}("TGA")]);
+
+julia> is_circular(cgd)
+false    # validate cgd
+```
+"""
 function is_circular(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
@@ -32,6 +88,34 @@ function is_circular(cgd::CodonGraphData)
 end
 
 
+"""
+    is_comma_free(cgd::CodonGraphData) -> Bool
+
+Checks whether a codon graph is comma-free.
+
+# Arguments
+
+  - `cgd::CodonGraphData`: Codon graph data object to check.
+
+# Returns
+
+  - `Bool`: `true` if `cgd` is comma-free, otherwise `false`.
+
+# Throws
+
+  - `ArgumentError`: If `cgd` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("ATG"), LongDNA{4}("TGA")]);
+
+julia> is_comma_free(cgd)
+false    # validate cgd
+```
+"""
 function is_comma_free(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
@@ -48,6 +132,34 @@ function is_comma_free(cgd::CodonGraphData)
 end
 
 
+"""
+    is_self_complementary(cgd::CodonGraphData) -> Bool
+
+Checks whether a codon graph is invariant under complement and reversal.
+
+# Arguments
+
+  - `cgd::CodonGraphData`: Codon graph data object to check.
+
+# Returns
+
+  - `Bool`: `true` if the graph is self-complementary, otherwise `false`.
+
+# Throws
+
+  - `ArgumentError`: If `cgd` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("ATG"), LongDNA{4}("CAT")]);
+
+julia> is_self_complementary(cgd)
+false    # validate cgd
+```
+"""
 function is_self_complementary(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
@@ -69,6 +181,34 @@ end
 
 
 # check if a codon graph is strong C3 (i.e., C3 and expanded graph only has cycles of length 2)
+"""
+    is_strong_c3(cgd::CodonGraphData) -> Bool
+
+Checks whether a codon graph is strong C3.
+
+# Arguments
+
+  - `cgd::CodonGraphData`: Codon graph data object to check.
+
+# Returns
+
+  - `Bool`: `true` if `cgd` is strong C3, otherwise `false`.
+
+# Throws
+
+  - `ArgumentError`: If `cgd` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> cgd = CodonGraphData([LongDNA{4}("ATG"), LongDNA{4}("TGA")]);
+
+julia> is_strong_c3(cgd)
+false    # validate cgd
+```
+"""
 function is_strong_c3(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
@@ -174,7 +314,7 @@ function _dfs_depth(graph::SimpleDiGraph, vertex::Int, depth::Int, max_depth::In
 end
 
 
-# expand graph by adding N₂ and N₃N₁ for each codon N₁N₂N₃ as vertices and connect them accordingly (if possible)
+# expand graph by adding N2 and N3N1 for each codon N1N2N3 as vertices and connect them accordingly (if possible)
 function _expand_graph!(cgd::CodonGraphData)
     # validate cgd
     _validate_cgd(cgd)
@@ -309,3 +449,5 @@ function _is_codon_graphs_equal(cgd_1::CodonGraphData, cgd_2::CodonGraphData)
 
     return true
 end
+
+
