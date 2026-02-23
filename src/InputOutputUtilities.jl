@@ -17,9 +17,7 @@ Formats a codon set as a quoted, comma-separated string.
 ```jldoctest
 julia> using GCATCodes
 
-julia> using BioSequences: LongDNA
-
-julia> codon_set_to_str([LongDNA{4}("ATG"), LongDNA{4}("TGA")])
+julia> codon_set_to_str([GCATCodes.LongDNA{4}("ATG"), GCATCodes.LongDNA{4}("TGA")])
 "\"ATG\", \"TGA\""
 ```
 """
@@ -51,8 +49,6 @@ Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
 # Examples
 ```jldoctest
 julia> using GCATCodes
-
-julia> using BioSequences: LongDNA
 
 julia> get_codon_set_from_line("AAC|AAG,1|2")
 2-element Vector{LongDNA{4}}:
@@ -124,11 +120,9 @@ Writes a codon set with indices as one compact CSV line to a stream.
 ```jldoctest
 julia> using GCATCodes
 
-julia> using BioSequences: LongDNA
-
 julia> io = IOBuffer();
 
-julia> write_res(io, [LongDNA{4}("AAC"), LongDNA{4}("AAG")], [1, 2])
+julia> write_res(io, [GCATCodes.LongDNA{4}("AAC"), GCATCodes.LongDNA{4}("AAG")], [1, 2])
 true
 ```
 """
