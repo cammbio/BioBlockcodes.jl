@@ -8,18 +8,23 @@
 Creates a single visualization of a codon graph.
 
 # Arguments
-- `cgd::CodonGraphData`: Codon graph to plot.
+
+  - `cgd::CodonGraphData`: Codon graph to plot.
 
 # Keyword Arguments
-- `fig_size::Tuple{Int, Int}=(1800, 900)`: Size of the generated figure in pixels.
+
+  - `fig_size::Tuple{Int, Int}=(1800, 900)`: Size of the generated figure in pixels.
 
 # Returns
-- `Figure`: Makie figure containing the plotted graph.
+
+  - `Figure`: Makie figure containing the plotted graph.
 
 # Throws
-- `ArgumentError`: If `cgd` is invalid.
+
+  - `ArgumentError`: If `cgd` is invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
@@ -30,7 +35,7 @@ julia> cgd = CodonGraphData(codon_set);
 julia> fig = plot_codon_graph(cgd);
 
 julia> typeof(fig)
-Figure
+Makie.Figure
 ```
 """
 function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900))
@@ -77,19 +82,24 @@ end
 Creates a grid visualization of multiple codon graphs.
 
 # Arguments
-- `cgd_list::Vector{CodonGraphData}`: List of codon graphs to plot.
+
+  - `cgd_list::Vector{CodonGraphData}`: List of codon graphs to plot.
 
 # Keyword Arguments
-- `fig_title::Union{String, Nothing}=nothing`: Optional global title above the grid.
-- `fig_size::Tuple{Int, Int}=(1800, 900)`: Size of the generated figure in pixels.
+
+  - `fig_title::Union{String, Nothing}=nothing`: Optional global title above the grid.
+  - `fig_size::Tuple{Int, Int}=(1800, 900)`: Size of the generated figure in pixels.
 
 # Returns
-- `Figure`: Makie figure containing all plotted graphs.
+
+  - `Figure`: Makie figure containing all plotted graphs.
 
 # Throws
-- `ArgumentError`: If `cgd_list` is empty or contains invalid entries.
+
+  - `ArgumentError`: If `cgd_list` is empty or contains invalid entries.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
@@ -97,10 +107,10 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> fig = plot_multiple_codon_graphs([cgd]; fig_title="Example");
+julia> fig = plot_multiple_codon_graphs([cgd]; fig_title = "Example");
 
 julia> typeof(fig)
-Figure
+FigureMakie.Figure
 ```
 """
 function plot_multiple_codon_graphs(

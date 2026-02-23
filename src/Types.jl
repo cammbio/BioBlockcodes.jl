@@ -19,18 +19,23 @@ end
 Constructs a `CodonGraphData` instance from a codon set and builds the corresponding graph.
 
 # Arguments
-- `codon_set::Vector{LongDNA{4}}`: Input codons used to build the graph.
+
+  - `codon_set::Vector{LongDNA{4}}`: Input codons used to build the graph.
 
 # Keyword Arguments
-- `graph_title::String=""`: Optional title for the graph.
+
+  - `graph_title::String=""`: Optional title for the graph.
 
 # Returns
-- `CodonGraphData`: Fully initialized structure with vertices, edges, and labels.
+
+  - `CodonGraphData`: Fully initialized structure with vertices, edges, and labels.
 
 # Throws
-- `ArgumentError`: If `codon_set` is invalid or graph construction fails.
+
+  - `ArgumentError`: If `codon_set` is invalid or graph construction fails.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
@@ -38,7 +43,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["CCA", "GAT"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> cgd isa CodonGraphData
+julia> cgd isa CodonGraphData    # validate codon_set
 true
 ```
 """

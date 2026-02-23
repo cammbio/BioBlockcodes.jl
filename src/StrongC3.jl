@@ -7,22 +7,27 @@
 Computes strong-C3 combinations of a given size with checkpoint and resume logic.
 
 # Arguments
-- `comb_size::Int`: Size of combinations to compute (1 to 20).
-- `ckp_path::AbstractString`: Path to the checkpoint file.
-- `prev_res_path::AbstractString`: Path to the result file of the previous combination size.
-- `res_path::AbstractString`: Path to the output file for current results.
-- `stop_flag::Base.Threads.Atomic{Bool}`: Atomic stop flag for graceful interruption.
+
+  - `comb_size::Int`: Size of combinations to compute (1 to 20).
+  - `ckp_path::AbstractString`: Path to the checkpoint file.
+  - `prev_res_path::AbstractString`: Path to the result file of the previous combination size.
+  - `res_path::AbstractString`: Path to the output file for current results.
+  - `stop_flag::Base.Threads.Atomic{Bool}`: Atomic stop flag for graceful interruption.
 
 # Keyword Arguments
-- `worker_count::Int=nthreads()`: Number of parallel workers for processing.
+
+  - `worker_count::Int=nthreads()`: Number of parallel workers for processing.
 
 # Returns
-- `Bool`: `true` if processing ends regularly or is completed cleanly.
+
+  - `Bool`: `true` if processing ends regularly or is completed cleanly.
 
 # Throws
-- `ArgumentError`: If inputs, checkpoint contents, or file states are invalid.
+
+  - `ArgumentError`: If inputs, checkpoint contents, or file states are invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
@@ -110,7 +115,7 @@ function calc_strong_c3_comb_by_size(
                 end
 
                 codon = ALL_CODONS[line_count]
-                write_res(io, [codon], [line_count])
+                _write_res(io, [codon], [line_count])
             end
         end
     else
@@ -166,7 +171,7 @@ function calc_strong_c3_comb_by_size(
 
                                 if _is_comb_strong_c3(new_comb_idxs)
                                     lock(w_lock) do
-                                        write_res(output, ALL_CODONS[new_comb_idxs], new_comb_idxs)
+                                        _write_res(output, ALL_CODONS[new_comb_idxs], new_comb_idxs)
                                     end
                                 end
                             end

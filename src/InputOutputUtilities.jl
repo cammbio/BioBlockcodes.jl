@@ -5,15 +5,19 @@
 Formats a codon set as a quoted, comma-separated string.
 
 # Arguments
-- `codon_set::Vector{LongDNA{4}}`: Codon set to format.
+
+  - `codon_set::Vector{LongDNA{4}}`: Codon set to format.
 
 # Returns
-- `String`: Formatted representation, e.g. `"ATG", "TGA"`.
+
+  - `String`: Formatted representation, e.g. `"ATG", "TGA"`.
 
 # Throws
-- `ArgumentError`: If `codon_set` is invalid.
+
+  - `ArgumentError`: If `codon_set` is invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
@@ -38,22 +42,26 @@ end
 Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
 
 # Arguments
-- `line::AbstractString`: Input line with codons and corresponding indices.
+
+  - `line::AbstractString`: Input line with codons and corresponding indices.
 
 # Returns
-- `Vector{LongDNA{4}}`: Parsed and validated codon set.
+
+  - `Vector{LongDNA{4}}`: Parsed and validated codon set.
 
 # Throws
-- `ArgumentError`: If the format, indices, or codons are invalid.
+
+  - `ArgumentError`: If the format, indices, or codons are invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
 julia> get_codon_set_from_line("AAC|AAG,1|2")
 2-element Vector{LongDNA{4}}:
  DNA "AAC"
- DNA "AAG"
+ DNA "AAG"    # do not allow empty line
 ```
 """
 function get_codon_set_from_line(line::AbstractString)
@@ -99,47 +107,6 @@ function get_codon_set_from_line(line::AbstractString)
 end
 
 
-# write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
-"""
-    write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int}) -> Bool
-
-Writes a codon set with indices as one compact CSV line to a stream.
-
-# Arguments
-- `io::IO`: Target output stream.
-- `codon_set::Vector{LongDNA{4}}`: Codons to write.
-- `comb::Vector{Int}`: Corresponding combination indices.
-
-# Returns
-- `Bool`: Always `true` if no error occurs.
-
-# Throws
-- `ArgumentError`: If `codon_set` or `comb` is invalid.
-
-# Examples
-```jldoctest
-julia> using GCATCodes
-
-julia> io = IOBuffer();
-
-julia> write_res(io, [GCATCodes.LongDNA{4}("AAC"), GCATCodes.LongDNA{4}("AAG")], [1, 2])
-true
-```
-"""
-function write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
-    # validate codon set
-    _validate_codon_set(codon_set)
-    # validate combination indices
-    _validate_comb(comb)
-
-    # compact CSV-style line: "COD1|COD2,idx1|idx2"
-    codon_str = string.(codon_set)
-    idx_str = string.(comb)
-    println(io, join(codon_str, "|"), ",", join(idx_str, "|"))
-    return true
-end
-
-
 # get corresponding combination from codon set
 function _get_comb_from_codon_set(codon_set::Vector{LongDNA{4}})
     # validate codon set
@@ -151,4 +118,16 @@ function _get_comb_from_codon_set(codon_set::Vector{LongDNA{4}})
 end
 
 
+# write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
+function _write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
+    # validate codon set
+    _validate_codon_set(codon_set)
+    # validate combination indices
+    _validate_comb(comb)
 
+    # compact CSV-style line: "COD1|COD2,idx1|idx2"
+    codon_str = string.(codon_set)
+    idx_str = string.(comb)
+    println(io, join(codon_str, "|"), ",", join(idx_str, "|"))
+    return true
+end
