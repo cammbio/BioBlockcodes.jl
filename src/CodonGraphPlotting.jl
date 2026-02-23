@@ -23,9 +23,7 @@ Creates a single visualization of a codon graph.
 ```jldoctest
 julia> using GCATCodes
 
-julia> using BioSequences: LongDNA
-
-julia> codon_set = LongDNA{4}.(["CAA", "GTC"]);
+julia> codon_set = GCATCodes.LongDNA{4}.(["CAA", "GTC"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -95,9 +93,7 @@ Creates a grid visualization of multiple codon graphs.
 ```jldoctest
 julia> using GCATCodes
 
-julia> using BioSequences: LongDNA
-
-julia> codon_set = LongDNA{4}.(["TTC", "GCA"]);
+julia> codon_set = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
 
 julia> cgd = CodonGraphData(codon_set);
 

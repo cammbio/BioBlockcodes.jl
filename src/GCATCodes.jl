@@ -1,6 +1,6 @@
 module GCATCodes
 # ----------------------------------------------- PACKAGES ----------------------------------------------
-using Base.Threads: @spawn#, ReentrantLock, nthreads
+using Base.Threads: @spawn
 using BioSequences
 using CairoMakie
 using GraphMakie

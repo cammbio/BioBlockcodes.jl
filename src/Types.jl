@@ -34,9 +34,7 @@ Constructs a `CodonGraphData` instance from a codon set and builds the correspon
 ```jldoctest
 julia> using GCATCodes
 
-julia> using BioSequences: LongDNA
-
-julia> codon_set = LongDNA{4}.(["CCA", "GAT"]);
+julia> codon_set = GCATCodes.LongDNA{4}.(["CCA", "GAT"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
