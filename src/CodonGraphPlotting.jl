@@ -23,6 +23,7 @@ Creates a single visualization of a codon graph.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+julia> using BioSequences: LongDNA
 
 julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
 
@@ -91,6 +92,7 @@ Creates a grid visualization of multiple codon graphs.
 # Examples
 ```jldoctest
 julia> using GCATCodes
+julia> using BioSequences: LongDNA
 
 julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
 
@@ -173,5 +175,6 @@ function _get_col_count(graph_count::Int)
     col_count = max(1, ceil(Int, sqrt(graph_count)))
     return col_count
 end
+
 
 

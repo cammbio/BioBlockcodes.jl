@@ -1,4 +1,4 @@
-# validate CodonGraphData consistency (labels, indices, graph size)
+# validate CodonGraphData object for consistency and correctness
 function _validate_cgd(cgd::CodonGraphData)
     _validate_codon_set(cgd.codon_set)
     _validate_edges(cgd)
@@ -6,6 +6,7 @@ function _validate_cgd(cgd::CodonGraphData)
 end
 
 
+# validate checkpoint file format and contents
 function _validate_ckp_file(path::AbstractString)
     # check if file exists
     !isfile(path) && throw(ArgumentError("checkpoint file not found.
@@ -89,6 +90,7 @@ function _validate_ckp_file(path::AbstractString)
 end
 
 
+# validate checkpoint contents against expected values
 function _validate_ckp(
     ckp::NamedTuple{(:comb_size, :next_line, :status)},
     ckp_path::String,
@@ -138,10 +140,10 @@ function _validate_ckp(
 end
 
 
-# validate codon_set contents
+# validate codon content
 function _validate_codon(codon::LongDNA{4})
     # do not allow empty codon
-    length(codon) == 0 && throw(ArgumentError("codon is empty."))
+    length(codon) == 0 && throw(ArgumentError("\"codon\" cannot be empty."))
 
     # check if codon is valid
     codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" is not a valid codon."))
@@ -151,22 +153,24 @@ end
 # validate codon_set contents
 function _validate_codon_set(codon_set::Vector{LongDNA{4}})
     # do not allow empty codon sets
-    length(codon_set) == 0 && throw(ArgumentError("\"codon_set\" is empty."))
+    length(codon_set) == 0 && throw(ArgumentError("\"codon_set\" cannot be empty."))
 
     # do not allow duplicates
     length(codon_set) == length(Set(codon_set)) ||
-        throw(ArgumentError("\"codon_set\" contains duplicate codons."))
+        throw(ArgumentError("codon_set \"$codon_set\" contains duplicate codons."))
 
     # check if all codons in codon_set are valid
     for codon in codon_set
-        codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" in \"codon_set\" is not a valid codon."))
+        codon in ALL_CODONS ||
+            throw(ArgumentError("codon \"$codon\" in codon_set \"$codon_set\" is not a valid codon."))
     end
 end
 
 
+# validate combination content
 function _validate_comb(comb::Vector{Int})
     # check if combination is empty
-    length(comb) == 0 && throw(ArgumentError("\"comb\" is empty."))
+    length(comb) == 0 && throw(ArgumentError("\"comb\" cannot be empty."))
 
     # check if combination contains valid indices
     max_index = length(ALL_CODONS)
@@ -183,15 +187,18 @@ function _validate_comb(comb::Vector{Int})
 end
 
 
+# validate that a file path is valid and points to an existing file
 function _validate_dir(path::AbstractString)
     dir = dirname(path)
     isdir(dir) || throw(ArgumentError("directory does not exist: \"$dir\""))
 end
 
+
 # validate edge labels against edge count
 function _validate_edges(cgd::CodonGraphData)
     # check if edge_labels is empty
-    isempty(cgd.edge_labels) && throw(ArgumentError("inconsistent CodonGraphData: \"edge_labels\" is empty."))
+    isempty(cgd.edge_labels) &&
+        throw(ArgumentError("inconsistent CodonGraphData: \"edge_labels\" cannot be empty."))
     # check if graph contains edges
     ne(cgd.graph) == 0 && throw(ArgumentError("inconsistent CodonGraphData: graph has no edges."))
     # check if edge_labels length matches number of edges in graph
@@ -253,13 +260,15 @@ function _validate_edges(cgd::CodonGraphData)
 end
 
 
+# validate graph structure
 function _validate_graph(graph::SimpleDiGraph)
     # do not allow empty graphs
-    ne(graph) == 0 && throw(ArgumentError("graph has no edges."))
-    nv(graph) == 0 && throw(ArgumentError("graph has no vertices."))
+    ne(graph) == 0 && throw(ArgumentError("inconsistent CodonGraphData: graph has no edges."))
+    nv(graph) == 0 && throw(ArgumentError("inconsistent CodonGraphData: graph has no vertices."))
 end
 
 
+# validate label content
 function _validate_label(label::String)
     # do not allow empty labels
     isempty(label) && throw(ArgumentError("label cannot be empty."))
@@ -274,6 +283,7 @@ function _validate_label(label::String)
         )
     end
 end
+
 
 # validate vertices and index mappings
 function _validate_vertices(cgd::CodonGraphData)

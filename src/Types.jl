@@ -34,6 +34,7 @@ Constructs a `CodonGraphData` instance from a codon set and builds the correspon
 # Examples
 ```jldoctest
 julia> using GCATCodes
+julia> using BioSequences: LongDNA
 
 julia> cgd = CodonGraphData([LongDNA{4}("AAC"), LongDNA{4}("AAG")]);
 
@@ -126,5 +127,6 @@ function _add_vertices!(cgd::CodonGraphData)
         add_vertex!(cgd.graph)
     end
 end
+
 
 
