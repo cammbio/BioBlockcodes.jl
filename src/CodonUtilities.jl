@@ -4,21 +4,24 @@
 Builds the complemented and reversed codon for each codon in the set.
 
 # Arguments
-- `codon_set::Vector{LongDNA{4}}`: Input codon set.
+
+  - `codon_set::Vector{LongDNA{4}}`: Input codon set.
 
 # Returns
-- `Vector{LongDNA{4}}`: Complemented-and-reversed codon set in the same order.
+
+  - `Vector{LongDNA{4}}`: Complemented-and-reversed codon set in the same order.
 
 # Throws
-- `ArgumentError`: If `codon_set` is invalid.
+
+  - `ArgumentError`: If `codon_set` is invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
 julia> get_comp_rev_codon_set([GCATCodes.LongDNA{4}("ATG")])
-1-element Vector{LongDNA{4}}:
- DNA "CAT"
+1-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}: CAT
 ```
 """
 function get_comp_rev_codon_set(codon_set::Vector{LongDNA{4}})
@@ -37,21 +40,25 @@ end
 Performs a cyclic left shift on a codon.
 
 # Arguments
-- `codon::LongDNA{4}`: Codon to shift.
-- `shift_by::Int`: Number of left shifts.
+
+  - `codon::LongDNA{4}`: Codon to shift.
+  - `shift_by::Int`: Number of left shifts.
 
 # Returns
-- `LongDNA{4}`: Cyclically left-shifted codon.
+
+  - `LongDNA{4}`: Cyclically left-shifted codon.
 
 # Throws
-- `ArgumentError`: If `shift_by < 0` or `codon` is invalid.
+
+  - `ArgumentError`: If `shift_by < 0` or `codon` is invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
 julia> left_shift_codon(GCATCodes.LongDNA{4}("ATG"), 1) == GCATCodes.LongDNA{4}("TGA")
-true
+true    # do not allow negative shift_by
 ```
 """
 function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
@@ -75,22 +82,25 @@ end
 Performs a cyclic left shift on all codons in a set.
 
 # Arguments
-- `codon_set::Vector{LongDNA{4}}`: Codon set to shift.
-- `shift_by::Int`: Number of left shifts.
+
+  - `codon_set::Vector{LongDNA{4}}`: Codon set to shift.
+  - `shift_by::Int`: Number of left shifts.
 
 # Returns
-- `Vector{LongDNA{4}}`: Shifted codon set.
+
+  - `Vector{LongDNA{4}}`: Shifted codon set.
 
 # Throws
-- `ArgumentError`: If `shift_by < 0` or `codon_set` is invalid.
+
+  - `ArgumentError`: If `shift_by < 0` or `codon_set` is invalid.
 
 # Examples
+
 ```jldoctest
 julia> using GCATCodes
 
 julia> left_shift_codon_set([GCATCodes.LongDNA{4}("ATG")], 1)
-1-element Vector{LongDNA{4}}:
- DNA "TGA"
+1-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}: TGA
 ```
 """
 function left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int)
