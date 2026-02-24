@@ -73,34 +73,6 @@ end
 end
 
 
-@testset "write_res" begin
-    @testset "happy path" begin
-        io = IOBuffer()
-        codon_set = LongDNA{4}.(["AAT", "ACT"])
-        comb = [3, 7]
-
-        @test GCATCodes.write_res(io, codon_set, comb) == true
-        @test String(take!(io)) == "AAT|ACT,3|7\n"
-    end
-
-
-    @testset "empty codon_set" begin
-        io = IOBuffer()
-        codon_set = LongDNA{4}[]
-        comb = [1]
-        @test_throws ArgumentError GCATCodes.write_res(io, codon_set, comb)
-    end
-
-
-    @testset "invalid comb" begin
-        io = IOBuffer()
-        codon_set = LongDNA{4}.(["AAT", "ACT"])
-        comb = [7, 3]
-        @test_throws ArgumentError GCATCodes.write_res(io, codon_set, comb)
-    end
-end
-
-
 @testset "_get_comb_from_codon_set" begin
     @testset "happy path" begin
         codon_set = LongDNA{4}.(["AAT", "ACT"])
@@ -112,5 +84,33 @@ end
     @testset "duplicate codons" begin
         codon_set = LongDNA{4}.(["AAT", "AAT"])
         @test_throws ArgumentError GCATCodes._get_comb_from_codon_set(codon_set)
+    end
+end
+
+
+@testset "_write_res" begin
+    @testset "happy path" begin
+        io = IOBuffer()
+        codon_set = LongDNA{4}.(["AAT", "ACT"])
+        comb = [3, 7]
+
+        @test GCATCodes._write_res(io, codon_set, comb) == true
+        @test String(take!(io)) == "AAT|ACT,3|7\n"
+    end
+
+
+    @testset "empty codon_set" begin
+        io = IOBuffer()
+        codon_set = LongDNA{4}[]
+        comb = [1]
+        @test_throws ArgumentError GCATCodes._write_res(io, codon_set, comb)
+    end
+
+
+    @testset "invalid comb" begin
+        io = IOBuffer()
+        codon_set = LongDNA{4}.(["AAT", "ACT"])
+        comb = [7, 3]
+        @test_throws ArgumentError GCATCodes._write_res(io, codon_set, comb)
     end
 end

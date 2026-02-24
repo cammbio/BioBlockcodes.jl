@@ -25,7 +25,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"]);
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_c3(cgd)
-true
+false
 ```
 """
 function is_c3(cgd::CodonGraphData)
@@ -160,12 +160,12 @@ Checks whether a codon graph is invariant under complement and reversal.
 ```jldoctest
 julia> using GCATCodes
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["AGC", "CTG"]);
+julia> codon_set = GCATCodes.LongDNA{4}.(["AGC", "CTG", "TGT", "ATC"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
 julia> is_self_complementary(cgd)
-true
+false
 ```
 """
 function is_self_complementary(cgd::CodonGraphData)

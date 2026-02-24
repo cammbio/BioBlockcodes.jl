@@ -21,7 +21,9 @@ Formats a codon set as a quoted, comma-separated string.
 ```jldoctest
 julia> using GCATCodes
 
-julia> codon_set_to_str([GCATCodes.LongDNA{4}("ATG"), GCATCodes.LongDNA{4}("TGA")])
+julia> codon_set = GCATCodes.LongDNA{4}("ATG"), GCATCodes.LongDNA{4}("TGA");
+
+julia> codon_set_to_str(codon_set);
 "\"ATG\", \"TGA\""
 ```
 """
