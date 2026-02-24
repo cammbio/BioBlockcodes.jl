@@ -289,10 +289,3 @@ for i in 1:1
     println("Comparing sorted res files:")
     compare_files(sort_path, test_sort_path)
 end
-
-
-codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"])
-cgd = CodonGraphData(codon_set)
-is_c3(cgd)
-
-typeof(left_shift_codon(GCATCodes.LongDNA{4}("ATG"), 1))
