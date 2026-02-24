@@ -43,7 +43,7 @@ julia> codon_set = GCATCodes.LongDNA{4}.(["CCA", "GAT"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
-julia> cgd isa CodonGraphData    # validate codon_set
+julia> cgd isa CodonGraphData
 true
 ```
 """

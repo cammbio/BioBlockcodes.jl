@@ -1,6 +1,3 @@
-# using Base.Threads: @spawn, ReentrantLock, nthreads
-
-# process strong c3 combinations incrementally from previous results file
 """
     calc_strong_c3_comb_by_size(comb_size::Int, ckp_path::AbstractString, prev_res_path::AbstractString, res_path::AbstractString, stop_flag::Base.Threads.Atomic{Bool}; worker_count::Int=nthreads()) -> Bool
 
@@ -27,15 +24,6 @@ Computes strong-C3 combinations of a given size with checkpoint and resume logic
   - `ArgumentError`: If inputs, checkpoint contents, or file states are invalid.
 
 # Examples
-
-```jldoctest
-julia> using GCATCodes
-
-julia> stop_flag = Base.Threads.Atomic{Bool}(false);
-
-julia> typeof(stop_flag)
-Base.Threads.Atomic{Bool}
-```
 """
 function calc_strong_c3_comb_by_size(
     comb_size::Int,

@@ -99,11 +99,17 @@ Creates a grid visualization of multiple codon graphs in a Figure.
 ```jldoctest
 julia> using GCATCodes
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
+julia> codon_set_1 = GCATCodes.LongDNA{4}.(["ATA", "GGA"]);
 
-julia> cgd = CodonGraphData(codon_set);
+julia> codon_set_2 = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
 
-julia> fig = plot_multiple_codon_graphs([cgd]; fig_title = "Example");
+julia> cgd_1 = CodonGraphData(codon_set_1);
+
+julia> cgd_2 = CodonGraphData(codon_set_2);
+
+julia> cgd_list = [cgd_1, cgd_2];
+
+julia> fig = plot_multiple_codon_graphs(cgd_list);
 
 julia> typeof(fig)
 Makie.Figure
