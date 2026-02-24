@@ -258,7 +258,7 @@ function _get_processed_count_from_combination(comb::Vector{Int}; n::Int = 60)
 end
 
 
-for i in 1:12
+for i in 1:1
     println("Comparing files for combination size $i....................................................")
     res_path = "files/results/res_$(i).csv"
     ckp_path = "files/checkpoints/ckp_$(i).csv"
@@ -291,12 +291,8 @@ for i in 1:12
 end
 
 
-codon_set = GCATCodes.LongDNA{4}.(["CAA", "GTC"])
+codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"])
 cgd = CodonGraphData(codon_set)
-fig = plot_codon_graph(cgd)
-typeof(fig)
+is_c3(cgd)
 
-codon_set = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
-cgd = CodonGraphData(codon_set);
-fig = plot_multiple_codon_graphs([cgd]; fig_title = "Example");
-typeof(fig)
+typeof(left_shift_codon(GCATCodes.LongDNA{4}("ATG"), 1))

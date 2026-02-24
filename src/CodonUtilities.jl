@@ -59,8 +59,8 @@ Performs a cyclic left shift on a codon.
 julia> using GCATCodes
 
 julia> left_shift_codon(GCATCodes.LongDNA{4}("ATG"), 1)
-BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}:
- TGA
+3nt DNA Sequence:
+TGA
 ```
 """
 function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
