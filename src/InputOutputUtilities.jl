@@ -23,8 +23,8 @@ julia> using GCATCodes
 
 julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"]);
 
-julia> codon_set_to_str(codon_set)
-"\"ATG\", \"TGA\""
+julia> codon_set_to_str(codon_set) == "\"ATG\", \"TGA\""
+true
 ```
 """
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
