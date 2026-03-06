@@ -1,5 +1,5 @@
-using GCATCodes
 using Documenter
+using GCATCodes
 
 DocMeta.setdocmeta!(GCATCodes, :DocTestSetup, :(using GCATCodes); recursive = true)
 

@@ -1,23 +1,18 @@
-using GCATCodes
-using Test
+test_file_list = [
+    "codon_graph_analysis_test.jl",
+    "codon_graph_plotting_test.jl",
+    "codon_utilities_test.jl",
+    "input_output_utilities_test.jl",
+    "strong_c3_test.jl",
+    "types_test.jl",
+    "validation_test.jl",
+]
 
-
-println("Running tests...")
-
-isfile("codon_graph_analysis_test.jl") ? include("codon_graph_analysis_test.jl") :
-@warn "Test file \"codon_graph_analysis_test.jl\" not found. Skipping file."
-
-isfile("codon_graph_plotting_test.jl") ? include("codon_graph_plotting_test.jl") :
-@warn "Test file \"codon_graph_plotting_test.jl\" not found. Skipping file."
-
-isfile("codon_utilities_test.jl") ? include("codon_utilities_test.jl") :
-@warn "Test file \"codon_utilities_test.jl\" not found. Skipping file."
-
-isfile("input_output_utilities_test.jl") ? include("input_output_utilities_test.jl") :
-@warn "Test file \"input_output_utilities_test.jl\" not found. Skipping file."
-
-isfile("strong_c3_test.jl") ? include("strong_c3_test.jl") :
-@warn "Test file \"strong_c3_test.jl\" not found. Skipping file."
-
-isfile("types_test.jl") ? include("types_test.jl") :
-@warn "Test file \"types_test.jl\" not found. Skipping file."
+for file in test_file_list
+    if isfile(file)
+        println("\n\nRunning tests for $file...")
+        include(file)
+    else
+        @warn "Test file \"$(file)\" not found. Skipping file."
+    end
+end
