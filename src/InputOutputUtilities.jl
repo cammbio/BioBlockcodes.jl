@@ -1,11 +1,35 @@
 # turn a codon set into a string representation for printing
+"""
+    codon_set_to_str(codon_set::Vector{LongDNA{4}}) -> String
+
+Formats a codon set as a quoted, comma-separated string.
+
+# Arguments
+
+  - `codon_set::Vector{LongDNA{4}}`: Codon set to format.
+
+# Returns
+
+  - `String`: Formatted representation, e.g. `"ATG", "TGA"`.
+
+# Throws
+
+  - `ArgumentError`: If `codon_set` is invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA"]);
+
+julia> codon_set_to_str(codon_set) == "\\\"ATG\\\", \\\"TGA\\\""
+true
+```
+"""
 function codon_set_to_str(codon_set::Vector{LongDNA{4}})
-    # do not allow empty codon set
-    isempty(codon_set) && throw(ArgumentError("codon set is empty."))
-    # codons must have length 3 and contain only allowed bases
-    for codon in codon_set
-        codon in ALL_CODONS || throw(ArgumentError("codon \"$codon\" in \"codon_set\" is not a valid codon!"))
-    end
+    # validate codon set
+    _validate_codon_set(codon_set)
 
     codon_str = String.(codon_set)
     formatted_str = "\"" * join(codon_str, "\", \"") * "\""
@@ -14,31 +38,57 @@ end
 
 
 # parse one compact CSV line "COD1|COD2,idx1|idx2" to Vector{LongDNA{4}}
+"""
+    get_codon_set_from_line(line::AbstractString) -> Vector{LongDNA{4}}
+
+Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
+
+# Arguments
+
+  - `line::AbstractString`: Input line with codons and corresponding indices.
+
+# Returns
+
+  - `Vector{LongDNA{4}}`: Parsed and validated codon set.
+
+# Throws
+
+  - `ArgumentError`: If the format, indices, or codons are invalid.
+
+# Examples
+
+```jldoctest
+julia> using GCATCodes
+
+julia> line = "AAC|AAG,1|2";
+
+julia> get_codon_set_from_line(line)
+2-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}:
+ AAC
+ AAG
+```
+"""
 function get_codon_set_from_line(line::AbstractString)
     # do not allow empty line
     isempty(line) && throw(ArgumentError("line is empty."))
 
-    # do not allow more than one comma
-    parts = split(line, ",")
-    length(parts) == 2 || throw(
+    # require exactly one comma separator
+    count(==(','), line) == 1 || throw(
         ArgumentError("line has wrong format. Expected format: \"COD1|COD2|...|CODn,idx1|idx2|...|idxn\"."),
     )
+    parts = split(line, ","; limit = 2)
 
     # check codon list format
     codon_tokens = split(strip(parts[1]), "|"; keepempty = false)
-    # do not allow empty codon list
-    isempty(codon_tokens) && throw(ArgumentError("codon list is empty."))
-    # codons must have length 3 and contain only allowed bases
-    for codon in codon_tokens
-        length(codon) == 3 || throw(ArgumentError("codon \"$codon\" must have length 3."))
-        all(base -> base in ALLOWED_BASES_STR, codon) ||
-            throw(ArgumentError("codon \"$codon\" contains invalid base. Allowed: A, C, G, T."))
-    end
+    # turn codon_tokens into codon_set
+    codon_set = LongDNA{4}.(codon_tokens)
+    # validate codon_set
+    _validate_codon_set(codon_set)
 
     # check index list format
     idx_tokens = split(strip(parts[2]), "|"; keepempty = false)
     # do not allow empty index list
-    isempty(idx_tokens) && throw(ArgumentError("Index list is missing."))
+    isempty(idx_tokens) && throw(ArgumentError("index list is missing."))
     # indices must be positive integers
     all(t -> occursin(r"^\d+$", t), idx_tokens) ||
         throw(ArgumentError("index list must contain only positive integers."))
@@ -48,5 +98,40 @@ function get_codon_set_from_line(line::AbstractString)
         ArgumentError("codon and index counts differ ($(length(codon_tokens)) vs $(length(idx_tokens)))."),
     )
 
-    return LongDNA{4}.(codon_tokens)
+    # check that idx_tokens are equivalent to combination indices
+    comb_idxs_line = parse.(Int, idx_tokens)
+    comb_idxs_codon_set = _get_comb_from_codon_set(codon_set)
+    comb_idxs_line == comb_idxs_codon_set || throw(
+        ArgumentError(
+            "index list does not match codon list. Expected indices: $(comb_idxs_codon_set), got: $(comb_idxs_line).",
+        ),
+    )
+
+    return codon_set
+end
+
+
+# get corresponding combination from codon set
+function _get_comb_from_codon_set(codon_set::Vector{LongDNA{4}})
+    # validate codon set
+    _validate_codon_set(codon_set)
+
+    # get indices of codons in codon_set
+    idxs = getindex.(Ref(CODON_INDEX), codon_set)
+    return idxs
+end
+
+
+# write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
+function _write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
+    # validate codon set
+    _validate_codon_set(codon_set)
+    # validate combination indices
+    _validate_comb(comb)
+
+    # compact CSV-style line: "COD1|COD2,idx1|idx2"
+    codon_str = string.(codon_set)
+    idx_str = string.(comb)
+    println(io, join(codon_str, "|"), ",", join(idx_str, "|"))
+    return true
 end

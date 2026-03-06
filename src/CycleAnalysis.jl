@@ -7,23 +7,23 @@ end
 
 
 # function to get count of cycles with length equal to cycle_length
-function get_cycle_count_by_length(data::CodonGraphData, cycle_length::Int)
-    cycles = simplecycles(data.graph)
+function get_cycle_count_by_length(cgd::CodonGraphData, cycle_length::Int)
+    cycles = simplecycles(cgd.graph)
     cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
     return length(cycles_filtered)
 end
 
 
 # function to get all cycles in a graph
-function get_cycles_all(data::CodonGraphData)
+function get_cycles_all(cgd::CodonGraphData)
     # get all cycles using simplecycles
-    cycles = simplecycles(data.graph)
+    cycles = simplecycles(cgd.graph)
 
     # create new array to store cycles with vertice labels instead of indices
     cycles_labeled = Vector{Vector{String}}()
     # iterate all cycles and convert vertice indices to labels
     for cycle in cycles
-        cycle_labeled = [data.vert_labels[i] for i in cycle]
+        cycle_labeled = [cgd.vert_labels[i] for i in cycle]
         push!(cycles_labeled, cycle_labeled)
     end
     return cycles_labeled
@@ -31,13 +31,13 @@ end
 
 
 # function to get all cycles with length equal to cycle_length
-function get_cycles_by_length(data::CodonGraphData, cycle_length::Int)
-    cycles = simplecycles(data.graph)
+function get_cycles_by_length(cgd::CodonGraphData, cycle_length::Int)
+    cycles = simplecycles(cgd.graph)
     cycles_filtered = filter(cycle -> length(cycle) == cycle_length, cycles)
     # iterate all filtered cycles and convert vertice indices to labels
     cycles_labeled = Vector{Vector{String}}()
     for cycle in cycles_filtered
-        cycle_labeled = [data.vert_labels[i] for i in cycle]
+        cycle_labeled = [cgd.vert_labels[i] for i in cycle]
         push!(cycles_labeled, cycle_labeled)
     end
     return cycles_labeled
@@ -45,22 +45,22 @@ end
 
 
 # function to get all cycles that start from a given vertex label in a graph
-function get_cycles_by_vertex_label(data::CodonGraphData, vertex_label::String)
-    !haskey(data.vert_idxs, vertex_label) &&
-        throw(ArgumentError("Vertex label $vertex_label not found in graph data."))
+function get_cycles_by_vertex_label(cgd::CodonGraphData, vertex_label::String)
+    !haskey(cgd.vert_idxs, vertex_label) &&
+        throw(ArgumentError("Vertex label $vertex_label not found in graph cgd."))
 
-    vert_idxs = data.vert_idxs[vertex_label]
-    cycles = simplecycles(data.graph)
+    vert_idxs = cgd.vert_idxs[vertex_label]
+    cycles = simplecycles(cgd.graph)
     cycles_filtered = filter(cycle -> cycle[1] == vert_idxs, cycles)
     return cycles_filtered
 end
 
 
 # function to get cycles which are in graph1 but not in graph2
-function get_cycles_difference(data_1::CodonGraphData, data_2::CodonGraphData)
+function get_cycles_difference(cgd_1::CodonGraphData, cgd_2::CodonGraphData)
     # get cycles from both graphs
-    cycles_1 = simplecycles(data_1.graph)
-    cycles_2 = simplecycles(data_2.graph)
+    cycles_1 = simplecycles(cgd_1.graph)
+    cycles_2 = simplecycles(cgd_2.graph)
 
     # convert cycles to sets of tuples for easy comparison
     cycles_set_1 = Set(map(Tuple, cycles_1))
@@ -73,9 +73,9 @@ end
 
 
 # function to display duplicate cycles
-function get_duplicate_cycles(data::CodonGraphData)
+function get_duplicate_cycles(cgd::CodonGraphData)
     println("Checking for duplicate cycles in the graph...")
-    cycles = simplecycles(data.graph)
+    cycles = simplecycles(cgd.graph)
     cycle_keys = map(Tuple, cycles)
     seen = Set{Tuple{Vararg{Int64}}}()
     duplicate_keys = Tuple{Vararg{Int64}}[]
@@ -84,7 +84,7 @@ function get_duplicate_cycles(data::CodonGraphData)
             push!(duplicate_keys, key)
             println(
                 "Duplicate cycle found: ",
-                join((data.vert_labels[i] for i in (key..., first(key))), " -> "),
+                join((cgd.vert_labels[i] for i in (key..., first(key))), " -> "),
             )
         else
             push!(seen, key)
