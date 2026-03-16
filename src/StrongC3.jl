@@ -1,5 +1,5 @@
 """
-    calc_strong_c3_comb_by_size(comb_size::Int, ckp_path::AbstractString, prev_res_path::AbstractString, res_path::AbstractString, stop_flag::Base.Threads.Atomic{Bool}; worker_count::Int=nthreads()) -> Bool
+    calc_strong_c3_comb_by_size(comb_size::Int, ckp_path::AbstractString, prev_res_path::AbstractString, res_path::AbstractString, stop_flag::Base.Threads.Atomic{Bool}; worker_count::Int=1) -> Bool
 
 Computes strong-C3 combinations of a given size with checkpoint and resume logic.
 
@@ -31,7 +31,7 @@ function calc_strong_c3_comb_by_size(
     prev_res_path::AbstractString,
     res_path::AbstractString,
     stop_flag::Base.Threads.Atomic{Bool};
-    worker_count::Int = nthreads(),
+    worker_count::Int = 1,
 )
     # only allow combination sizes from 1 to 20
     (comb_size < 1 || comb_size > 20) &&
