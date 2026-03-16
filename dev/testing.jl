@@ -8,6 +8,47 @@ using GraphMakie
 using JuliaFormatter
 using Logging
 
+for i in 7:12
+    println("Checking i: $i")
+    res_path = "D:/Bachelorarbeit_23_02_2026_11_35/GCATCodes/files/results/sorted_res_$i.csv"
+    path_com_free = "files/maximal_comma_free_strong_c3_codes/strong_res_$i.txt"
+    path_self_comp = "files/maximal_self_complementary_strong_c3_codes/strong_res_$i.txt"
+    path_self_comp_com_free = "files/maximal_comma_free_self_complementary_strong_c3_codes/strong_res_$i.txt"
+
+    com_free_cnt = 0
+    self_comp_cnt = 0
+    self_comp_com_free_cnt = 0
+
+    open(path_com_free, "a") do comma_out
+        open(path_self_comp, "a") do self_out
+            open(path_self_comp_com_free, "a") do self_comma_out
+                for line in eachline(res_path)
+                    codon_set = get_codon_set_from_line(line)
+                    codon_set_str = codon_set_to_str(codon_set)
+                    cgd = CodonGraphData(codon_set)
+                    _expand_graph!(cgd)
+                    if is_comma_free(cgd)
+                        com_free_cnt += 1
+                        println(comma_out, codon_set_str)
+                    end
+                    if is_self_complementary(cgd)
+                        self_comp_cnt += 1
+                        println(self_out, codon_set_str)
+                    end
+                    if (is_comma_free(cgd)) && (is_self_complementary(cgd))
+                        self_comp_com_free_cnt += 1
+                        println(self_comma_out, codon_set_str)
+                    end
+                end
+            end
+        end
+    end
+    println("""for i $i:
+            comma-free:           $com_free_cnt
+            self_comp:            $self_comp_cnt
+            self-comp-comma-free: $self_comp_com_free_cnt""")
+end
+
 # debug logging
 global_logger(ConsoleLogger(Logging.Debug)) # activate
 # global_logger(ConsoleLogger(Logging.Info)) # deactivate
@@ -289,3 +330,4 @@ for i in 1:1
     println("Comparing sorted res files:")
     compare_files(sort_path, test_sort_path)
 end
+

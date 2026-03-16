@@ -122,5 +122,7 @@ export
     get_codon_set_from_line,
     codon_set_to_str,
     # StrongC3.jl
-    calc_strong_c3_comb_by_size
+    calc_strong_c3_comb_by_size,
+
+    _expand_graph!
 end
