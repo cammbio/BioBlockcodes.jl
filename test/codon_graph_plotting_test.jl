@@ -1,6 +1,6 @@
 using BioSequences
 using CairoMakie
-using GCATCodes
+using BioBlockcodes
 using Graphs
 using Test
 
@@ -176,26 +176,26 @@ end
 
 @testset "_get_col_count" begin
     @testset "normal values" begin
-        @test GCATCodes._get_col_count(1) == 1
-        @test GCATCodes._get_col_count(2) == 2
-        @test GCATCodes._get_col_count(3) == 2
-        @test GCATCodes._get_col_count(5) == 3
+        @test BioBlockcodes._get_col_count(1) == 1
+        @test BioBlockcodes._get_col_count(2) == 2
+        @test BioBlockcodes._get_col_count(3) == 2
+        @test BioBlockcodes._get_col_count(5) == 3
     end
 
 
     @testset "perfect squares" begin
-        @test GCATCodes._get_col_count(4) == 2
-        @test GCATCodes._get_col_count(9) == 3
-        @test GCATCodes._get_col_count(16) == 4
+        @test BioBlockcodes._get_col_count(4) == 2
+        @test BioBlockcodes._get_col_count(9) == 3
+        @test BioBlockcodes._get_col_count(16) == 4
     end
 
 
     @testset "zero graph count" begin
-        @test_throws ArgumentError GCATCodes._get_col_count(0)
+        @test_throws ArgumentError BioBlockcodes._get_col_count(0)
     end
 
 
     @testset "negative graph count" begin
-        @test_throws ArgumentError GCATCodes._get_col_count(-1)
+        @test_throws ArgumentError BioBlockcodes._get_col_count(-1)
     end
 end

@@ -1,5 +1,5 @@
 using BioSequences
-using GCATCodes
+using BioBlockcodes
 using Test
 
 
@@ -144,15 +144,15 @@ end
 
 @testset "_get_comp_base" begin
     @testset "happy path" begin
-        @test GCATCodes._get_comp_base(DNA_A) == DNA_T
-        @test GCATCodes._get_comp_base(DNA_C) == DNA_G
-        @test GCATCodes._get_comp_base(DNA_G) == DNA_C
-        @test GCATCodes._get_comp_base(DNA_T) == DNA_A
+        @test BioBlockcodes._get_comp_base(DNA_A) == DNA_T
+        @test BioBlockcodes._get_comp_base(DNA_C) == DNA_G
+        @test BioBlockcodes._get_comp_base(DNA_G) == DNA_C
+        @test BioBlockcodes._get_comp_base(DNA_T) == DNA_A
     end
 
 
     @testset "invalid base throws ArgumentError" begin
-        @test_throws ArgumentError GCATCodes._get_comp_base(DNA_N)
+        @test_throws ArgumentError BioBlockcodes._get_comp_base(DNA_N)
     end
 end
 
@@ -160,7 +160,7 @@ end
 @testset "_get_comp_codon" begin
     @testset "happy path" begin
         codon = LongDNA{4}("ATG")
-        comp_codon = GCATCodes._get_comp_codon(codon)
+        comp_codon = BioBlockcodes._get_comp_codon(codon)
         @test comp_codon == LongDNA{4}("TAC")
     end
 
@@ -168,7 +168,7 @@ end
     @testset "does not mutate input codon" begin
         codon = LongDNA{4}("CGA")
         copy_codon = copy(codon)
-        comp_codon = GCATCodes._get_comp_codon(codon)
+        comp_codon = BioBlockcodes._get_comp_codon(codon)
         @test codon == copy_codon
     end
 end
@@ -177,7 +177,7 @@ end
 @testset "_get_rev_codon" begin
     @testset "happy path" begin
         codon = LongDNA{4}("ATG")
-        rev_codon = GCATCodes._get_rev_codon(codon)
+        rev_codon = BioBlockcodes._get_rev_codon(codon)
         @test rev_codon == LongDNA{4}("GTA")
     end
 
@@ -185,7 +185,7 @@ end
     @testset "does not mutate input codon" begin
         codon = LongDNA{4}("TTC")
         copy_codon = copy(codon)
-        rev_codon = GCATCodes._get_rev_codon(codon)
+        rev_codon = BioBlockcodes._get_rev_codon(codon)
         @test codon == copy_codon
     end
 end
@@ -194,14 +194,14 @@ end
 @testset "_get_comp_codon_set" begin
     @testset "happy path" begin
         codon_set = LongDNA{4}.(["ATG", "CGA", "TTC"])
-        comp_codon_set = GCATCodes._get_comp_codon_set(codon_set)
+        comp_codon_set = BioBlockcodes._get_comp_codon_set(codon_set)
         @test comp_codon_set == LongDNA{4}.(["TAC", "GCT", "AAG"])
     end
 
 
     @testset "returns same length as input" begin
         codon_set = LongDNA{4}.(["GCT", "AAT", "TGC", "CCA"])
-        comp_codon_set = GCATCodes._get_comp_codon_set(codon_set)
+        comp_codon_set = BioBlockcodes._get_comp_codon_set(codon_set)
         @test length(comp_codon_set) == length(codon_set)
     end
 
@@ -209,7 +209,7 @@ end
     @testset "does not mutate input codon_set" begin
         codon_set = LongDNA{4}.(["AGC", "TTA", "CGA"])
         copy_codon_set = copy(codon_set)
-        comp_codon_set = GCATCodes._get_comp_codon_set(codon_set)
+        comp_codon_set = BioBlockcodes._get_comp_codon_set(codon_set)
         @test codon_set == copy_codon_set
     end
 end
@@ -218,14 +218,14 @@ end
 @testset "_get_rev_codon_set" begin
     @testset "happy path" begin
         codon_set = LongDNA{4}.(["ATG", "CGA", "TTC"])
-        rev_codon_set = GCATCodes._get_rev_codon_set(codon_set)
+        rev_codon_set = BioBlockcodes._get_rev_codon_set(codon_set)
         @test rev_codon_set == LongDNA{4}.(["GTA", "AGC", "CTT"])
     end
 
 
     @testset "returns same length as input" begin
         codon_set = LongDNA{4}.(["GCT", "AAT", "TGC", "CCA"])
-        rev_codon_set = GCATCodes._get_rev_codon_set(codon_set)
+        rev_codon_set = BioBlockcodes._get_rev_codon_set(codon_set)
         @test length(rev_codon_set) == length(codon_set)
     end
 
@@ -233,7 +233,7 @@ end
     @testset "does not mutate input codon_set" begin
         codon_set = LongDNA{4}.(["AGC", "TTA", "CGA"])
         copy_codon_set = copy(codon_set)
-        rev_codon_set = GCATCodes._get_rev_codon_set(codon_set)
+        rev_codon_set = BioBlockcodes._get_rev_codon_set(codon_set)
         @test codon_set == copy_codon_set
     end
 end

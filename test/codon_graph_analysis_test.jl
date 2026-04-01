@@ -1,5 +1,5 @@
 using BioSequences
-using GCATCodes
+using BioBlockcodes
 using Graphs
 using Test
 
@@ -114,7 +114,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("T", "CC")
         src_label, dst_label = edge_label
-        @test GCATCodes._add_edge_by_label!(cgd, edge_label) == true
+        @test BioBlockcodes._add_edge_by_label!(cgd, edge_label) == true
         @test (edge_label in cgd.edge_labels) == true
         @test (has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])) == true
         @test ne(cgd.graph) == 5
@@ -125,7 +125,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("A", "GT")
         src_label, dst_label = edge_label
-        @test GCATCodes._add_edge_by_label!(cgd, edge_label) == false
+        @test BioBlockcodes._add_edge_by_label!(cgd, edge_label) == false
         @test (edge_label in cgd.edge_labels) == true
         @test (has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])) == true
         @test ne(cgd.graph) == 4
@@ -136,7 +136,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("AT", "C")
         src_label, dst_label = edge_label
-        @test_throws ArgumentError GCATCodes._add_edge_by_label!(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._add_edge_by_label!(cgd, edge_label)
         @test (edge_label in cgd.edge_labels) == false
         @test_throws KeyError has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])
     end
@@ -146,7 +146,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("A", "TT")
         src_label, dst_label = edge_label
-        @test_throws ArgumentError GCATCodes._add_edge_by_label!(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._add_edge_by_label!(cgd, edge_label)
         @test (edge_label in cgd.edge_labels) == false
         @test_throws KeyError has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])
     end
@@ -156,7 +156,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("CG", "T")
         src_label, dst_label = edge_label
-        @test_throws ArgumentError GCATCodes._add_edge_by_label!(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._add_edge_by_label!(cgd, edge_label)
         @test (edge_label in cgd.edge_labels) == false
         @test_throws KeyError has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])
     end
@@ -166,7 +166,7 @@ end
         cgd = CodonGraphData(codon_set)
         edge_label = ("G", "CT")
         src_label, dst_label = edge_label
-        @test_throws ArgumentError GCATCodes._add_edge_by_label!(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._add_edge_by_label!(cgd, edge_label)
         @test (edge_label in cgd.edge_labels) == false
         @test_throws KeyError has_edge(cgd.graph, cgd.vert_idxs[src_label], cgd.vert_idxs[dst_label])
     end
@@ -181,7 +181,7 @@ end
     @testset "happy path" begin
         cgd = CodonGraphData(codon_set)
         vert_label = "AC"
-        @test GCATCodes._add_vert_by_label!(cgd, vert_label) == true
+        @test BioBlockcodes._add_vert_by_label!(cgd, vert_label) == true
         @test (vert_label in cgd.vert_labels) == true
         @test haskey(cgd.vert_idxs, vert_label) == true
         @test nv(cgd.graph) == 8
@@ -191,7 +191,7 @@ end
     @testset "sad path" begin
         cgd = CodonGraphData(codon_set)
         vert_label = "CC"
-        @test GCATCodes._add_vert_by_label!(cgd, vert_label) == false
+        @test BioBlockcodes._add_vert_by_label!(cgd, vert_label) == false
         @test (vert_label in cgd.vert_labels) == true
         @test haskey(cgd.vert_idxs, vert_label) == true
         @test nv(cgd.graph) == 7
@@ -209,7 +209,7 @@ end
         g = SimpleDiGraph(3)
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 3)
-        @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == false
+        @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == false
     end
 
 
@@ -219,7 +219,7 @@ end
         add_edge!(g, 2, 3)
         add_edge!(g, 3, 4)
         add_edge!(g, 4, 5)
-        @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == false
+        @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == false
     end
 
 
@@ -230,7 +230,7 @@ end
         add_edge!(g, 3, 4)
         add_edge!(g, 4, 5)
         add_edge!(g, 5, 6)
-        @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == true
+        @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == true
     end
 
 
@@ -239,7 +239,7 @@ end
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 3)
         add_edge!(g, 3, 1)
-        # @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == false
+        # @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == false
     end
 
 
@@ -249,7 +249,7 @@ end
         add_edge!(g, 2, 3)
         add_edge!(g, 3, 4)
         add_edge!(g, 4, 1)
-        # @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == false
+        # @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == false
     end
 
 
@@ -260,7 +260,7 @@ end
         add_edge!(g, 3, 4)
         add_edge!(g, 4, 5)
         add_edge!(g, 5, 1)
-        @test GCATCodes._dfs_depth(g, start_vert, depth, max_depth) == true
+        @test BioBlockcodes._dfs_depth(g, start_vert, depth, max_depth) == true
     end
 end
 
@@ -269,7 +269,7 @@ end
     @testset "validate edges" begin
         codon_set = LongDNA{4}.(["AGA", "GAC", "TGG"])
         cgd = CodonGraphData(codon_set)
-        GCATCodes._expand_graph!(cgd)
+        BioBlockcodes._expand_graph!(cgd)
         @test ne(cgd.graph) == 12
         @test cgd.edge_labels == [
             ("A", "GA"),
@@ -291,7 +291,7 @@ end
     @testset "validate vertices" begin
         codon_set = LongDNA{4}.(["AAC", "ATG", "TGC"])
         cgd = CodonGraphData(codon_set)
-        GCATCodes._expand_graph!(cgd)
+        BioBlockcodes._expand_graph!(cgd)
         @test nv(cgd.graph) == 12
         @test cgd.vert_labels == ["A", "C", "G", "T", "AA", "AC", "AT", "GC", "TG", "CA", "GA", "CT"]
     end
@@ -303,10 +303,10 @@ end
         g = SimpleDiGraph(3)
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 3)
-        @test GCATCodes._has_cycle_longer_than(g, 0) == false
-        @test GCATCodes._has_cycle_longer_than(g, 1) == false
-        @test GCATCodes._has_cycle_longer_than(g, 4) == false
-        @test GCATCodes._has_cycle_longer_than(g, 7) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 0) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 1) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 4) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 7) == false
     end
 
 
@@ -314,10 +314,10 @@ end
         g = SimpleDiGraph(2)
         add_edge!(g, 1, 1)
         add_edge!(g, 2, 2)
-        @test GCATCodes._has_cycle_longer_than(g, 0) == true
-        @test GCATCodes._has_cycle_longer_than(g, 1) == false
-        @test GCATCodes._has_cycle_longer_than(g, 4) == false
-        @test GCATCodes._has_cycle_longer_than(g, 7) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 0) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 1) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 4) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 7) == false
     end
 
 
@@ -325,10 +325,10 @@ end
         g = SimpleDiGraph(2)
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 1)
-        @test GCATCodes._has_cycle_longer_than(g, 0) == true
-        @test GCATCodes._has_cycle_longer_than(g, 1) == true
-        @test GCATCodes._has_cycle_longer_than(g, 2) == false
-        @test GCATCodes._has_cycle_longer_than(g, 5) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 0) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 1) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 2) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 5) == false
     end
 
 
@@ -339,10 +339,10 @@ end
         add_edge!(g, 3, 4)
         add_edge!(g, 4, 5)
         add_edge!(g, 5, 1)
-        @test GCATCodes._has_cycle_longer_than(g, 0) == true
-        @test GCATCodes._has_cycle_longer_than(g, 1) == true
-        @test GCATCodes._has_cycle_longer_than(g, 4) == true
-        @test GCATCodes._has_cycle_longer_than(g, 7) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 0) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 1) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 4) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 7) == false
     end
 
 
@@ -352,22 +352,22 @@ end
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 3)
         add_edge!(g, 3, 1)
-        @test GCATCodes._has_cycle_longer_than(g, 0) == true
-        @test GCATCodes._has_cycle_longer_than(g, 1) == true
-        @test GCATCodes._has_cycle_longer_than(g, 4) == false
-        @test GCATCodes._has_cycle_longer_than(g, 7) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 0) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 1) == true
+        @test BioBlockcodes._has_cycle_longer_than(g, 4) == false
+        @test BioBlockcodes._has_cycle_longer_than(g, 7) == false
     end
 
 
     @testset "invalid no vertices and edges" begin
         g = SimpleDiGraph(0)
-        @test_throws ArgumentError GCATCodes._has_cycle_longer_than(g, 1)
+        @test_throws ArgumentError BioBlockcodes._has_cycle_longer_than(g, 1)
     end
 
 
     @testset "invalid vertices but no edges" begin
         g = SimpleDiGraph(3)
-        @test_throws ArgumentError GCATCodes._has_cycle_longer_than(g, 1)
+        @test_throws ArgumentError BioBlockcodes._has_cycle_longer_than(g, 1)
     end
 
 
@@ -375,7 +375,7 @@ end
         g = SimpleDiGraph(2)
         add_edge!(g, 1, 2)
         add_edge!(g, 2, 1)
-        @test_throws ArgumentError GCATCodes._has_cycle_longer_than(g, -2)
+        @test_throws ArgumentError BioBlockcodes._has_cycle_longer_than(g, -2)
     end
 end
 
@@ -386,7 +386,7 @@ end
         codon_set_2 = LongDNA{4}.(["AAC", "ATG"])
         cgd_1 = CodonGraphData(codon_set_1)
         cgd_2 = CodonGraphData(codon_set_2)
-        @test GCATCodes._is_codon_graphs_equal(cgd_1, cgd_2) == true
+        @test BioBlockcodes._is_codon_graphs_equal(cgd_1, cgd_2) == true
     end
 
 
@@ -395,7 +395,7 @@ end
         codon_set_2 = LongDNA{4}.(["AGT", "CGA"])
         cgd_1 = CodonGraphData(codon_set_1)
         cgd_2 = CodonGraphData(codon_set_2)
-        @test GCATCodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
+        @test BioBlockcodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
     end
 
 
@@ -404,8 +404,8 @@ end
         cgd_1 = CodonGraphData(codon_set)
         cgd_2 = CodonGraphData(codon_set)
         edge_label = ("A", "CA")
-        GCATCodes._add_edge_by_label!(cgd_1, edge_label)
-        @test GCATCodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
+        BioBlockcodes._add_edge_by_label!(cgd_1, edge_label)
+        @test BioBlockcodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
     end
 
 
@@ -414,8 +414,8 @@ end
         codon_set_2 = LongDNA{4}.(["AGT", "GCA"])
         cgd_1 = CodonGraphData(codon_set_1)
         cgd_2 = CodonGraphData(codon_set_2)
-        GCATCodes._add_vert_by_label!(cgd_1, "CT")
-        @test GCATCodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
+        BioBlockcodes._add_vert_by_label!(cgd_1, "CT")
+        @test BioBlockcodes._is_codon_graphs_equal(cgd_1, cgd_2) == false
     end
 end
 
@@ -427,37 +427,37 @@ end
 
     @testset "happy path" begin
         edge_label = ("C", "GT")
-        @test GCATCodes._has_edge_label(cgd, edge_label) == true
+        @test BioBlockcodes._has_edge_label(cgd, edge_label) == true
     end
 
 
     @testset "sad path" begin
         edge_label = ("C", "TA")
-        @test GCATCodes._has_edge_label(cgd, edge_label) == false
+        @test BioBlockcodes._has_edge_label(cgd, edge_label) == false
     end
 
 
     @testset "src_label not in vert_labels" begin
         edge_label = ("GA", "T")
-        @test_throws ArgumentError GCATCodes._has_edge_label(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._has_edge_label(cgd, edge_label)
     end
 
 
     @testset "dst_label not in vert_labels" begin
         edge_label = ("T", "AT")
-        @test_throws ArgumentError GCATCodes._has_edge_label(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._has_edge_label(cgd, edge_label)
     end
 
 
     @testset "src_label not in vert_idxs" begin
         edge_label = ("G", "AA")
-        @test_throws ArgumentError GCATCodes._has_edge_label(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._has_edge_label(cgd, edge_label)
     end
 
 
     @testset "dst_label not in vert_idxs" begin
         edge_label = ("T", "GG")
-        @test_throws ArgumentError GCATCodes._has_edge_label(cgd, edge_label)
+        @test_throws ArgumentError BioBlockcodes._has_edge_label(cgd, edge_label)
     end
 end
 
@@ -470,12 +470,12 @@ end
 
     @testset "happy path" begin
         vert_label = "CT"
-        @test GCATCodes._has_vert_label(cgd, vert_label) == true
+        @test BioBlockcodes._has_vert_label(cgd, vert_label) == true
     end
 
 
     @testset "sad path" begin
         vert_label = "AG"
-        @test GCATCodes._has_vert_label(cgd, vert_label) == false
+        @test BioBlockcodes._has_vert_label(cgd, vert_label) == false
     end
 end

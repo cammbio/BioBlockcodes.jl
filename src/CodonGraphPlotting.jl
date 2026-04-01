@@ -22,9 +22,9 @@ Creates a single visualization of a codon graph in a Figure.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["CAA", "GTC"]);
+julia> codon_set = BioBlockcodes.LongDNA{4}.(["CAA", "GTC"]);
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -97,11 +97,11 @@ Creates a grid visualization of multiple codon graphs in a Figure.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes
 
-julia> codon_set_1 = GCATCodes.LongDNA{4}.(["ATA", "GGA"]);
+julia> codon_set_1 = BioBlockcodes.LongDNA{4}.(["ATA", "GGA"]);
 
-julia> codon_set_2 = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
+julia> codon_set_2 = BioBlockcodes.LongDNA{4}.(["TTC", "GCA"]);
 
 julia> cgd_1 = CodonGraphData(codon_set_1);
 

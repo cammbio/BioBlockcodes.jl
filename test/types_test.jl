@@ -1,5 +1,5 @@
 using BioSequences
-using GCATCodes
+using BioBlockcodes
 using Graphs
 using Test
 

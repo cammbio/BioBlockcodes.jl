@@ -1,18 +1,18 @@
 using Documenter
-using GCATCodes
+using BioBlockcodes
 
-DocMeta.setdocmeta!(GCATCodes, :DocTestSetup, :(using GCATCodes); recursive = true)
+DocMeta.setdocmeta!(BioBlockcodes, :DocTestSetup, :(using BioBlockcodes); recursive = true)
 
 makedocs(;
-    modules = [GCATCodes],
-    authors = "Filip Cavar",
-    sitename = "GCATCodes.jl",
+    modules = [BioBlockcodes],
+    authors = "Filip Cavar, Markus Gumbel",
+    sitename = "BioBlockcodes.jl",
     format = Documenter.HTML(;
-        canonical = "https://fcavar.github.io/GCATCodes.jl",
+        # canonical = "https://fcavar.github.io/BioBlockcodes.jl",
         edit_link = "master",
         assets = String[],
     ),
     pages = ["Home" => "index.md"],
 )
 
-deploydocs(; repo = "github.com/fcavar/GCATCodes.jl", devbranch = "master")
+deploydocs(; repo = "github.com/cammbio/BioBlockcodes.jl", devbranch = "master")

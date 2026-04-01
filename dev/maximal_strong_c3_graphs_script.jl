@@ -1,7 +1,7 @@
 using Revise
 using BioSequences: LongDNA
 using CairoMakie
-using GCATCodes
+using BioBlockcodes
 
 # stop_flag
 const stop_flag = Base.Threads.Atomic{Bool}(false)

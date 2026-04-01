@@ -1,4 +1,4 @@
-module GCATCodes
+module BioBlockcodes
 # ----------------------------------------------- PACKAGES ----------------------------------------------
 using Base.Threads: @spawn
 using BioSequences

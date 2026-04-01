@@ -1,5 +1,5 @@
 using Revise
-isdefined(Main, :GCATCodes) || using GCATCodes
+isdefined(Main, :BioBlockcodes) || using BioBlockcodes
 using Base.Threads
 using BioSequences
 using CairoMakie
@@ -103,7 +103,7 @@ end
 # get corresponding combination from codon set
 function _get_comb_from_codon_set2(codon_set::Vector{LongDNA{4}})
     # get indices of codons in codon_set
-    idxs = getindex.(Ref(GCATCodes.CODON_INDEX), codon_set)
+    idxs = getindex.(Ref(BioBlockcodes.CODON_INDEX), codon_set)
     return idxs
 end
 
@@ -459,7 +459,7 @@ end
 
 for i in 12:12
     println("Checking i: $i")
-    res_path = "D:/Bachelorarbeit_23_02_2026_11_35/GCATCodes/files/results/sorted_res_$i.csv"
+    res_path = "D:/Bachelorarbeit_23_02_2026_11_35/BioBlockcodes/files/results/sorted_res_$i.csv"
     path_com_free = "files/maximal_comma_free_strong_c3_codes/strong_res_$i.txt"
     path_self_comp = "files/maximal_self_complementary_strong_c3_codes/strong_res_$i.txt"
     path_self_comp_com_free = "files/maximal_comma_free_self_complementary_strong_c3_codes/strong_res_$i.txt"

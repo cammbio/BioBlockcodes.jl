@@ -1,4 +1,4 @@
-using GCATCodes
+using BioBlockcodes
 using BioSequences: LongDNA
 using Base.Threads: Atomic, nthreads, @spawn
 using BenchmarkTools

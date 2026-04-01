@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = GCATCodes
+CurrentModule = BioBlockcodes
 ```
 
-# GCATCodes
+# BioBlockcodes
 
-Documentation for [GCATCodes](https://github.com/fcavar/GCATCodes.jl).
+Documentation for [BioBlockcodes](https://github.com/fcavar/BioBlockcodes.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [GCATCodes]
+Modules = [BioBlockcodes]
 ```
