@@ -18,9 +18,9 @@ Builds the complemented and reversed codon for each codon in the set.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["ATG", "TGA", "TCA"]);
+julia> codon_set = BioBlockcodes.LongDNA{4}.(["ATG", "TGA", "TCA"]);
 
 julia> get_comp_rev_codon_set(codon_set)
 3-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}:
@@ -60,9 +60,9 @@ Performs a cyclic left shift on a codon.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes
 
-julia> codon = GCATCodes.LongDNA{4}("ACT");
+julia> codon = BioBlockcodes.LongDNA{4}("ACT");
 
 julia> left_shift_codon(codon, 1)
 3nt DNA Sequence:
@@ -105,9 +105,9 @@ Performs a cyclic left shift on all codons in a set.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["TTG", "TGA"]);
+julia> codon_set = BioBlockcodes.LongDNA{4}.(["TTG", "TGA"]);
 
 julia> left_shift_codon_set(codon_set, 1)
 2-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}:
