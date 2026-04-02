@@ -1,3 +1,4 @@
+using BioCodes
 using BioSequences
 using BioBlockcodes
 using Graphs
