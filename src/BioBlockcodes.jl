@@ -1,11 +1,9 @@
 module BioBlockcodes
 # ----------------------------------------------- PACKAGES ----------------------------------------------
 using Base.Threads: @spawn
+using BioCodes
 using BioSequences
-using CairoMakie
-using GraphMakie
 using Graphs
-using NetworkLayout
 # ---------------------------------------------- VARIABLES ----------------------------------------------
 
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
@@ -85,8 +83,13 @@ include("InputOutputUtilities.jl")
 include("CodonUtilities.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphBuilder.jl
 include("CycleAnalysis.jl") # needs Types.jl
-include("CodonGraphPlotting.jl") # needs Types.jl
 include("StrongC3.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphAnalysis.jl
+
+# ------------------------------------------------ EXT --------------------------------------------------
+function plot_codon_graph end
+function plot_multiple_codon_graphs end
+function _get_col_count end
+
 # ---------------------------------------------- EXPORTS ------------------------------------------------
 # Types
 export
@@ -122,6 +125,5 @@ export
     codon_set_to_str,
     # StrongC3.jl
     calc_strong_c3_comb_by_size,
-
     _expand_graph!
 end

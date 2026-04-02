@@ -1,6 +1,6 @@
-using BioSequences
-using CairoMakie
+using GraphMakie, CairoMakie, NetworkLayout
 using BioBlockcodes
+using BioSequences
 using Graphs
 using Test
 
