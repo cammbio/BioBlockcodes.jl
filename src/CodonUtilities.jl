@@ -75,7 +75,7 @@ function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
     # validate codon
     _validate_codon(codon)
 
-    return circshift(codon; k = shift_by)
+    return BioCodes.circshift(codon; k = shift_by)
 end
 
 
@@ -115,7 +115,7 @@ function left_shift_codon_set(codon_set::Vector{T}, shift_by::Int) where {T <: L
     shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
     # validate codon_set
     _validate_codon_set(codon_set)
-    circshift.(codon_set; k = shift_by)
+    BioCodes.circshift.(codon_set; k = shift_by)
 end
 
 

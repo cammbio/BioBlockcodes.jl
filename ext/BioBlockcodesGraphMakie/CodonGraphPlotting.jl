@@ -1,3 +1,15 @@
+# determine number of columns for grid layout based on amount of graphs
+function _get_col_count(graph_count::Int)
+    # do not allow 0 or negative graph count
+    if graph_count <= 0
+        throw(ArgumentError("graph_count must be a positive integer."))
+    end
+
+    col_count = max(1, ceil(Int, sqrt(graph_count)))
+    return col_count
+end
+
+
 """
     plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900)) -> Figure
 
@@ -36,7 +48,7 @@ Makie.Figure
 """
 function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900))
     # validate cgd object
-    _validate_cgd(cgd)
+    BioBlockcodes._validate_cgd(cgd)
 
     # create plot figure
     fig = Figure(size = fig_size)
@@ -123,7 +135,7 @@ function plot_multiple_codon_graphs(
     # do not allow empty cgd_list
     isempty(cgd_list) && throw(ArgumentError("cgd_list is empty."))
     # validate cgd objects
-    _validate_cgd.(cgd_list)
+    BioBlockcodes._validate_cgd.(cgd_list)
 
     # get number of columns for grid layout based on amount of graphs
     col_count = _get_col_count(length(cgd_list))
@@ -176,18 +188,3 @@ function plot_multiple_codon_graphs(
 
     return fig
 end
-
-
-# determine number of columns for grid layout based on amount of graphs
-function _get_col_count(graph_count::Int)
-    # do not allow 0 or negative graph count
-    if graph_count <= 0
-        throw(ArgumentError("graph_count must be a positive integer."))
-    end
-
-    col_count = max(1, ceil(Int, sqrt(graph_count)))
-    return col_count
-end
-
-
-
