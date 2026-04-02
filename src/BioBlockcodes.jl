@@ -77,7 +77,6 @@ const ALL_CODONS =
 
 const ALLOWED_BASES_DNA = Set((DNA_A, DNA_C, DNA_G, DNA_T))
 const ALLOWED_BASES_STR = Set(('A', 'C', 'G', 'T'))
-const BASE_COMPLEMENT = Dict(DNA_A => DNA_T, DNA_T => DNA_A, DNA_C => DNA_G, DNA_G => DNA_C)
 const CODON_INDEX = Dict{LongDNA{4}, Int}(codon => i for (i, codon) in enumerate(ALL_CODONS))
 # ---------------------------------------------- INCLUDES -----------------------------------------------
 include("Types.jl")
