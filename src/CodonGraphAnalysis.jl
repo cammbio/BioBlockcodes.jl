@@ -18,9 +18,9 @@ Checks whether a codon graph satisfies the C3 property.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["ATG", "TGA"]);
+julia> codon_set = [dna"ATG", dna"TGA"];
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -69,9 +69,9 @@ Checks whether a codon graph is acyclic aka. contains no cycles.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["AAC", "GTT"]);
+julia> codon_set = [dna"AAC", dna"GTT"];
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -116,9 +116,9 @@ Checks whether a codon graph is comma-free.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["CGA", "TAC"]);
+julia> codon_set = [dna"CGA", dna"TAC"];
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -162,9 +162,9 @@ Checks whether a codon graph is invariant under complement and reversal.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["AGC", "CTG", "TGT", "ATC"]);
+julia> codon_set = [dna"AGC", dna"CTG", dna"TGT", dna"ATC"];
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -213,9 +213,9 @@ Checks whether a codon graph is strong C3.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["GGA", "TAA"]);
+julia> codon_set = [dna"GGA", dna"TAA"];
 
 julia> cgd = CodonGraphData(codon_set);
 

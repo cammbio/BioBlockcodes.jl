@@ -19,9 +19,9 @@ Formats a codon set as a quoted, comma-separated string.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["ATG", "TGA"]);
+julia> codon_set = [dna"ATG", dna"TGA"];
 
 julia> codon_set_to_str(codon_set) == "\\\"ATG\\\", \\\"TGA\\\""
 true
@@ -58,12 +58,12 @@ Parses one line in the format `COD1|COD2|...,idx1|idx2|...` into a codon set.
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
 julia> line = "AAC|AAG,1|2";
 
 julia> get_codon_set_from_line(line)
-2-element Vector{BioSequences.LongSequence{BioSequences.DNAAlphabet{4}}}:
+2-element Vector{LongSequence{DNAAlphabet{4}}}:
  AAC
  AAG
 ```
