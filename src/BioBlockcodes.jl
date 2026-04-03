@@ -86,6 +86,7 @@ include("CycleAnalysis.jl") # needs Types.jl
 include("StrongC3.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphAnalysis.jl
 
 # ------------------------------------------------ EXT --------------------------------------------------
+# Functions used in the extension:
 function plot_codon_graph end
 function plot_multiple_codon_graphs end
 function _get_col_count end

@@ -37,9 +37,9 @@ Constructs a `CodonGraphData` instance from a codon set and builds the correspon
 # Examples
 
 ```jldoctest
-julia> using BioBlockcodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = BioBlockcodes.LongDNA{4}.(["CCA", "GAT"]);
+julia> codon_set = [dna"CCA", dna"GAT"];
 
 julia> cgd = CodonGraphData(codon_set);
 
