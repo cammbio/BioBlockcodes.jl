@@ -2,4 +2,5 @@
 BioBlockcodes = "604ddfb8-b057-4e57-a88a-fd8ef85a1bc4"
 BioCodes = "5da0a781-4ec8-4633-a007-8ceb506d1ca1"
 BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"

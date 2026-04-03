@@ -4,7 +4,7 @@ CurrentModule = BioBlockcodes
 
 # BioBlockcodes
 
-Documentation for [BioBlockcodes](https://github.com/fcavar/BioBlockcodes.jl).
+Documentation for [BioBlockcodes](https://github.com/cammbio/BioBlockcodes.jl).
 
 ```@index
 ```
