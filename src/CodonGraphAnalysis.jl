@@ -91,6 +91,23 @@ function is_circular(cgd::CodonGraphData)
     return true
 end
 
+
+"""
+    $(TYPEDSIGNATURES)
+
+Checks whether the set of codons as specified in `codons` defines a circular code.
+
+# Examples
+
+```jldoctest
+julia> using BioBlockcodes, BioSequences
+
+julia> codon_set = [dna"AAC", dna"GTT"];
+
+julia> is_circular(codon_set)
+true
+```
+"""
 function is_circular(codons::Vector{LongDNA{4}})
     cgd = CodonGraphData(codons)
     return is_circular(cgd)

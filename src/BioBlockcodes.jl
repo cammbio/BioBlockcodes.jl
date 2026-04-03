@@ -4,6 +4,7 @@ using Base.Threads: @spawn
 using BioCodes
 using BioSequences
 using Graphs
+using DocStringExtensions
 # ---------------------------------------------- VARIABLES ----------------------------------------------
 
 # ---------------------------------------------- CONSTANTS ----------------------------------------------

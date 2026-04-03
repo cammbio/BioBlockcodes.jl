@@ -3,19 +3,14 @@ uuid = "604ddfb8-b057-4e57-a88a-fd8ef85a1bc4"
 version = "1.0.0"
 authors = ["Filip Cavar", "Markus Gumbel"]
 
+[workspace]
+projects = ["test"]
+
 [deps]
 BioCodes = "5da0a781-4ec8-4633-a007-8ceb506d1ca1"
 BioSequences = "7e6ae17a-c86d-528c-b3b9-7f778a29fe59"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
-
-[compat]
-BioCodes = "0.1.0"
-BioSequences = "3.5.1"
-CairoMakie = "0.15.9"
-GraphMakie = "0.6.3"
-Graphs = "1.14.0"
-NetworkLayout = "0.4.10"
-julia = "1.12"
 
 [weakdeps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
@@ -25,5 +20,12 @@ NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 [extensions]
 BioBlockcodesGraphMakie = ["GraphMakie", "CairoMakie", "NetworkLayout"]
 
-[workspace]
-projects = ["test"]
+[compat]
+BioCodes = "0.1.0"
+BioSequences = "3.5.1"
+CairoMakie = "0.15.9"
+DocStringExtensions = "0.9.5"
+GraphMakie = "0.6.3"
+Graphs = "1.14.0"
+NetworkLayout = "0.4.10"
+julia = "1.12"
