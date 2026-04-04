@@ -1,6 +1,6 @@
 name = "BioBlockcodes"
 uuid = "604ddfb8-b057-4e57-a88a-fd8ef85a1bc4"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Filip Cavar", "Markus Gumbel"]
 
 [workspace]
@@ -21,7 +21,7 @@ NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 BioBlockcodesGraphMakie = ["GraphMakie", "CairoMakie", "NetworkLayout"]
 
 [compat]
-BioCodes = "0.1.0"
+BioCodes = "0.1.2"
 BioSequences = "3.5.1"
 CairoMakie = "0.15.9"
 DocStringExtensions = "0.9.5"
