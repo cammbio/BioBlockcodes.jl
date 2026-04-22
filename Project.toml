@@ -21,7 +21,7 @@ NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
 BioBlockcodesGraphMakie = ["GraphMakie", "CairoMakie", "NetworkLayout"]
 
 [compat]
-BioCodes = "0.1.2"
+BioCodes = "0.1.0"
 BioSequences = "3.5.1"
 CairoMakie = "0.15.9"
 DocStringExtensions = "0.9.5"
