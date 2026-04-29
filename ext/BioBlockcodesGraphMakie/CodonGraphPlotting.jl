@@ -1,3 +1,15 @@
+# determine number of columns for grid layout based on amount of graphs
+function _get_col_count(graph_count::Int)
+    # do not allow 0 or negative graph count
+    if graph_count <= 0
+        throw(ArgumentError("graph_count must be a positive integer."))
+    end
+
+    col_count = max(1, ceil(Int, sqrt(graph_count)))
+    return col_count
+end
+
+
 """
     plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900)) -> Figure
 
@@ -22,9 +34,9 @@ Creates a single visualization of a codon graph in a Figure.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set = GCATCodes.LongDNA{4}.(["CAA", "GTC"]);
+julia> codon_set = [dna"CAA", dna"GTC"];
 
 julia> cgd = CodonGraphData(codon_set);
 
@@ -34,10 +46,7 @@ julia> typeof(fig)
 Makie.Figure
 ```
 """
-function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800, 900))
-    # validate cgd object
-    _validate_cgd(cgd)
-
+function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (600, 400), spring = 100)
     # create plot figure
     fig = Figure(size = fig_size)
     ax = Axis(
@@ -54,16 +63,16 @@ function plot_codon_graph(cgd::CodonGraphData; fig_size::Tuple{Int, Int} = (1800
     graphplot!(
         ax,
         cgd.graph;
-        layout = NetworkLayout.Spring(C = 50.0),
+        layout = NetworkLayout.Spring(C = spring),
         nlabels = cgd.vert_labels,
-        nlabels_color = :white,
-        nlabels_size = 18,
+        nlabels_color = :black,
+        nlabels_size = 28,
         nlabels_offset = Point2f(0, 0),
         nlabels_align = (:center, :center),
-        node_color = :black,
-        node_size = 30,
+        node_color = :lightgrey,
+        node_size = 50,
         arrow_shift = :end,
-        arrow_size = 12,
+        arrow_size = 10,
         edge_width = 2,
         edge_curvature = 0.9,
     )
@@ -97,11 +106,11 @@ Creates a grid visualization of multiple codon graphs in a Figure.
 # Examples
 
 ```jldoctest
-julia> using GCATCodes
+julia> using BioBlockcodes, BioSequences
 
-julia> codon_set_1 = GCATCodes.LongDNA{4}.(["ATA", "GGA"]);
+julia> codon_set_1 = [dna"ATA", dna"GGA"];
 
-julia> codon_set_2 = GCATCodes.LongDNA{4}.(["TTC", "GCA"]);
+julia> codon_set_2 = [dna"TTC", dna"GCA"];
 
 julia> cgd_1 = CodonGraphData(codon_set_1);
 
@@ -123,7 +132,7 @@ function plot_multiple_codon_graphs(
     # do not allow empty cgd_list
     isempty(cgd_list) && throw(ArgumentError("cgd_list is empty."))
     # validate cgd objects
-    _validate_cgd.(cgd_list)
+    BioBlockcodes._validate_cgd.(cgd_list)
 
     # get number of columns for grid layout based on amount of graphs
     col_count = _get_col_count(length(cgd_list))
@@ -176,18 +185,3 @@ function plot_multiple_codon_graphs(
 
     return fig
 end
-
-
-# determine number of columns for grid layout based on amount of graphs
-function _get_col_count(graph_count::Int)
-    # do not allow 0 or negative graph count
-    if graph_count <= 0
-        throw(ArgumentError("graph_count must be a positive integer."))
-    end
-
-    col_count = max(1, ceil(Int, sqrt(graph_count)))
-    return col_count
-end
-
-
-

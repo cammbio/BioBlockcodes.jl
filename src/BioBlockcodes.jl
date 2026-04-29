@@ -1,11 +1,10 @@
-module GCATCodes
+module BioBlockcodes
 # ----------------------------------------------- PACKAGES ----------------------------------------------
 using Base.Threads: @spawn
+using BioCodes
 using BioSequences
-using CairoMakie
-using GraphMakie
 using Graphs
-using NetworkLayout
+using DocStringExtensions
 # ---------------------------------------------- VARIABLES ----------------------------------------------
 
 # ---------------------------------------------- CONSTANTS ----------------------------------------------
@@ -77,7 +76,6 @@ const ALL_CODONS =
 
 const ALLOWED_BASES_DNA = Set((DNA_A, DNA_C, DNA_G, DNA_T))
 const ALLOWED_BASES_STR = Set(('A', 'C', 'G', 'T'))
-const BASE_COMPLEMENT = Dict(DNA_A => DNA_T, DNA_T => DNA_A, DNA_C => DNA_G, DNA_G => DNA_C)
 const CODON_INDEX = Dict{LongDNA{4}, Int}(codon => i for (i, codon) in enumerate(ALL_CODONS))
 # ---------------------------------------------- INCLUDES -----------------------------------------------
 include("Types.jl")
@@ -86,8 +84,14 @@ include("InputOutputUtilities.jl")
 include("CodonUtilities.jl") # needs Types.jl
 include("CodonGraphAnalysis.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphBuilder.jl
 include("CycleAnalysis.jl") # needs Types.jl
-include("CodonGraphPlotting.jl") # needs Types.jl
 include("StrongC3.jl") # needs Types.jl, CodonUtilities.jl and CodonGraphAnalysis.jl
+
+# ------------------------------------------------ EXT --------------------------------------------------
+# Functions used in the extension:
+function plot_codon_graph end
+function plot_multiple_codon_graphs end
+function _get_col_count end
+
 # ---------------------------------------------- EXPORTS ------------------------------------------------
 # Types
 export
@@ -123,6 +127,5 @@ export
     codon_set_to_str,
     # StrongC3.jl
     calc_strong_c3_comb_by_size,
-
     _expand_graph!
 end
