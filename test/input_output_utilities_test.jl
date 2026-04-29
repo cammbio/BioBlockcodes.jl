@@ -1,4 +1,4 @@
-using GCATCodes
+using BioBlockcodes
 using Test
 
 
@@ -76,14 +76,14 @@ end
 @testset "_get_comb_from_codon_set" begin
     @testset "happy path" begin
         codon_set = LongDNA{4}.(["AAT", "ACT"])
-        comb = GCATCodes._get_comb_from_codon_set(codon_set)
+        comb = BioBlockcodes._get_comb_from_codon_set(codon_set)
         @test comb == [3, 7]
     end
 
 
     @testset "duplicate codons" begin
         codon_set = LongDNA{4}.(["AAT", "AAT"])
-        @test_throws ArgumentError GCATCodes._get_comb_from_codon_set(codon_set)
+        @test_throws ArgumentError BioBlockcodes._get_comb_from_codon_set(codon_set)
     end
 end
 
@@ -94,7 +94,7 @@ end
         codon_set = LongDNA{4}.(["AAT", "ACT"])
         comb = [3, 7]
 
-        @test GCATCodes._write_res(io, codon_set, comb) == true
+        @test BioBlockcodes._write_res(io, codon_set, comb) == true
         @test String(take!(io)) == "AAT|ACT,3|7\n"
     end
 
@@ -103,7 +103,7 @@ end
         io = IOBuffer()
         codon_set = LongDNA{4}[]
         comb = [1]
-        @test_throws ArgumentError GCATCodes._write_res(io, codon_set, comb)
+        @test_throws ArgumentError BioBlockcodes._write_res(io, codon_set, comb)
     end
 
 
@@ -111,6 +111,6 @@ end
         io = IOBuffer()
         codon_set = LongDNA{4}.(["AAT", "ACT"])
         comb = [7, 3]
-        @test_throws ArgumentError GCATCodes._write_res(io, codon_set, comb)
+        @test_throws ArgumentError BioBlockcodes._write_res(io, codon_set, comb)
     end
 end
