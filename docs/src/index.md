@@ -114,6 +114,170 @@ the same set (for example [`is_c3`](@ref), [`is_comma_free`](@ref) or
   - `is_circular` tests circularity only. Stronger properties such as
     comma-freeness or the C3 property have their own predicates.
 
+## Testing a codon set for the C3 property with `is_c3`
+
+This section covers `is_c3(codons::Vector{LongDNA{4}})`, which decides whether a
+codon set is a *C3 code*. The setup and codon-set construction from the
+`is_circular` section above carry over unchanged; only the property being tested
+is new.
+
+### Background
+
+A codon set is **C3** if the set itself *and* both of its reading-frame shifts
+are circular. The two frame shifts are obtained by rotating every codon
+`N1N2N3` cyclically by one and by two positions; `is_c3` builds the codon graph
+for each of the three sets and checks that none of them contains a cycle.
+
+C3 sits strictly between the two other predicates in this tutorial: every C3 code
+is [`is_circular`](@ref), and every [`is_strong_c3`](@ref) code is C3, but
+neither implication reverses.
+
+### The two methods of `is_c3`
+
+As with `is_circular`, the predicate is defined for both argument types:
+
+  - [`is_c3(cgd::CodonGraphData)`](@ref) works on an existing codon graph.
+  - `is_c3(codons::Vector{LongDNA{4}})` builds the [`CodonGraphData`](@ref)
+    internally and forwards to the method above. Note that the two frame-shifted
+    sets get their own graphs regardless of which method you call.
+
+### Checking a codon set
+
+```jldoctest is_circular_tutorial
+julia> is_c3([dna"AAC", dna"ATG"])
+true
+```
+
+`{AAC, ATG}` is circular and stays circular under both frame shifts, so it is a
+C3 code.
+
+### Circular but not C3
+
+Circularity of the set alone is not enough. `{AAC, CCA}` is circular, but one of
+its frame shifts is not, so it fails the C3 test:
+
+```jldoctest is_circular_tutorial
+julia> is_circular([dna"AAC", dna"CCA"])
+true
+
+julia> is_c3([dna"AAC", dna"CCA"])
+false
+```
+
+### Relationship to the `CodonGraphData` method
+
+The two calls below are equivalent; pass a `CodonGraphData` when you want to run
+several checks on the same set without rebuilding its graph:
+
+```jldoctest is_circular_tutorial
+julia> is_c3([dna"AAC", dna"ATG"])
+true
+
+julia> cgd = CodonGraphData([dna"AAC", dna"ATG"]);
+
+julia> is_c3(cgd)
+true
+```
+
+### Notes and errors
+
+  - An invalid codon set raises an `ArgumentError` while the `CodonGraphData` is
+    being constructed, exactly as for `is_circular`.
+  - The order of the codons does not affect the result.
+  - A `false` result does not say which frame is to blame; call
+    [`is_circular`](@ref) on the set to see whether circularity already fails or
+    only one of the shifts does.
+
+## Testing a codon set for the strong C3 property with `is_strong_c3`
+
+This section covers `is_strong_c3(codons::Vector{LongDNA{4}})`, which decides
+whether a codon set is a *strong comma-free C3 code*. The setup and codon-set
+construction from the `is_circular` section above carry over unchanged; only the
+property being tested is new.
+
+### Background
+
+The relevant properties form a hierarchy, each one strictly stronger than the
+one before:
+
+  1. **circular** – the codon graph is acyclic (see the previous section).
+  2. **C3** – the code *and* both of its frame shifts (obtained by cyclically
+     shifting every codon one and two positions to the left) are circular. This
+     is what [`is_c3`](@ref) checks.
+  3. **strong C3** – the code is C3 *and* its *expanded* codon graph contains no
+     cycle longer than length 2. The expanded graph adds, for every codon
+     `N1N2N3`, the vertices `N2` and `N3N1` together with the two edges
+     `N2 -> N3N1` and `N3N1 -> N2`.
+
+So `is_strong_c3(codons)` returns `true` only for sets that already pass
+`is_circular` and `is_c3`.
+
+### The two methods of `is_strong_c3`
+
+Like `is_circular`, the predicate is defined for both argument types:
+
+  - [`is_strong_c3(cgd::CodonGraphData)`](@ref) works on an existing codon graph.
+  - `is_strong_c3(codons::Vector{LongDNA{4}})` builds the [`CodonGraphData`](@ref)
+    internally and forwards to the method above.
+
+### Checking a codon set
+
+```jldoctest is_circular_tutorial
+julia> is_strong_c3([dna"GGA", dna"TAA"])
+true
+```
+
+The set `{GGA, TAA}` is circular, stays circular under both frame shifts, and its
+expanded graph has only length-2 cycles, so it is strong C3.
+
+### C3 but not strong C3
+
+Passing `is_c3` is necessary but not sufficient. The set `{AAC, ACC}` is C3, yet
+its expanded graph contains a longer cycle, so it fails the strong C3 test:
+
+```jldoctest is_circular_tutorial
+julia> is_c3([dna"AAC", dna"ACC"])
+true
+
+julia> is_strong_c3([dna"AAC", dna"ACC"])
+false
+```
+
+### A codon set that fails outright
+
+`{AGA, AAG, CTG, TGA, TTC}` is not even circular, so every stronger property
+fails as well:
+
+```jldoctest is_circular_tutorial
+julia> is_strong_c3([dna"AGA", dna"AAG", dna"CTG", dna"TGA", dna"TTC"])
+false
+```
+
+### Relationship to the `CodonGraphData` method
+
+As with `is_circular`, the two calls below are equivalent; pass a
+`CodonGraphData` when you want to run several checks on the same set without
+rebuilding the graph each time:
+
+```jldoctest is_circular_tutorial
+julia> is_strong_c3([dna"GGA", dna"TAA"])
+true
+
+julia> cgd = CodonGraphData([dna"GGA", dna"TAA"]);
+
+julia> is_strong_c3(cgd)
+true
+```
+
+### Notes and errors
+
+  - An invalid codon set raises an `ArgumentError` while the `CodonGraphData` is
+    being constructed, exactly as for `is_circular`.
+  - The order of the codons does not affect the result.
+  - `is_strong_c3` returning `false` tells you the set is not strong C3, but not
+    which weaker property it still satisfies; call [`is_c3`](@ref) or
+    [`is_circular`](@ref) to locate the set in the hierarchy.
+
 # API 
 
 ```@index
