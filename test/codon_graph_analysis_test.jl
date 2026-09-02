@@ -39,6 +39,7 @@ end
         codon_set = LongDNA{4}.(["AAC", "ATG"])
         cgd = CodonGraphData(codon_set)
         @test is_circular(cgd) == true
+        @test is_circular(codon_set) == true
     end
 
 
@@ -46,6 +47,7 @@ end
         codon_set = LongDNA{4}.(["AGA", "AAG", "GAA"])
         cgd = CodonGraphData(codon_set)
         @test is_circular(cgd) == false
+        @test is_circular(codon_set) == false
     end
 end
 
@@ -55,6 +57,7 @@ end
         codon_set = LongDNA{4}.(["AAC", "ATG"])
         cgd = CodonGraphData(codon_set)
         @test is_comma_free(cgd) == true
+        @test is_comma_free(codon_set) == true
     end
 
 
@@ -62,6 +65,7 @@ end
         codon_set = LongDNA{4}.(["AGA", "AAG", "CTG", "TGA", "TTC"])
         cgd = CodonGraphData(codon_set)
         @test is_comma_free(cgd) == false
+        @test is_comma_free(codon_set) == false
     end
 end
 

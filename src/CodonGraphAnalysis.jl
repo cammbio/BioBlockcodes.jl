@@ -1,5 +1,5 @@
 """
-    is_c3(cgd::CodonGraphData) -> Bool
+    $(TYPEDSIGNATURES)
 
 Checks whether a codon graph satisfies the C3 property.
 
@@ -48,9 +48,29 @@ function is_c3(cgd::CodonGraphData)
     return true
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Checks whether the set of codons as specified in `codons` satisfies the C3 property.
+
+# Examples
+
+```jldoctest
+julia> using BioBlockcodes, BioSequences
+
+julia> codon_set = [dna"ATG", dna"TGA"];
+
+julia> is_c3(codon_set)
+false
+```
+"""
+function is_c3(codons::Vector{LongDNA{4}})
+    cgd = CodonGraphData(codons)
+    return is_c3(cgd)
+end
 
 """
-    is_circular(cgd::CodonGraphData) -> Bool
+    $(TYPEDSIGNATURES)
 
 Checks whether a codon graph is acyclic aka. contains no cycles.
 
@@ -114,7 +134,7 @@ function is_circular(codons::Vector{LongDNA{4}})
 end
 
 """
-    is_comma_free(cgd::CodonGraphData) -> Bool
+    $(TYPEDSIGNATURES)
 
 Checks whether a codon graph is comma-free.
 
@@ -158,9 +178,29 @@ function is_comma_free(cgd::CodonGraphData)
     return true
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Checks whether the set of codons as specified in `codons` defines a comma-free code.
+
+# Examples
+
+```jldoctest
+julia> using BioBlockcodes, BioSequences
+
+julia> codon_set = [dna"AAC", dna"GTT"];
+
+julia> is_comma_free(codon_set)
+true
+```
+"""
+function is_comma_free(codons::Vector{LongDNA{4}})
+    cgd = CodonGraphData(codons)
+    return is_comma_free(cgd)
+end
 
 """
-    is_self_complementary(cgd::CodonGraphData) -> Bool
+    $(TYPEDSIGNATURES)
 
 Checks whether a codon graph is invariant under complement and reversal.
 
@@ -211,7 +251,7 @@ end
 
 # check if a codon graph is strong C3 (i.e., C3 and expanded graph only has cycles of length 2)
 """
-    is_strong_c3(cgd::CodonGraphData) -> Bool
+    $(TYPEDSIGNATURES)
 
 Checks whether a codon graph is strong C3.
 
@@ -266,9 +306,29 @@ function is_strong_c3(cgd::CodonGraphData)
     end
 end
 
+"""
+    $(TYPEDSIGNATURES)
+
+Checks whether the set of codons as specified in `codons` defines a is strong C3 code.
+
+# Examples
+
+```jldoctest
+julia> using BioBlockcodes, BioSequences
+
+julia> codon_set = [dna"GGA", dna"TAA"];
+
+julia> is_strong_c3(codon_set)
+true
+```
+"""
+function is_strong_c3(codons::Vector{LongDNA{4}})
+    cgd = CodonGraphData(codons)
+    return is_strong_c3(cgd)
+end
 
 # adds edge to graph by vertex labels
-function _add_edge_by_label!(cgd::CodonGraphData, edge_label::Tuple{String, String})
+function _add_edge_by_label!(cgd::CodonGraphData, edge_label::Tuple{String,String})
     src_label, dst_label = edge_label
     # validate cgd
     _validate_cgd(cgd)
@@ -368,7 +428,7 @@ function _has_cycle_longer_than(graph::SimpleDiGraph, max_length::Int)
     max_length < 0 && throw(ArgumentError("max_length must be at least 0"))
 
     # stack for DFS: (current_vertex, remaining_neighbors, current_depth)
-    dfs_stack = Vector{Tuple{Int, Vector{Int}, Int}}()
+    dfs_stack = Vector{Tuple{Int,Vector{Int},Int}}()
     vert_count = nv(graph)
     curr_path = Int[]
     in_curr_path = falses(vert_count)
@@ -417,7 +477,7 @@ end
 
 
 # checks if an edge with given labels exists in the graph
-function _has_edge_label(cgd::CodonGraphData, edge_label::Tuple{String, String})
+function _has_edge_label(cgd::CodonGraphData, edge_label::Tuple{String,String})
     src_label, dst_label = edge_label
     # validate labels
     _validate_label(src_label)
