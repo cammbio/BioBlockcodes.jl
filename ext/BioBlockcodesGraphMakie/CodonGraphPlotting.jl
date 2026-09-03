@@ -125,10 +125,10 @@ Makie.Figure
 ```
 """
 function plot_multiple_codon_graphs(
-    cgd_list::Vector{CodonGraphData};
+    cgd_list::Vector{CodonGraphData{T}};
     fig_title::Union{String,Nothing}=nothing,
-    fig_size::Tuple{Int,Int}=(1800, 900),
-)
+    fig_size::Tuple{Int,Int}=(1800, 900)
+) where {T <: LongDNA}
     # do not allow empty cgd_list
     isempty(cgd_list) && throw(ArgumentError("cgd_list is empty."))
     # validate cgd objects

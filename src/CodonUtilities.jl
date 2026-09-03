@@ -1,15 +1,15 @@
 """
-    get_comp_rev_codon_set(codon_set::Vector{LongDNA{4}}) -> Vector{LongDNA{4}}
+    $(TYPEDSIGNATURES)
 
 Builds the complemented and reversed codon for each codon in the set.
 
 # Arguments
 
-  - `codon_set::Vector{LongDNA{4}}`: Input codon set.
+  - `codon_set::Vector{LongDNA}`: Input codon set.
 
 # Returns
 
-  - `Vector{LongDNA{4}}`: Complemented-and-reversed codon set in the same order.
+  - `Vector{LongDNA}`: Complemented-and-reversed codon set in the same order.
 
 # Throws
 
@@ -29,7 +29,7 @@ julia> get_comp_rev_codon_set(codon_set)
  TGA
 ```
 """
-function get_comp_rev_codon_set(codon_set::Vector{LongDNA{4}})
+function get_comp_rev_codon_set(codon_set::Vector{T}) where {T <: LongDNA}
     # validate codon_set
     _validate_codon_set(codon_set)
     # get complemented, reversed codon set
@@ -40,18 +40,18 @@ end
 
 
 """
-    left_shift_codon(codon::LongDNA{4}, shift_by::Int) -> LongDNA{4}
+    $(TYPEDSIGNATURES)
 
 Performs a cyclic left shift on a codon.
 
 # Arguments
 
-  - `codon::LongDNA{4}`: Codon to shift.
+  - `codon::LongDNA`: Codon to shift.
   - `shift_by::Int`: Number of left shifts.
 
 # Returns
 
-  - `LongDNA{4}`: Cyclically left-shifted codon.
+  - `LongDNA`: Cyclically left-shifted codon.
 
 # Throws
 
@@ -62,14 +62,14 @@ Performs a cyclic left shift on a codon.
 ```jldoctest
 julia> using BioBlockcodes, BioSequences
 
-julia> codon = BioBlockcodes.LongDNA{4}("ACT");
+julia> codon = dna"ACT";
 
 julia> left_shift_codon(codon, 1)
 3nt DNA Sequence:
 CTA
 ```
 """
-function left_shift_codon(codon::LongDNA{4}, shift_by::Int)
+function left_shift_codon(codon::T, shift_by::Int) where {T <: LongDNA}
     # do not allow negative shift_by
     shift_by < 0 && throw(ArgumentError("shift_by must be non-negative, got shift_by = $shift_by."))
     # validate codon
@@ -80,18 +80,18 @@ end
 
 
 """
-    left_shift_codon_set(codon_set::Vector{LongDNA{4}}, shift_by::Int) -> Vector{LongDNA{4}}
+    $(TYPEDSIGNATURES)
 
 Performs a cyclic left shift on all codons in a set.
 
 # Arguments
 
-  - `codon_set::Vector{LongDNA{4}}`: Codon set to shift.
+  - `codon_set::Vector{LongDNA}`: Codon set to shift.
   - `shift_by::Int`: Number of left shifts.
 
 # Returns
 
-  - `Vector{LongDNA{4}}`: Shifted codon set.
+  - `Vector{LongDNA}`: Shifted codon set.
 
 # Throws
 
@@ -127,7 +127,7 @@ function _get_comp_base(base::DNA)
 end
 
 
-function _get_comp_codon(codon::LongDNA{4})
+function _get_comp_codon(codon::LongDNA)
     # validate codon
     _validate_codon(codon)
 
@@ -136,7 +136,7 @@ function _get_comp_codon(codon::LongDNA{4})
 end
 
 
-function _get_comp_codon_set(codon_set::Vector{LongDNA{4}})
+function _get_comp_codon_set(codon_set::Vector{T}) where {T <: LongDNA}
     # validate codon_set
     _validate_codon_set(codon_set)
 
@@ -145,7 +145,7 @@ function _get_comp_codon_set(codon_set::Vector{LongDNA{4}})
 end
 
 
-function _get_rev_codon(codon::LongDNA{4})
+function _get_rev_codon(codon::LongDNA)
     # validate codon
     _validate_codon(codon)
 
@@ -154,7 +154,7 @@ function _get_rev_codon(codon::LongDNA{4})
 end
 
 
-function _get_rev_codon_set(codon_set::Vector{LongDNA{4}})
+function _get_rev_codon_set(codon_set::Vector{T}) where {T <: LongDNA}
     # validate codon_set
     _validate_codon_set(codon_set)
 

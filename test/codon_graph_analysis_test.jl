@@ -9,6 +9,7 @@ using Test
         codon_set = LongDNA{4}.(["AAC", "ATG"])
         cgd = CodonGraphData(codon_set)
         @test is_c3(cgd) == true
+        @test is_c3(codon_set) == true
     end
 
 
@@ -16,6 +17,7 @@ using Test
         codon_set = LongDNA{4}.(["AGA", "AAG", "GAA"])
         cgd = CodonGraphData(codon_set)
         @test is_c3(cgd) == false
+        @test is_c3(codon_set) == false
     end
 
 
@@ -91,6 +93,7 @@ end
         codon_set = LongDNA{4}.(["AAC", "ATG"])
         cgd = CodonGraphData(codon_set)
         @test is_strong_c3(cgd) == true
+        @test is_strong_c3(codon_set) == true
     end
 
 
@@ -98,6 +101,7 @@ end
         codon_set = LongDNA{4}.(["AGA", "AAG", "CTG", "TGA", "TTC"])
         cgd = CodonGraphData(codon_set)
         @test is_strong_c3(cgd) == false
+        @test is_strong_c3(codon_set) == false
     end
 
 
@@ -105,6 +109,7 @@ end
         codon_set = LongDNA{4}.(["AAC", "ACC"])
         cgd = CodonGraphData(codon_set)
         @test is_strong_c3(cgd) == false
+        @test is_strong_c3(codon_set) == false
     end
 end
 

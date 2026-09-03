@@ -4,6 +4,7 @@ using CairoMakie
 using GraphMakie
 using NetworkLayout
 using BioCodes
+using BioSequences
 using BioBlockcodes
 
 # Pull API functions into extension module

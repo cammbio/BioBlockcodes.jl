@@ -2,25 +2,25 @@
 # using Graphs
 
 # struct to hold all data related to a codon graph
-mutable struct CodonGraphData
-    codon_set::Vector{LongDNA{4}}
-    edge_labels::Vector{Tuple{String, String}}
+mutable struct CodonGraphData{T<:LongDNA}
+    codon_set::Vector{T}
+    edge_labels::Vector{Tuple{String,String}}
     graph::Graphs.SimpleDiGraph
     graph_title::String
-    vert_idxs::Dict{String, Int}
+    vert_idxs::Dict{String,Int}
     vert_labels::Vector{String}
 end
 
 
 # constructor for CodonGraphData that takes a codon set and builds the other fields
 """
-    CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "") -> CodonGraphData
+    CodonGraphData(codon_set::Vector{LongDNA}; graph_title::String = "") -> CodonGraphData
 
 Constructs a `CodonGraphData` instance from a codon set and builds the corresponding graph.
 
 # Arguments
 
-  - `codon_set::Vector{LongDNA{4}}`: Input codons used to build the graph.
+  - `codon_set::Vector{LongDNA}`: Input codons used to build the graph.
 
 # Keyword Arguments
 
@@ -47,16 +47,16 @@ julia> cgd isa CodonGraphData
 true
 ```
 """
-function CodonGraphData(codon_set::Vector{LongDNA{4}}; graph_title::String = "")
+function CodonGraphData(codon_set::Vector{T}; graph_title::String="") where {T <: LongDNA}
     # validate codon_set
     _validate_codon_set(codon_set)
 
     cgd = CodonGraphData(
         copy(codon_set),
-        Tuple{String, String}[],
+        Tuple{String,String}[],
         Graphs.SimpleDiGraph(0),
         graph_title,
-        Dict{String, Int}(),
+        Dict{String,Int}(),
         String[],
     )
 
@@ -124,7 +124,7 @@ function _add_vertices!(cgd::CodonGraphData)
 
     # sort and copy temp_labels to vert_labels
     labels::Vector{String} = collect(temp_labels)
-    sort!(labels, by = x -> (length(x), x))
+    sort!(labels, by=x -> (length(x), x))
     append!(cgd.vert_labels, labels)
 
     # add a vertex for each label to graph

@@ -27,7 +27,7 @@ julia> codon_set_to_str(codon_set) == "\\\"ATG\\\", \\\"TGA\\\""
 true
 ```
 """
-function codon_set_to_str(codon_set::Vector{LongDNA{4}})
+function codon_set_to_str(codon_set::Vector{T}) where {T <: LongDNA}
     # validate codon set
     _validate_codon_set(codon_set)
 
@@ -112,7 +112,7 @@ end
 
 
 # get corresponding combination from codon set
-function _get_comb_from_codon_set(codon_set::Vector{LongDNA{4}})
+function _get_comb_from_codon_set(codon_set::Vector{T}) where {T <: LongDNA{4}}
     # validate codon set
     _validate_codon_set(codon_set)
 
@@ -123,7 +123,7 @@ end
 
 
 # write codon set and combination indices to CSV line: "COD1|COD2,idx1|idx2"
-function _write_res(io::IO, codon_set::Vector{LongDNA{4}}, comb::Vector{Int})
+function _write_res(io::IO, codon_set::Vector{T}, comb::Vector{Int}) where {T <: LongDNA}
     # validate codon set
     _validate_codon_set(codon_set)
     # validate combination indices

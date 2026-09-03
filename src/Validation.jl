@@ -141,7 +141,7 @@ end
 
 
 # validate codon content
-function _validate_codon(codon::LongDNA{4})
+function _validate_codon(codon::LongDNA)
     # do not allow empty codon
     length(codon) == 0 && throw(ArgumentError("\"codon\" cannot be empty."))
 
@@ -151,7 +151,7 @@ end
 
 
 # validate codon_set contents
-function _validate_codon_set(codon_set::Vector{LongDNA{4}})
+function _validate_codon_set(codon_set::Vector{T}) where {T <: LongDNA}
     # do not allow empty codon sets
     length(codon_set) == 0 && throw(ArgumentError("\"codon_set\" cannot be empty."))
 

@@ -101,7 +101,7 @@ for set in sorted_amino_vector
 end
 
 # get corresponding combination from codon set
-function _get_comb_from_codon_set2(codon_set::Vector{LongDNA{4}})
+function _get_comb_from_codon_set2(codon_set::Vector{T}) where {T <: LongDNA}
     # get indices of codons in codon_set
     idxs = getindex.(Ref(BioBlockcodes.CODON_INDEX), codon_set)
     return idxs
@@ -219,7 +219,7 @@ function read_line(path, n::Int)
     end
 end
 
-function get_count_tier(codon::LongDNA{4}, size::Int)
+function get_count_tier(codon::LongDNA{T}, size::Int) where {T <: LongDNA}
     codon_count = get_codon_count_in_res("files/results/res_$(size).csv")
     count = codon_count[codon]
     count_of_count = get_count_of_count(codon_count)
@@ -393,7 +393,7 @@ function check_empty_lines_in_file(file_path::String)
 end
 
 # function to get all subsets of a codon set
-function subsets(codon_set::Vector{LongDNA{4}})
+function subsets(codon_set::Vector{T}) where {T <: LongDNA}
     n = length(codon_set)
     result = Vector{Vector{LongDNA{4}}}()
     for i in 1:(2^n - 1)

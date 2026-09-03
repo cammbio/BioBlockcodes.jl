@@ -64,7 +64,7 @@ julia> is_c3(codon_set)
 false
 ```
 """
-function is_c3(codons::Vector{LongDNA{4}})
+function is_c3(codons::Vector{T}) where {T <: LongDNA}
     cgd = CodonGraphData(codons)
     return is_c3(cgd)
 end
@@ -128,7 +128,7 @@ julia> is_circular(codon_set)
 true
 ```
 """
-function is_circular(codons::Vector{LongDNA{4}})
+function is_circular(codons::Vector{T}) where {T <: LongDNA}
     cgd = CodonGraphData(codons)
     return is_circular(cgd)
 end
@@ -194,7 +194,7 @@ julia> is_comma_free(codon_set)
 true
 ```
 """
-function is_comma_free(codons::Vector{LongDNA{4}})
+function is_comma_free(codons::Vector{T}) where {T <: LongDNA}
     cgd = CodonGraphData(codons)
     return is_comma_free(cgd)
 end
@@ -321,7 +321,7 @@ julia> is_strong_c3(codon_set)
 true
 ```
 """
-function is_strong_c3(codons::Vector{LongDNA{4}})
+function is_strong_c3(codons::Vector{T}) where {T <: LongDNA}
     cgd = CodonGraphData(codons)
     return is_strong_c3(cgd)
 end

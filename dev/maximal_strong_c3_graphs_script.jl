@@ -33,7 +33,7 @@ end
 
 
 # grows a maximal strong c3 codon set from size 1-12 and displays graphs for each size
-function _get_cod_graphs(max_codon_set::Vector{LongDNA{4}})
+function _get_cod_graphs(max_codon_set::Vector{T}) where {T <: LongDNA}
     cgd_list = Vector{CodonGraphData}()
     for i in 1:length(max_codon_set)
         codon_set = max_codon_set[1:i]

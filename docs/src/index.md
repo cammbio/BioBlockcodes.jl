@@ -1,7 +1,6 @@
 ```@meta
 CurrentModule = BioBlockcodes
 ```
-Documentation for [BioBlockcodes](https://github.com/cammbio/BioBlockcodes.jl).
 
 # Tutorial
 
@@ -11,11 +10,11 @@ First of all, load the required packages:
 julia> using BioBlockcodes, BioSequences
 ```
 
-`BioSequences` provides the `dna"..."` string macro that produces `LongDNA{4}` values which are required later.
+`BioSequences` provides the `dna"..."` string macro that produces `LongDNA` values which are required later.
 
 ## Testing a codon set for circularity with `is_circular`
 
-This tutorial walks you through `is_circular(codons::Vector{LongDNA{4}})`, the
+This tutorial walks you through `is_circular(codons::Vector{LongDNA})`, the
 convenience method that answers a single question: *do the given codons form a
 circular code?*
 
@@ -39,7 +38,7 @@ cycle. A codon set is circular **if and only if** its codon graph is acyclic.
 
   - [`is_circular(cgd::CodonGraphData)`](@ref) works on a codon graph you have
     already constructed.
-  - `is_circular(codons::Vector{LongDNA{4}})` takes the raw codon set, builds the
+  - `is_circular(codons::Vector{LongDNA})` takes the raw codon set, builds the
     [`CodonGraphData`](@ref) for you, and forwards to the method above.
 
 Use the vector method when you just want a yes/no answer and do not need the
@@ -48,7 +47,7 @@ graph object for anything else.
 
 ### Build a codon set
 
-A codon set is simply a `Vector{LongDNA{4}}` in which every entry has length 3:
+A codon set is simply a vector of DNA sequences in which every sequence has length 3:
 
 ```jldoctest is_circular_tutorial
 julia> codon_set = [dna"AAC", dna"GTT"]
@@ -116,7 +115,7 @@ the same set (for example [`is_c3`](@ref), [`is_comma_free`](@ref) or
 
 ## Testing a codon set for the C3 property with `is_c3`
 
-This section covers `is_c3(codons::Vector{LongDNA{4}})`, which decides whether a
+This section covers `is_c3(codons::Vector{LongDNA})`, which decides whether a
 codon set is a *C3 code*. The setup and codon-set construction from the
 `is_circular` section above carry over unchanged; only the property being tested
 is new.
@@ -137,7 +136,7 @@ neither implication reverses.
 As with `is_circular`, the predicate is defined for both argument types:
 
   - [`is_c3(cgd::CodonGraphData)`](@ref) works on an existing codon graph.
-  - `is_c3(codons::Vector{LongDNA{4}})` builds the [`CodonGraphData`](@ref)
+  - `is_c3(codons::Vector{LongDNA})` builds the [`CodonGraphData`](@ref)
     internally and forwards to the method above. Note that the two frame-shifted
     sets get their own graphs regardless of which method you call.
 
@@ -190,7 +189,7 @@ true
 
 ## Testing a codon set for the strong C3 property with `is_strong_c3`
 
-This section covers `is_strong_c3(codons::Vector{LongDNA{4}})`, which decides
+This section covers `is_strong_c3(codons::Vector{LongDNA})`, which decides
 whether a codon set is a *strong comma-free C3 code*. The setup and codon-set
 construction from the `is_circular` section above carry over unchanged; only the
 property being tested is new.
@@ -217,7 +216,7 @@ So `is_strong_c3(codons)` returns `true` only for sets that already pass
 Like `is_circular`, the predicate is defined for both argument types:
 
   - [`is_strong_c3(cgd::CodonGraphData)`](@ref) works on an existing codon graph.
-  - `is_strong_c3(codons::Vector{LongDNA{4}})` builds the [`CodonGraphData`](@ref)
+  - `is_strong_c3(codons::Vector{LongDNA})` builds the [`CodonGraphData`](@ref)
     internally and forwards to the method above.
 
 ### Checking a codon set

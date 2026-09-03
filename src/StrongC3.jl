@@ -206,7 +206,7 @@ end
 
 
 # build rotation masks for all codons in codon_set
-function _get_rot_masks(codon_set::Vector{LongDNA{4}})
+function _get_rot_masks(codon_set::Vector{T}) where {T <: LongDNA}
     # validate codon_set
     _validate_codon_set(codon_set)
 

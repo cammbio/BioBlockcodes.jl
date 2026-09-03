@@ -132,7 +132,7 @@ end
 
 
     @testset "empty cgd_list throws ArgumentError" begin
-        @test_throws ArgumentError plot_multiple_codon_graphs(CodonGraphData[])
+        @test_throws ArgumentError plot_multiple_codon_graphs(CodonGraphData{LongDNA}[])
     end
 
 
