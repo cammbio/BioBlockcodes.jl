@@ -278,6 +278,100 @@ true
     which weaker property it still satisfies; call [`is_c3`](@ref) or
     [`is_circular`](@ref) to locate the set in the hierarchy.
 
+## Plotting graphs
+
+The codon graph behind every predicate in the previous sections can be drawn.
+The plotting functions live in the package extension `BioBlockcodesGraphMakie`,
+so they only become available once a [Makie](https://docs.makie.org) backend and
+`GraphMakie` have been loaded. Codon sets and `CodonGraphData` are built exactly
+as before.
+
+### Loading the extension
+
+`BioBlockcodesGraphMakie` is a *weak-dependency* extension. Its trigger packages
+are `CairoMakie`, `GraphMakie` and `NetworkLayout`; loading them next to
+`BioBlockcodes` activates the extension automatically:
+
+```@example plotting
+using BioBlockcodes, BioSequences
+using CairoMakie, GraphMakie
+CairoMakie.activate!(type = "png") # hide
+nothing # hide
+```
+
+Until the extension is active, `plot_codon_graph` is only an empty function stub
+and calling it throws a `MethodError`. Use `CairoMakie` for writing image files
+and, for example, `GLMakie` for an interactive window; the plotting code itself
+is backend-agnostic.
+
+### Plotting a single codon graph with `plot_codon_graph`
+
+`plot_codon_graph(cgd::CodonGraphData; fig_size = (600, 400), spring = 100)`
+takes a [`CodonGraphData`](@ref) and returns a `Makie.Figure` with the directed
+codon graph laid out by a spring (force-directed) algorithm. Vertices are
+labelled with the mononucleotides and dinucleotides of the codon graph; edges
+carry arrow heads showing their direction.
+
+```@example plotting
+codon_set = [dna"CAA", dna"GTC"]
+cgd = CodonGraphData(codon_set)
+fig = plot_codon_graph(cgd)
+```
+
+The function returns the figure rather than displaying it, so you decide what to
+do with it — `save("codon_graph.png", fig)` to write a file, `display(fig)` to
+show it, or embed it in a larger layout.
+
+### Adjusting size and layout
+
+Two keyword arguments control the output:
+
+  - `fig_size::Tuple{Int, Int}` – width and height of the figure in pixels.
+  - `spring::Real` – the `C` parameter of the spring layout. Larger values push
+    the vertices further apart, which helps with dense graphs; smaller values
+    make the drawing more compact.
+
+```@example plotting
+plot_codon_graph(cgd; fig_size = (900, 600), spring = 200)
+```
+
+Because the layout is force-directed and seeded randomly, successive calls can
+produce slightly different arrangements of the same graph.
+
+### Adding a title
+
+`plot_codon_graph` uses the `graph_title` field of the `CodonGraphData` as the
+axis title. Set it when constructing the graph:
+
+```@example plotting
+cgd_titled = CodonGraphData([dna"CAA", dna"GTC"]; graph_title = "X = {CAA, GTC}")
+plot_codon_graph(cgd_titled)
+```
+
+### Plotting several graphs side by side
+
+`plot_multiple_codon_graphs(cgd_list::Vector{CodonGraphData}; fig_title = nothing,
+fig_size = (1800, 900))` arranges a list of codon graphs in a grid (the number of
+columns is chosen from the number of graphs) and returns one `Figure`. Pass
+`fig_title` for a caption above the whole grid:
+
+```@example plotting
+cgd_list = [
+    CodonGraphData([dna"ATA", dna"GGA"]; graph_title = "set 1"),
+    CodonGraphData([dna"TTC", dna"GCA"]; graph_title = "set 2"),
+]
+plot_multiple_codon_graphs(cgd_list; fig_title = "Two codon graphs")
+```
+
+### Notes
+
+  - Both functions take `CodonGraphData`, not a raw codon vector; build the graph
+    first with [`CodonGraphData`](@ref).
+  - An invalid `CodonGraphData`, an empty `cgd_list`, or invalid entries in it
+    raise an `ArgumentError`.
+  - The extension is optional: `BioBlockcodes` itself has no dependency on Makie,
+    so scripts that only test codon properties stay lightweight.
+
 # API 
 
 ```@index

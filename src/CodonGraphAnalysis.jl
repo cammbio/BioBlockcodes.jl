@@ -249,7 +249,6 @@ function is_self_complementary(cgd::CodonGraphData)
 end
 
 
-# check if a codon graph is strong C3 (i.e., C3 and expanded graph only has cycles of length 2)
 """
     $(TYPEDSIGNATURES)
 

@@ -1,6 +1,10 @@
 using Documenter
 using BioBlockcodes
 
+# Load the plotting stack so the BioBlockcodesGraphMakie extension is active and
+# the `@example` blocks in the "Plotting graphs" section can render figures.
+using CairoMakie, GraphMakie, NetworkLayout
+
 DocMeta.setdocmeta!(BioBlockcodes, :DocTestSetup, :(using BioBlockcodes); recursive = true)
 
 makedocs(;
