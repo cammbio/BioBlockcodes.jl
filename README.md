@@ -19,6 +19,27 @@ See the [tutorial](https://cammbio.github.io/BioBlockcodes.jl/dev/) for a step-b
 
 `BioBlockcodes.jl` is the Julia version of the GCAT (**G**enetic **C**ode **A**nalysis **T**oolkit) written in Java [2].
 
+## Docker image
+
+There is also a Docker image that demonstrates some of this package's features as a web app. It can be installed from DockerHub. The Docker tag is: [cammbio/gcat-blockcodes-demo:latest](https://hub.docker.com/r/cammbio/gcat-blockcodes-demo)
+
+You may download the image by the shell command: 
+
+```
+docker pull cammbio/gcat-blockcodes-demo:latest
+```
+
+You can start the container on your local computer with: 
+
+```
+docker run -p 8042:8042 cammbio/gcat-blockcodes-demo
+```
+
+8042 is a port number. Make sure that this port is not used on your local machine. Otherwise chose a different port number.
+
+Open the web-app in your browser. Its URL is:
+
+http://localhost:8042/StrongC3
 
 ## References
 
